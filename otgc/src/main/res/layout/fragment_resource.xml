@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ ******************************************************************
+  ~
+  ~  Copyright 2018 DEKRA Testing and Certification, S.A.U. All Rights Reserved.
+  ~
+  ~  ******************************************************************
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  ~  ******************************************************************
+  -->
+
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/introspected_layout"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/fragment_horizontal_margin"
+    android:layout_marginEnd="@dimen/fragment_horizontal_margin"
+    android:layout_marginTop="@dimen/fragment_vertical_margin"
+    android:layout_marginBottom="@dimen/fragment_vertical_margin">
+</LinearLayout>-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:layout_marginStart="@dimen/fragment_horizontal_margin"
+    android:layout_marginEnd="@dimen/fragment_horizontal_margin"
+    android:layout_marginTop="@dimen/fragment_vertical_margin"
+    android:layout_marginBottom="@dimen/fragment_vertical_margin">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageButton
+            android:id="@+id/expand_button"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?android:selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_expand_more_black_36dp"
+            android:tint="@color/ocf_light_blue" />
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:weightSum="1">
+            <TextView
+                android:id="@+id/device_resource_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="0.8" />
+            <Switch
+                android:id="@+id/device_resource_observation"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="0.2"
+                android:visibility="invisible"/>
+        </LinearLayout>
+    </LinearLayout>
+    <GridLayout
+        android:id="@+id/introspected_layout"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="36dp"
+        android:visibility="gone"
+        android:columnCount="2"
+        android:rowCount="0" />
+</LinearLayout>

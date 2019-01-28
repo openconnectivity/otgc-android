@@ -1,0 +1,1 @@
+include ':otgc', ':iotivity-base-release', ':easy-setup-core'

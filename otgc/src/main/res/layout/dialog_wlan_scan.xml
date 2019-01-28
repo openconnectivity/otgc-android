@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="10dip"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Spinner
+        android:id="@+id/dialog_spinner_wifi"
+        android:layout_width="fill_parent"
+        android:layout_height="50dp" />
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:passwordToggleEnabled="true"
+        app:passwordToggleTint="@color/OCF_LIGHT_GRAY">
+        <android.support.design.widget.TextInputEditText
+            android:id="@+id/edit_text_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/login_password_hint"
+            android:imeOptions="actionDone"
+            android:backgroundTint="@color/OCF_DARK_GRAY"
+            android:inputType="textPassword"
+            android:textAppearance="@style/MyTextAppearance.Default" />
+    </android.support.design.widget.TextInputLayout>
+
+</LinearLayout>

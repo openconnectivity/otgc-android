@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ ******************************************************************
+  ~
+  ~  Copyright 2018 DEKRA Testing and Certification, S.A.U. All Rights Reserved.
+  ~
+  ~  ******************************************************************
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  ~  ******************************************************************
+  -->
+
+<resources>
+    <string name="permissions_dialog_title">Permisos</string>
+    <string name="pref_help_header">Ayuda</string>
+    <string name="pref_help_app_info">Info. de la app</string>
+    <string name="about_app_version">Versión %1$s</string>
+    <string name="about_all_rights_reserved">Todos los derechos reservados.</string>
+    <string name="about_powered_by">Desarrollado por:</string>
+    <string name="pref_iotivity_title_discovery_timeout">Tiempo de descubrimiento (en segundos)</string>
+    <string name="wlan_scan_title">Conectar a red Wi-Fi</string>
+    <string name="settings_title">Ajustes</string>
+    <string name="devices_menu_item_logout">Cerrar sesión</string>
+    <string name="login_username_hint">Usuario</string>
+    <string name="login_password_hint">Contraseña</string>
+    <string name="login_button_text">Iniciar sesión</string>
+    <string name="login_snackbar_action_try_again">Reintentar</string>
+    <string name="login_error_authenticating">Algo salió mal durante la autenticación.</string>
+    <string name="permissions_dialog_explain_message">Para asegurar que la aplicación se ejecuta correctamente, son necesarios los siguientes permisos:</string>
+    <string name="permissions_dialog_location_explain"><b>Ubicación</b>: para mostrar la lista de redes Wi-Fi disponibles.</string>
+    <string name="permissions_dialog_storage_explain"><b>Almacenamiento</b>: para crear bases de datos para la gestión de la seguridad.</string>
+    <string name="permissions_dialog_yes_message">Conceder</string>
+    <string name="permissions_dialog_no_message">Denegar</string>
+    <string name="permissions_denied_dialog_title">Permiso denegado</string>
+    <string name="permissions_denied_dialog_go_to_settings_message">Se han denegado algunos permisos. Para asegurar el correcto funcionamiento de la aplicación se necesitan los permisos de ubicación y almacenamiento. Por favor, conceda los permisos denegados en los ajustes de aplicación.</string>
+    <string name="permissions_denied_dialog_yes_message">Ir a ajustes</string>
+    <string name="permissions_denied_dialog_no_message">Continuar</string>
+    <string name="wlan_scan_dialog_enable_wifi_message">Activando Wi-Fi…</string>
+    <string name="wlan_scan_network_scan_message">Buscando redes Wi-Fi…</string>
+    <string name="wlan_scan_dialog_password_input_hint">Contraseña</string>
+    <string name="wlan_scan_dialog_password_positive_button_text">Conectar</string>
+    <string name="wlan_scan_dialog_password_negative_button_text">Cancelar</string>
+    <string name="wlan_scan_dialog_connect_to_wifi_message">Conectando a la red Wi-Fi…</string>
+    <string name="devices_select_oxm_title">Seleccionar OXM</string>
+    <string name="devices_no_oxm_supported">El dispositivo no soporta ningún OXM.</string>
+    <string name="devices_dialog_insert_randompin_title">Introduzca el PIN mostrado por el dispositivo</string>
+    <string name="devices_dialog_insert_randompin_yes_option">Confirmar</string>
+    <string name="devices_dialog_insert_randompin_no_option">Cancelar</string>
+    <string name="devices_dialog_show_randompin_yes_option">Cerrar</string>
+    <string name="devices_menu_item_logs">Mostrar trazas</string>
+    <string name="devices_menu_item_settings">Ajustes</string>
+    <string name="devices_cardview_unnamed_device">Sin nombre</string>
+    <string name="devices_cardview_no_device_types">Sin tipos de dispositivo estandarizados</string>
+    <string name="devices_cardview_menu_item_access_control">Control de acceso</string>
+    <string name="devices_cardview_menu_item_credentials">Credenciales</string>
+    <string name="devices_dialog_scanning_message">Buscando dispositivos…</string>
+    <string name="devices_dialog_wifi_title">Conectar a red Wi-Fi</string>
+    <string name="devices_dialog_wifi_message">En este momento no se dispone de ninguna conexión Wi-Fi activa. ¿Quiere conectarse a una red Wi-Fi?</string>
+    <string name="devices_dialog_wifi_positive_button_text">Conectar</string>
+    <string name="devices_dialog_wifi_negative_button_text">Cancelar</string>
+    <string name="devices_dialog_onboarding_otm_message">El dispositivo está siendo añadido a su red OCF. Por favor, espere…</string>
+    <string name="devices_dialog_offboarding_reset_message">El dispositivo está siendo eliminado de su red OCF. Por favor, espere…</string>
+    <string name="devices_cardview_menu_item_offboard">Desvincular</string>
+    <string name="devices_error_scanning_devices">Error buscando dispositivos</string>
+    <string name="devices_error_transferring_ownership">La transferencia de propiedad falló</string>
+    <string name="devices_error_rfotm_failed">Error al cambiar a modo RFOTM</string>
+    <string name="devices_error_rfnop_failed">Error al cambiar a modo RFNOP</string>
+    <string name="client_title_no_name">Sin nombre</string>
+    <string name="client_menu_item_info">Información</string>
+    <string name="devices_error_offboard_failed">La desvinculación del dispositivo falló</string>
+    <string name="devices_oxm_man_cert">Certificado de fabricante</string>
+    <string name="devices_oxm_random_pin">PIN aleatorio</string>
+    <string name="client_cannot_retrieve_device_info">No se pueden obtener las propiedades del recurso /oic/d</string>
+    <string name="client_cannot_retrieve_platform_info">No se pueden obtener las propiedades del recurso /oic/p</string>
+    <string name="client_unauthorized_request">Petición no autorizada</string>
+    <string name="client_drawer_device_name">Nombre del dispositivo</string>
+    <string name="client_drawer_device_spec_version_url">URL de la versión de especificación</string>
+    <string name="client_drawer_device_id">ID de dispositivo</string>
+    <string name="client_drawer_device_data_model">Modelo de datos</string>
+    <string name="client_drawer_device_piid">ID independiente del protocolo</string>
+    <string name="client_drawer_device_descriptions">Descripciones localizadas</string>
+    <string name="client_drawer_device_sw_version">Versión de software</string>
+    <string name="client_drawer_device_manufacturer_name">Nombre del fabricante</string>
+    <string name="client_drawer_device_model_number">Número de modelo</string>
+    <string name="client_drawer_platform_id">ID de plataforma</string>
+    <string name="client_drawer_platform_man_name">Nombre del fabricante</string>
+    <string name="client_drawer_platform_man_url">URL del fabricante</string>
+    <string name="client_drawer_platform_man_model_no">Número de model del fabricante</string>
+    <string name="client_drawer_platform_man_date">Fecha de fabricación</string>
+    <string name="client_drawer_platform_man_platform_version">Versión de plataforma del fabricante</string>
+    <string name="client_drawer_platform_man_os_version">Versión del SO del fabricante</string>
+    <string name="client_drawer_platform_man_hw_version">Versión hardware del fabricante</string>
+    <string name="client_drawer_platform_man_fw_version">Versión firmware del fabricante</string>
+    <string name="client_drawer_platform_man_support_url">URL de soporte del fabricante</string>
+    <string name="client_drawer_platform_man_system_time">Tiempo de sistema del fabricante</string>
+    <string name="client_cannot_introspect_device">No se puede efectuar la introspección del dispositivo</string>
+    <string name="client_no_resources_found">No se han encontrado recursos</string>
+    <string name="client_fragment_get_request_failed">La petición GET falló</string>
+    <string name="client_fragment_post_request_failed">La petición POST falló</string>
+    <string name="client_fragment_put_request_failed">La petición PUT falló</string>
+    <string name="access_control_title">Control de Acceso</string>
+    <string name="access_control_error_retrieve">Error al recuperar la ACL</string>
+    <string name="access_control_ace_permission_hint">Permisos</string>
+    <string name="access_control_ace_error_create">Error al crear la ACE</string>
+    <string name="access_control_ace_error_update">Error al actualizar la ACE</string>
+    <string name="credentials_title">Credenciales</string>
+    <string name="credentials_menu_item_identity_cert">Instalar certificado de identidad</string>
+    <string name="credentials_menu_item_role_cert">Instalar certificado de rol</string>
+    <string name="credentials_error_retrieve">Error al recuperar los credenciales</string>
+    <string name="credentials_error_provision_identity">Error al instalar el certificado de identidad</string>
+    <string name="credentials_error_provision_role">Error al instalar el certificado de rol</string>
+    <string name="devices_dialog_set_device_name_title">Inserte nombre del dispositivo</string>
+    <string name="devices_dialog_set_device_name_yes_option">Confirmar</string>
+    <string name="devices_dialog_set_device_name_no_option">Cancelar</string>
+    <string name="devices_cardview_menu_item_set_device_name">Cambiar nombre</string>
+    <string name="access_control_ace_title">Crear Regla de Acceso</string>
+    <string name="access_control_ace_subject_radio_title">Tipo de regla</string>
+    <string name="access_control_ace_subject_radio_role">Rol</string>
+    <string name="access_control_ace_subject_radio_conn_type">Tipo de conexión</string>
+    <string name="access_control_ace_subject_role_id_hint">ID de rol</string>
+    <string name="access_control_ace_subject_role_authority_hint">Autoridad de rol</string>
+    <string name="access_control_ace_subject_conn_type_radio_title">Tipo de conexión</string>
+    <string name="access_control_ace_subject_conn_type_radio_anon">Anónima</string>
+    <string name="access_control_ace_subject_conn_type_radio_auth">Autenticada</string>
+    <string name="access_control_ace_resources_all">Todos los recursos</string>
+    <string name="access_control_cardview_subject_connection_type">Tipo de conexión: %1$s</string>
+    <string name="access_control_cardview_subject_role">ID de rol: %1$s, Autoridad de rol: %2$s</string>
+    <string name="access_control_cardview_subject_connection_type_anon">Anónima</string>
+    <string name="access_control_cardview_subject_connection_type_auth">Autenticada</string>
+    <string name="credentials_error_delete">Error al eliminar el credencial</string>
+    <string name="credentials_cred_title">Instalar credencial</string>
+    <string name="credentials_cred_type_radio_title">Tipo de credencial</string>
+    <string name="credentials_cred_type_radio_identity">Identidad</string>
+    <string name="credentials_cred_type_radio_role">Rol</string>
+    <string name="credentials_cred_type_role_id_hint">ID de rol</string>
+    <string name="credentials_cred_type_role_authority_hint">Autoridad de rol</string>
+    <string name="credentials_cred_error_provision_identity">Error al instalar un certificado de identidad</string>
+    <string name="credentials_cred_error_provision_role">Error al instalar un certificado de rol</string>
+    <string name="credentials_cardview_role">ID de rol: %1$s, Autoridad de rol: %2$s</string>
+    <string name="devices_dialog_wifi_scan_error">Error escaneando las redes Wi-Fi</string>
+    <string name="devices_dialog_wifi_easy_setup_connecting">Configurando y conectado el dispositivo mediante Wi-Fi Easy Setup</string>
+    <string name="devices_dialog_wifi_easy_setup_error">Wi-Fi Easy Setup ha fallado</string>
+    <string name="devices_dialog_wifi_easy_setup_connect">Dispositivo configurado y conectado mediante Wi-Fi Easy Setup</string>
+</resources>
