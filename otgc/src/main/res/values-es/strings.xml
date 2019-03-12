@@ -152,4 +152,18 @@
     <string name="devices_dialog_wifi_easy_setup_connecting">Configurando y conectado el dispositivo mediante Wi-Fi Easy Setup</string>
     <string name="devices_dialog_wifi_easy_setup_error">Wi-Fi Easy Setup ha fallado</string>
     <string name="devices_dialog_wifi_easy_setup_connect">Dispositivo configurado y conectado mediante Wi-Fi Easy Setup</string>
+    <string name="devices_cardview_role_unknown">Desconocido</string>
+    <string name="devices_cardview_role_server">Servidor</string>
+    <string name="devices_cardview_role_client">Cliente</string>
+    <string name="devices_error_pairing_devices">Error al emparejar dispositivos</string>
+    <string name="devices_selection_menu_item_pairwise">Emparejar</string>
+    <string name="access_control_ace_error_select_resource">Por favor, selecciona al menos un recurso</string>
+    <string name="client_cannot_retrieve_device_name">No se puede recuperar el nombre del dispositivo de la base de datos</string>
+    <string name="linked_roles_title">Roles vinculados</string>
+    <string name="linked_roles_error_retrieve">Error al recuperar los roles vinculados</string>
+    <string name="linked_roles_dialog_add_role_title">Nuevo rol</string>
+    <string name="linked_roles_dialog_add_role_yes_option">Añadir</string>
+    <string name="linked_roles_dialog_add_role_no_option">Cancelar</string>
+    <string name="linked_roles_dialog_role_id_hint">ID de rol</string>
+    <string name="linked_roles_dialog_role_authority_hint">Autoridad de rol</string>
 </resources>

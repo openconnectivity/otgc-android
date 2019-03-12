@@ -67,10 +67,15 @@
     <string name="devices_menu_item_logs">Show log</string>
     <string name="devices_menu_item_settings">Settings</string>
     <string name="devices_menu_item_logout">Sign out</string>
+    <string name="devices_selection_menu_item_pairwise">Pairwise</string>
     <string name="devices_cardview_unnamed_device">Unnamed</string>
+    <string name="devices_cardview_role_unknown">Unknown</string>
+    <string name="devices_cardview_role_server">Server</string>
+    <string name="devices_cardview_role_client">Client</string>
     <string name="devices_cardview_no_device_types">No standard device types</string>
     <string name="devices_cardview_menu_item_access_control">Access Control</string>
     <string name="devices_cardview_menu_item_credentials">Credentials</string>
+    <string name="devices_cardview_menu_item_roles" translatable="false">Roles</string>
     <string name="devices_cardview_menu_item_offboard">Offboard</string>
     <string name="devices_cardview_menu_item_set_device_name">Set device name</string>
     <string name="devices_cardview_menu_item_wifi_easy_setup" translatable="false">Wi-Fi Easy Setup</string>
@@ -88,6 +93,7 @@
     <string name="devices_dialog_offboarding_title" translatable="false">Offboarding</string>
     <string name="devices_dialog_offboarding_reset_message">Resetting device&#8230;</string>
     <string name="devices_error_scanning_devices">Error scanning devices</string>
+    <string name="devices_error_pairing_devices">Error pairing devices</string>
     <string name="devices_error_transferring_ownership">Ownership transfer failed</string>
     <string name="devices_error_offboard_failed">Offboard failed</string>
     <string name="devices_error_rfotm_failed">Error setting RFOTM mode</string>
@@ -120,7 +126,7 @@
     <string name="access_control_ace_resources_all">All resources</string>
     <string name="access_control_ace_error_create">Error creating ACE</string>
     <string name="access_control_ace_error_update">Error updating ACE</string>
-    <string name="access_control_ace_error_select_resource">Please select at least one resource to add</string>
+    <string name="access_control_ace_error_select_resource">Please, select at least one resource to add</string>
 
     <string name="credentials_title">Credentials</string>
     <string name="credentials_menu_item_identity_cert">Install identity certificate</string>
@@ -172,6 +178,14 @@
     <string name="client_fragment_post_request_failed">POST request failed</string>
     <string name="client_fragment_put_request_failed">PUT request failed</string>
 
+    <string name="linked_roles_title">Linked roles</string>
+    <string name="linked_roles_error_retrieve">Error retrieving linked roles</string>
+    <string name="linked_roles_dialog_add_role_title">New role</string>
+    <string name="linked_roles_dialog_add_role_yes_option">Add</string>
+    <string name="linked_roles_dialog_add_role_no_option">Cancel</string>
+    <string name="linked_roles_dialog_role_id_hint">Role ID</string>
+    <string name="linked_roles_dialog_role_authority_hint">Role authority</string>
+
     <!-- Strings related to Settings -->
     <string name="settings_title">Settings</string>
     <string name="pref_iotivity_header" translatable="false">IoTivity</string>
@@ -186,5 +200,7 @@
     <string name="about_all_rights_reserved">All rights reserved.</string>
     <string name="about_powered_by">Powered by:</string>
     <string name="about_dekra_tc" translatable="false">DEKRA Testing and Certification, S.A.U.</string>
+
+    <string name="logviewer_log" translatable="false">IoTivity Logs</string>
 
 </resources>

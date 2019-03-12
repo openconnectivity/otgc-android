@@ -23,7 +23,7 @@
 package org.openconnectivity.otgc.client.domain.usecase;
 
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.json.JSONArray;
 import org.json.JSONException;

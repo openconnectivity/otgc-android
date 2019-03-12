@@ -22,8 +22,8 @@
 
 package org.openconnectivity.otgc.credential.presentation.viewmodel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import org.openconnectivity.otgc.common.domain.rx.SchedulersFacade;
 import org.openconnectivity.otgc.common.presentation.viewmodel.BaseViewModel;

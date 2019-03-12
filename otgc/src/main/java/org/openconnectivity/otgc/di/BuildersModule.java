@@ -27,6 +27,7 @@ import org.openconnectivity.otgc.credential.presentation.view.CredActivity;
 import org.openconnectivity.otgc.credential.presentation.view.CredentialsActivity;
 import org.openconnectivity.otgc.devicelist.DeviceListBuildersModule;
 import org.openconnectivity.otgc.devicelist.presentation.view.DeviceListActivity;
+import org.openconnectivity.otgc.linkedroles.presentation.view.LinkedRolesActivity;
 import org.openconnectivity.otgc.login.presentation.view.LoginActivity;
 import org.openconnectivity.otgc.splash.presentation.view.SplashActivity;
 import org.openconnectivity.otgc.wlanscan.presentation.view.WlanScanActivity;
@@ -63,4 +64,7 @@ public interface BuildersModule {
 
     @ContributesAndroidInjector(modules = ClientBuildersModule.class)
     abstract GenericClientActivity bindGenericClientActivity();
+
+    @ContributesAndroidInjector
+    abstract LinkedRolesActivity bindLinkedRolesActivity();
 }

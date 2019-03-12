@@ -22,9 +22,15 @@
 
 package org.openconnectivity.otgc.logviewer.presentation.view;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 import android.os.Bundle;
 import android.webkit.WebView;
+import android.widget.Switch;
+
+import org.openconnectivity.otgc.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,13 +38,31 @@ import java.util.Locale;
 
 public class LogViewerActivity extends AppCompatActivity {
 
+    @BindView(R.id.logviewer_iotivity_switch) Switch logSwitch;
+    @BindView(R.id.logviewer_webview) WebView webView;
+
+    private String iotivityLog = "";
+    private String otgcLog = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WebView webView = new WebView(this);
-        setContentView(webView);
+        setContentView(R.layout.activity_logviewer);
+        ButterKnife.bind(this);
 
         String fileNameTimeStamp = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        webView.loadUrl("file:///" + getExternalFilesDir(null).toString() + "/" + fileNameTimeStamp + ".html");
+        otgcLog = "file:///" + getExternalFilesDir(null).toString() + "/" + fileNameTimeStamp + ".html";
+        iotivityLog = "file:///" + getExternalFilesDir(null).toString() + "/log/logcat" + fileNameTimeStamp + ".html";
+
+        logSwitch.setOnClickListener(v -> loadWebView() );
+        webView.loadUrl(iotivityLog);
+    }
+
+    private void loadWebView() {
+        if (logSwitch.isChecked()) {
+            webView.loadUrl(iotivityLog);
+        } else {
+            webView.loadUrl(otgcLog);
+        }
     }
 }

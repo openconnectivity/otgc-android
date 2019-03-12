@@ -20,7 +20,9 @@
 package org.openconnectivity.otgc.common.logger;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+
+import android.os.Environment;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -52,6 +54,55 @@ public class FileLoggingTree extends Timber.DebugTree {
 
     public FileLoggingTree(Context context) {
         mContext = context;
+
+        storeLogsInFile();
+    }
+
+    private void storeLogsInFile()
+    {
+        if ( isExternalStorageWritable() ) {
+            String fileNameTimeStamp = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
+            File appDirectory = new File( mContext.getExternalFilesDir(null).toString() );
+            File logDirectory = new File( appDirectory + "/log" );
+            File logFile = new File( logDirectory, "logcat" + fileNameTimeStamp + ".html");
+
+            // create app folder
+            if ( !appDirectory.exists() ) {
+                appDirectory.mkdir();
+            }
+
+            // create log folder
+            if ( !logDirectory.exists() ) {
+                logDirectory.mkdir();
+            }
+
+            // clear the previous logcat and then write the new one to the file
+            try {
+                Process process = Runtime.getRuntime().exec("logcat -c");
+                process = Runtime.getRuntime().exec("logcat -f " + logFile);
+            } catch ( IOException e ) {
+                Timber.e(e);
+            }
+
+        } else if ( isExternalStorageReadable() ) {
+            // only readable
+        } else {
+            // not accessible
+        }
+    }
+
+    /* Checks if external storage is available for read and write */
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        return Environment.MEDIA_MOUNTED.equals( state );
+    }
+
+    /* Checks if external storage is available to at least read */
+    public boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        return ( Environment.MEDIA_MOUNTED.equals( state ) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals( state ) );
     }
 
     @Override

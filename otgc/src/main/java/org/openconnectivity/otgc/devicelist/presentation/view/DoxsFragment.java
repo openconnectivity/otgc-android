@@ -23,12 +23,28 @@
 package org.openconnectivity.otgc.devicelist.presentation.view;
 
 import android.app.AlertDialog;
-import android.arch.lifecycle.ViewModelProviders;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.design.widget.TextInputEditText;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import com.google.android.material.textfield.TextInputEditText;
+
+import androidx.recyclerview.selection.OnDragInitiatedListener;
+import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.selection.StorageStrategy;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -37,7 +53,7 @@ import org.iotivity.base.OxmType;
 import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.accesscontrol.presentation.view.AccessControlActivity;
 import org.openconnectivity.otgc.client.presentation.view.GenericClientActivity;
-import org.openconnectivity.otgc.common.presentation.view.RecyclerWithSwipeFragment;
+import org.openconnectivity.otgc.common.presentation.view.EmptyRecyclerView;
 import org.openconnectivity.otgc.common.presentation.viewmodel.CommonError;
 import org.openconnectivity.otgc.common.presentation.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.credential.presentation.view.CredentialsActivity;
@@ -46,14 +62,27 @@ import org.openconnectivity.otgc.common.presentation.UiUtils;
 import org.openconnectivity.otgc.common.presentation.viewmodel.Response;
 import org.openconnectivity.otgc.devicelist.presentation.viewmodel.SharedViewModel;
 import org.openconnectivity.otgc.devicelist.presentation.viewmodel.DoxsViewModel;
+import org.openconnectivity.otgc.di.Injectable;
+import org.openconnectivity.otgc.linkedroles.presentation.view.LinkedRolesActivity;
 import org.openconnectivity.otgc.wlanscan.domain.model.WifiNetwork;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import timber.log.Timber;
 
-public class DoxsFragment extends RecyclerWithSwipeFragment implements DoxsViewModel.SelectOxMListener {
+public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMListener, Injectable {
+
+    @BindView(R.id.swipe_refresh_devices) SwipeRefreshLayout mSwipeToRefreshView;
+    @BindView(R.id.recycler_ocf_devices) EmptyRecyclerView mRecyclerView;
+
+    @Inject ViewModelProvider.Factory mViewModelFactory;
 
     private DoxsListAdapter mAdapter;
 
@@ -69,12 +98,87 @@ public class DoxsFragment extends RecyclerWithSwipeFragment implements DoxsViewM
 
     private AlertDialog mConnectWifiDialog = null;
 
+    private SelectionTracker mSelectionTracker;
+    private ActionMode mActionMode;
+
     public DoxsFragment() {
         // Required empty public constructor
     }
 
     @Override
-    public RecyclerView.Adapter getAdapter() {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_recycler_with_swipe, container, false);
+        ButterKnife.bind(this, rootView);
+
+        initViews();
+
+        return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        initViewModel();
+    }
+
+    private void initViews() {
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRecyclerView.setAdapter(getAdapter());
+        mRecyclerView.setEmptyView(null);
+
+        if (getContext() != null) {
+            mSwipeToRefreshView.setColorSchemeColors(ContextCompat.getColor(getContext(), R.color.colorPrimary));
+        }
+
+        mSwipeToRefreshView.setOnRefreshListener(() -> {
+            mSwipeToRefreshView.setRefreshing(false);
+            onSwipeRefresh();
+        });
+
+        mSelectionTracker = new SelectionTracker.Builder<>(
+                "my-selection-id",
+                mRecyclerView,
+                new MyItemKeyProvider(1, mAdapter.mDataset),
+                new MyItemLookup(mRecyclerView),
+                StorageStrategy.createLongStorage()
+        ).withOnDragInitiatedListener(e -> {
+            Timber.d("onDragInitiated");
+            return true;
+        }).build();
+
+        mAdapter.setSelectionTracker(mSelectionTracker);
+
+        mSelectionTracker.addObserver(new SelectionTracker.SelectionObserver() {
+            @Override
+            public void onSelectionChanged() {
+                super.onSelectionChanged();
+                if (mSelectionTracker.hasSelection()) {
+                    if (mActionMode == null) {
+                        ActionModeController actionController = new ActionModeController(getActivity(), mSelectionTracker);
+                        ActionModeController.setOnMenuItemClickListener((menuItem, serverId, clientId) -> {
+                            if (menuItem.getItemId() == R.id.action_pairwise) {
+                                mViewModel.pairwiseDevices(serverId, clientId);
+                            } else if (menuItem.getItemId() == R.id.action_unlink) {
+                                mViewModel.unlinkDevices(serverId, clientId);
+                            }
+
+                            return true;
+                        });
+                        mActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(actionController);
+                    } else {
+                        mActionMode.invalidate();
+                    }
+                    mActionMode.setTitle(Integer.toString(mSelectionTracker.getSelection().size()));
+                } else if (mActionMode != null) {
+                    mActionMode.finish();
+                    mActionMode = null;
+                }
+            }
+        });
+    }
+
+    private RecyclerView.Adapter getAdapter() {
         mAdapter = new DoxsListAdapter(getContext());
         DoxsListAdapter.setOnItemClickListener((position, v) -> {
             /*switch (mAdapter.mDataset.get(position).getType()) {
@@ -97,9 +201,7 @@ public class DoxsFragment extends RecyclerWithSwipeFragment implements DoxsViewM
                     mViewModel.doOwnershipTransfer(mAdapter.mDataset.get(position).getOcSecureResource());
                     break;
                 case R.id.img_btn_generic_client:
-                    launchGenericClientView(
-                            mAdapter.mDataset.get(position).getOcSecureResource().getIpAddr(),
-                            mAdapter.mDataset.get(position).getDeviceId());
+                    launchGenericClientView(mAdapter.mDataset.get(position).getDeviceId());
                     break;
             }
         });
@@ -124,6 +226,13 @@ public class DoxsFragment extends RecyclerWithSwipeFragment implements DoxsViewM
                     credIntent.putExtra("deviceId", mAdapter.mDataset.get(position).getDeviceId());
                     startActivity(credIntent);
                     break;
+                case R.id.button_roles:
+                    Intent rolesIntent = new Intent(getActivity(), LinkedRolesActivity.class);
+                    rolesIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    rolesIntent.putExtra("deviceId", mAdapter.mDataset.get(position).getDeviceId());
+                    rolesIntent.putExtra("deviceRole", mAdapter.mDataset.get(position).getRole().toString());
+                    startActivity(rolesIntent);
+                    break;
                 case R.id.menu_item_wifi_easy_setup:
                     mViewModel.getScanResponse().observe(this, this::processScan);
                     positionWifiEasySetupItem = position;
@@ -141,9 +250,8 @@ public class DoxsFragment extends RecyclerWithSwipeFragment implements DoxsViewM
         return mAdapter;
     }
 
-    @Override
-    public void initViewModel() {
-        mViewModel = ViewModelProviders.of(this, getViewModelFactory()).get(DoxsViewModel.class);
+    private void initViewModel() {
+        mViewModel = ViewModelProviders.of(this, mViewModelFactory).get(DoxsViewModel.class);
 
         mViewModel.setOxmListener(this);
 
@@ -157,11 +265,10 @@ public class DoxsFragment extends RecyclerWithSwipeFragment implements DoxsViewM
         mViewModel.getConnectWifiEasySetupResponse().observe(this, this::processConnectWifiEasySetupResponse);
 
         if (getActivity() != null) {
-            mSharedViewModel = ViewModelProviders.of(getActivity(), getViewModelFactory()).get(SharedViewModel.class);
+            mSharedViewModel = ViewModelProviders.of(getActivity(), mViewModelFactory).get(SharedViewModel.class);
         }
     }
 
-    @Override
     public void onSwipeRefresh() {
         mAdapter.clearItems();
         mViewModel.onScanRequested();
@@ -222,6 +329,8 @@ public class DoxsFragment extends RecyclerWithSwipeFragment implements DoxsViewM
                 case SCAN_DEVICES:
                     Toast.makeText(getActivity(), R.string.devices_error_scanning_devices, Toast.LENGTH_SHORT).show();
                     break;
+                case PAIRWISE_DEVICES:
+                    Toast.makeText(getActivity(), R.string.devices_error_pairing_devices, Toast.LENGTH_SHORT).show();
                 default:
                     break;
             }
@@ -380,10 +489,9 @@ public class DoxsFragment extends RecyclerWithSwipeFragment implements DoxsViewM
         }
     }
 
-    private void launchGenericClientView(String ipAddress, String deviceId) {
+    private void launchGenericClientView(String deviceId) {
         Intent intent = new Intent(getActivity(), GenericClientActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("IpAddress", ipAddress);
         intent.putExtra("DeviceId", deviceId);
         startActivity(intent);
     }

@@ -22,22 +22,23 @@
 
 package org.openconnectivity.otgc.client.presentation.view;
 
-import android.arch.lifecycle.ViewModelProvider;
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
+
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.text.Editable;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.core.content.ContextCompat;
 import android.text.InputType;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,6 +54,7 @@ import org.openconnectivity.otgc.di.Injectable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -211,6 +213,41 @@ public class ResourceFragment extends Fragment implements Injectable {
                     } else {
                         ((TextView) mViews.get(entry.getKey())).setText(numberFormat.format(entry.getValue()));
                     }
+                } else if (entry.getValue() instanceof String) {
+                    if (isViewEnabled(response.getResourceInterfaces())) {
+                        ((EditText) mViews.get(entry.getKey())).setText(entry.getValue().toString());
+                    } else {
+                        ((TextView) mViews.get(entry.getKey())).setText(entry.getValue().toString());
+                    }
+                } else if (entry.getValue() instanceof String[]) {
+                    List<String> list = Arrays.asList((String[]) entry.getValue());
+                    ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, list);
+                    dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    ((Spinner) mViews.get(entry.getKey())).setAdapter(dataAdapter);
+                } else if (entry.getValue() instanceof  int[]) {
+                    LinearLayout layout = ((LinearLayout)mViews.get(entry.getKey()));
+                    NumberFormat numberFormat = NumberFormat.getInstance();
+                    int i = 0;
+                    for (int value : (int[])entry.getValue()) {
+                        if (isViewEnabled(response.getResourceInterfaces())) {
+                            ((EditText)layout.getChildAt(i)).setText(numberFormat.format(value));
+                        } else {
+                            ((TextView)layout.getChildAt(i)).setText(numberFormat.format(value));
+                        }
+                        i++;
+                    }
+                } else if (entry.getValue() instanceof  double[]) {
+                    LinearLayout layout = ((LinearLayout)mViews.get(entry.getKey()));
+                    NumberFormat numberFormat = new DecimalFormat("0.0");
+                    int i = 0;
+                    for (double value : (double[])entry.getValue()) {
+                        if (isViewEnabled(response.getResourceInterfaces())) {
+                            ((EditText)layout.getChildAt(i)).setText(numberFormat.format(value));
+                        } else {
+                            ((TextView)layout.getChildAt(i)).setText(numberFormat.format(value));
+                        }
+                        i++;
+                    }
                 }
             } else {
                 View view = null;
@@ -240,24 +277,12 @@ public class ResourceFragment extends Fragment implements Injectable {
                         et.setInputType(InputType.TYPE_CLASS_NUMBER);
                         NumberFormat numberFormat = NumberFormat.getInstance();
                         et.setText(numberFormat.format(entry.getValue()));
-                        et.addTextChangedListener(new TextWatcher() {
-
-                            @Override
-                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                            }
-
-                            @Override
-                            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                            }
-
-                            @Override
-                            public void afterTextChanged(Editable s) {
+                        et.setOnFocusChangeListener((v, hasFocus) -> {
+                            if (!hasFocus) {
                                 Integer number;
 
                                 try {
-                                    number = Integer.valueOf(s.toString());
+                                    number = Integer.valueOf(et.getText().toString());
                                 } catch (NumberFormatException e) {
                                     return;
                                 }
@@ -287,6 +312,26 @@ public class ResourceFragment extends Fragment implements Injectable {
                         et.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
                         NumberFormat numberFormat = new DecimalFormat("0.0");
                         et.setText(numberFormat.format(entry.getValue()));
+                        et.setOnFocusChangeListener((v, hasFocus) ->  {
+                            if (!hasFocus) {
+                                Double number;
+
+                                try {
+                                    number = Double.valueOf(et.getText().toString());
+                                } catch (NumberFormatException e) {
+                                    return;
+                                }
+
+                                OcRepresentation rep = new OcRepresentation();
+                                try {
+                                    rep.setValue(entry.getKey(), number);
+                                } catch (OcException e) {
+                                    return;
+                                }
+                                mViewModel.postRequest(mDeviceId, mResource.getUri(), mResource.getResourceTypes(), mResource.getResourceInterfaces(),
+                                        rep);
+                            }
+                        });
 
                         view = et;
                     } else {
@@ -296,6 +341,131 @@ public class ResourceFragment extends Fragment implements Injectable {
 
                         view = tv;
                     }
+                } else if (entry.getValue() instanceof String) {
+                    if (isViewEnabled(response.getResourceInterfaces())) {
+                        EditText et = new EditText(getContext());
+                        et.setInputType(InputType.TYPE_CLASS_TEXT);
+                        et.setText(String.valueOf(entry.getValue()));
+                        et.setOnFocusChangeListener((v, hasFocus) -> {
+                            if (!hasFocus) {
+                                OcRepresentation rep = new OcRepresentation();
+                                try {
+                                    rep.setValue(entry.getKey(), et.getText().toString());
+                                } catch (OcException e) {
+                                    return;
+                                }
+                                mViewModel.postRequest(mDeviceId, mResource.getUri(), mResource.getResourceTypes(), mResource.getResourceInterfaces(),
+                                        rep);
+                            }
+                        });
+
+                        view = et;
+                    } else {
+                        TextView tv = new TextView(getContext());
+                        tv.setText(String.valueOf(entry.getValue()));
+
+                        view = tv;
+                    }
+                } else if (entry.getValue() instanceof String[]) {
+                    List<String> list = Arrays.asList((String[]) entry.getValue());
+                    ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, list);
+                    dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+                    // attaching data adapter to list view
+                    Spinner spinner = new Spinner(getContext());
+                    spinner.setAdapter(dataAdapter);
+
+                    view = spinner;
+                } else if (entry.getValue() instanceof int[]) {
+                    LinearLayout layout = new LinearLayout(getContext());
+                    layout.setOrientation(LinearLayout.HORIZONTAL);
+                    for (int value : (int[]) entry.getValue()) {
+                        if (isViewEnabled(response.getResourceInterfaces())) {
+                            EditText et = new EditText(getContext());
+                            et.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            NumberFormat numberFormat = NumberFormat.getInstance();
+                            et.setText(numberFormat.format(value));
+                            et.setOnFocusChangeListener((v, hasFocus) -> {
+                                if (!hasFocus) {
+                                    int[] ret = new int[layout.getChildCount()];
+                                    for (int i = 0; i < layout.getChildCount(); i++) {
+                                        EditText tmp = (EditText) layout.getChildAt(i);
+                                        Integer number;
+                                        try {
+                                            number = Integer.valueOf(tmp.getText().toString());
+                                        } catch (NumberFormatException e) {
+                                            return;
+                                        }
+                                        ret[i] = number;
+                                    }
+
+                                    OcRepresentation rep = new OcRepresentation();
+                                    try {
+                                        rep.setValue(entry.getKey(), ret);
+                                    } catch (OcException e) {
+                                        return;
+                                    }
+                                    mViewModel.postRequest(mDeviceId, mResource.getUri(), mResource.getResourceTypes(), mResource.getResourceInterfaces(),
+                                            rep);
+                                }
+                            });
+
+                            layout.addView(et);
+                        } else {
+                            TextView tv = new TextView(getContext());
+                            NumberFormat numberFormat = NumberFormat.getInstance();
+                            tv.setText(numberFormat.format(value));
+
+                            layout.addView(tv);
+                        }
+                    }
+
+                    view = layout;
+                } else if (entry.getValue() instanceof double[]) {
+                    LinearLayout layout = new LinearLayout(getContext());
+                    layout.setOrientation(LinearLayout.HORIZONTAL);
+                    for (double value : (double[]) entry.getValue()) {
+                        if (isViewEnabled(response.getResourceInterfaces())) {
+                            EditText et = new EditText(getContext());
+                            et.setInputType(InputType.TYPE_CLASS_NUMBER);
+                            NumberFormat numberFormat = NumberFormat.getInstance();
+                            et.setText(numberFormat.format(value));
+                            et.setOnFocusChangeListener((v, hasFocus) -> {
+                                if (!hasFocus) {
+                                    double[] ret = new double[layout.getChildCount()];
+                                    for (int i = 0; i < layout.getChildCount(); i++) {
+                                        EditText tmp = (EditText) layout.getChildAt(i);
+                                        Double number;
+                                        try {
+                                            number = Double.valueOf(tmp.getText().toString());
+                                        } catch (NumberFormatException e) {
+                                            return;
+                                        }
+                                        ret[i] = number;
+                                    }
+
+                                    OcRepresentation rep = new OcRepresentation();
+                                    try {
+                                        rep.setValue(entry.getKey(), ret);
+                                    } catch (OcException e) {
+                                        return;
+                                    }
+                                    mViewModel.postRequest(mDeviceId, mResource.getUri(), mResource.getResourceTypes(), mResource.getResourceInterfaces(),
+                                            rep);
+                                }
+                            });
+
+                            layout.addView(et);
+                        } else {
+                            TextView tv = new TextView(getContext());
+                            NumberFormat numberFormat = NumberFormat.getInstance();
+                            tv.setText(numberFormat.format(value));
+
+                            layout.addView(tv);
+                        }
+                    }
+
+                    view = layout;
                 }
 
                 if (view != null) {

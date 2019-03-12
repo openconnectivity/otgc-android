@@ -24,7 +24,7 @@ package org.openconnectivity.otgc.common.data.repository;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.ArrayMap;
 
 import org.iotivity.base.ErrorCode;
@@ -38,9 +38,14 @@ import org.iotivity.base.OcResource;
 import org.iotivity.base.OcSecureResource;
 import org.iotivity.base.OxmType;
 
+import org.iotivity.ca.CaInterface;
+import org.iotivity.ca.OicCipher;
 import org.openconnectivity.otgc.common.constant.OcfResourceType;
 import org.openconnectivity.otgc.common.data.entity.DeviceEntity;
 import org.openconnectivity.otgc.common.data.persistence.dao.DeviceDao;
+import org.openconnectivity.otgc.common.domain.model.OcDevice;
+import org.openconnectivity.otgc.devicelist.domain.model.Device;
+import org.openconnectivity.otgc.devicelist.domain.model.DeviceType;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -50,6 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -88,7 +94,6 @@ public class IotivityRepository {
     private final DeviceDao deviceDao;
 
     private List<OcSecureResource> mUnownedDevices = new ArrayList<>();
-    private List<OcSecureResource> mOwnedDevices = new ArrayList<>();
 
     @Inject
     public IotivityRepository(Context ctx, DeviceDao deviceDao) {
@@ -112,13 +117,16 @@ public class IotivityRepository {
         }
     }
 
-    public Observable<OcSecureResource> scanUnownedDevices() {
+    public Observable<Device> scanUnownedDevices() {
         return Observable.create(emitter -> {
             try {
                 mUnownedDevices = OcProvisioning.discoverUnownedDevices(getDiscoveryTimeout());
 
                 for (OcSecureResource ocSecureResource : mUnownedDevices) {
-                    emitter.onNext(ocSecureResource);
+                    emitter.onNext(new Device(DeviceType.UNOWNED,
+                            ocSecureResource.getDeviceID(),
+                            new OcDevice(),
+                            ocSecureResource));
                 }
             } catch (OcException e) {
                 Timber.e(e);
@@ -128,37 +136,47 @@ public class IotivityRepository {
         });
     }
 
-    public Observable<OcSecureResource> scanOwnedDevices() {
-        return Observable.create(emitter -> {
-            try {
-                mOwnedDevices = OcProvisioning.discoverOwnedDevices(getDiscoveryTimeout());
-
-                for (OcSecureResource ocSecureResource : mOwnedDevices) {
-                    emitter.onNext(ocSecureResource);
-                }
-            } catch (OcException e) {
-                Timber.e(e);
-                emitter.onError(e);
+    public Observable<Device> scanOwnedDevices() {
+        return findObsResources("")
+                .timeout(getDiscoveryTimeout() + 5_00L, TimeUnit.SECONDS)
+                .map(ocResources -> ocResources.get(0))
+                .filter(ocResource -> {
+                    boolean isNotUnowned = true;
+                    for (OcSecureResource secureResource : mUnownedDevices) {
+                        if (secureResource.getDeviceID().equals(ocResource.getServerId())) {
+                            isNotUnowned = false;
+                        }
+                    }
+                    return isNotUnowned;
+                })
+                .filter(ocResource -> !ocResource.getServerId().equals(getDeviceId()))
+                .flatMapSingle(ocResource -> findDeviceInUnicast(ocResource.getServerId()));
             }
-            emitter.onComplete();
-        });
-    }
 
-    private Observable<List<OcResource>> findObsResources(String host) {
-        return Observable.create(emitter -> {
-            try {
-                OcPlatform.findResources(host,
-                        OcPlatform.WELL_KNOWN_QUERY,
-                        CONNECTIVITY_TYPES,
+            private Observable<List<OcResource>> findObsResources(String host) {
+                return Observable.create(emitter -> {
+                    try {
+                        OcPlatform.findResources(host,
+                                OcPlatform.WELL_KNOWN_QUERY,
+                                CONNECTIVITY_TYPES,
                         new OcPlatform.OnResourcesFoundListener() {
 
                             @Override
                             public void onResourcesFound(OcResource[] ocResources) {
                                 DeviceEntity device = deviceDao.findById(ocResources[0].getServerId()).blockingGet();
+                                List<String> hosts = new ArrayList<>();
+                                for (OcResource ocResource : ocResources) {
+                                    for (String host : ocResource.getAllHosts()) {
+                                        if (!hosts.contains(host)) {
+                                            hosts.add(host);
+                                        }
+                                    }
+                                }
+
                                 if (device == null) {
-                                    deviceDao.insert(new DeviceEntity(ocResources[0].getServerId(), "", ocResources[0].getAllHosts()));
+                                    deviceDao.insert(new DeviceEntity(ocResources[0].getServerId(), "", hosts));
                                 } else {
-                                    deviceDao.update(new DeviceEntity(device.getId(), device.getName(), ocResources[0].getAllHosts()));
+                                    deviceDao.update(new DeviceEntity(device.getId(), device.getName(), hosts));
                                 }
                                 emitter.onNext(Arrays.asList(ocResources));
                             }
@@ -197,46 +215,68 @@ public class IotivityRepository {
         return findObsResources("").ignoreElements();
     }
 
-    public Observable<OcSecureResource> scanOwnedByOtherDevices() {
-        return findObsResources("")
-                .map(ocResources -> ocResources.get(0))
-                .filter(ocResource -> {
-                    boolean isNotUnowned = true;
-                    for (OcSecureResource secureResource : mUnownedDevices) {
-                        if (secureResource.getDeviceID().equals(ocResource.getServerId())) {
-                            isNotUnowned = false;
-                        }
-                    }
-                    return isNotUnowned;
-                })
-                .filter(ocResource -> {
-                    boolean isNotOwned = true;
-                    for (OcSecureResource secureResource : mOwnedDevices) {
-                        if (secureResource.getDeviceID().equals(ocResource.getServerId())) {
-                            isNotOwned = false;
-                        }
-                    }
-                    return isNotOwned;
-                })
-                .filter(ocResource -> !ocResource.getServerId().equals(getDeviceId()))
-                .flatMapSingle(ocResource -> findOcSecureResource(ocResource.getServerId()));
-    }
-
     private String getDeviceId() {
         ByteBuffer bb = ByteBuffer.wrap(OcPlatform.getDeviceId());
         UUID uuid = new UUID(bb.getLong(), bb.getLong());
         return uuid.toString();
     }
 
-    public Single<OcSecureResource> findOcSecureResource(@NonNull String deviceId) {
+    private OcSecureResource getOcSecureResource(@NonNull String deviceId, boolean filterOwnedByMe) {
+        try {
+            String host = getDeviceCoapsIpv6Host(deviceId).blockingGet();
+            if (host != null) {
+                String address;
+                int port;
+                EnumSet<OcConnectivityType> connType = EnumSet.of(OcConnectivityType.CT_ADAPTER_IP);
+
+                if (host.contains(".")) {
+                    connType.add(OcConnectivityType.CT_IP_USE_V4);
+                    address = host.split("//")[1].split(":")[0];
+                    port = Integer.valueOf(host.split("//")[1].split(":")[1]);
+                } else {
+                    connType.add(OcConnectivityType.CT_IP_USE_V6);
+                    address = host.split("\\[")[1].split("]")[0].replace("%25", "%");
+                    port = Integer.valueOf(host.split("]")[1].split(":")[1]);
+                }
+
+                return OcProvisioning.discoverSingleDeviceInSecureUnicast(filterOwnedByMe, getDiscoveryTimeout(), deviceId, address, port, connType);
+            }
+        } catch (OcException|NullPointerException e) {
+            Timber.e(e);
+            return null;
+        }
+
+        return null;
+    }
+
+    public void setPreferredCiphersuite(OicCipher cipher) {
+        CaInterface.setCipherSuite(cipher, OcConnectivityType.CT_ADAPTER_IP);
+    }
+
+    private Single<OcSecureResource> retrieveOcSecureResource(@NonNull String deviceId, @NonNull OicCipher cipher) {
         return Single.create(emitter -> {
-            try {
-                OcSecureResource ocSecureResource =
-                        OcProvisioning.discoverSingleDevice(getDiscoveryTimeout(), deviceId);
+            setPreferredCiphersuite(cipher);
+            OcSecureResource ocSecureResource = getOcSecureResource(deviceId, false);
+            if (ocSecureResource != null) {
                 emitter.onSuccess(ocSecureResource);
-            } catch (OcException e) {
-                Timber.e(e);
-                emitter.onError(e);
+            } else {
+                emitter.onError(new Exception("Find OcSecureResource has failed"));
+            }
+        });
+    }
+
+    public Single<OcSecureResource> findOcSecureResource(@NonNull String deviceId) {
+        return retrieveOcSecureResource(deviceId, OicCipher.TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256)
+            .onErrorResumeNext(error -> retrieveOcSecureResource(deviceId, OicCipher.TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8));
+    }
+
+    public Single<Device> findDeviceInUnicast(@NonNull String deviceId) {
+        return Single.create(emitter -> {
+            OcSecureResource ocSecureResource = getOcSecureResource(deviceId, true);
+            if (ocSecureResource != null) {
+                emitter.onSuccess(new Device(DeviceType.OWNED_BY_SELF, ocSecureResource.getDeviceID(), new OcDevice(), ocSecureResource));
+            } else {
+                emitter.onSuccess(new Device(DeviceType.OWNED_BY_OTHER, deviceId, new OcDevice(), null));
             }
         });
     }
@@ -310,7 +350,7 @@ public class IotivityRepository {
         });
     }
 
-    public Single<List<OcResource>> findResource(String host) {
+    public Single<List<OcResource>> findResources(String host) {
         return Single.create(emitter -> {
             try {
                 OcPlatform.findResources(host,
@@ -329,8 +369,8 @@ public class IotivityRepository {
                                     Timber.d(throwable);
                                 } else {
                                     Timber.e(throwable);
-                                    emitter.onError(throwable);
                                 }
+                                emitter.onError(throwable);
                             }
                         });
             } catch (OcException ex) {
@@ -577,7 +617,7 @@ public class IotivityRepository {
         return coapsIpv6Host;
     }
 
-    private int getDiscoveryTimeout() {
+    public int getDiscoveryTimeout() {
         SharedPreferences wmbPreference = PreferenceManager.getDefaultSharedPreferences(ctx);
 
         return Integer.parseInt(

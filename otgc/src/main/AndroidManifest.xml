@@ -70,6 +70,11 @@
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".devicelist.presentation.view.DeviceListActivity" />
         <activity
+            android:name=".linkedroles.presentation.view.LinkedRolesActivity"
+            android:label="@string/linked_roles_title"
+            android:configChanges="orientation|screenSize"
+            android:parentActivityName=".devicelist.presentation.view.DeviceListActivity" />
+        <activity
             android:name=".logviewer.presentation.view.LogViewerActivity"
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".devicelist.presentation.view.DeviceListActivity" />

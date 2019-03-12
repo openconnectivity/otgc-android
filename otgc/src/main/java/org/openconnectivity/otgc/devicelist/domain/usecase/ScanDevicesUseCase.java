@@ -22,8 +22,6 @@
 package org.openconnectivity.otgc.devicelist.domain.usecase;
 
 import org.openconnectivity.otgc.devicelist.domain.model.Device;
-import org.openconnectivity.otgc.devicelist.domain.model.DeviceType;
-import org.openconnectivity.otgc.common.domain.model.OcDevice;
 import org.openconnectivity.otgc.common.data.repository.IotivityRepository;
 
 import javax.inject.Inject;
@@ -39,33 +37,11 @@ public class ScanDevicesUseCase {
     }
 
     public Observable<Device> execute() {
-        Observable<Device> unownedObservable = mIotivityRepository.scanUnownedDevices()
-                .map(ocSecureResource ->
-                        new Device(DeviceType.UNOWNED,
-                                ocSecureResource.getDeviceID(),
-                                new OcDevice(),
-                                ocSecureResource)
-                );
-
-        Observable<Device> ownedObservable = mIotivityRepository.scanOwnedDevices()
-                .map(ocSecureResource ->
-                        new Device(DeviceType.OWNED_BY_SELF,
-                                ocSecureResource.getDeviceID(),
-                                new OcDevice(),
-                                ocSecureResource)
-                );
-
-        Observable<Device> ownedByOtherObservable = mIotivityRepository.scanOwnedByOtherDevices()
-                .map(ocSecureResource ->
-                    new Device(
-                            DeviceType.OWNED_BY_OTHER,
-                            ocSecureResource.getDeviceID(),
-                            new OcDevice(),
-                            ocSecureResource)
-                );
+        Observable<Device> unownedObservable = mIotivityRepository.scanUnownedDevices();
+        Observable<Device> ownedObservable = mIotivityRepository.scanOwnedDevices();
 
         return mIotivityRepository.scanHosts()
                         .andThen(Observable.concat(unownedObservable,
-                                ownedObservable, ownedByOtherObservable));
+                                ownedObservable));
     }
 }

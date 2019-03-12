@@ -33,9 +33,17 @@
         <!--<item name="fontFamily">@font/century_gothic</item> --> <!-- target android sdk versions < 26 and > 14 if theme other than AppCompat -->
         <!--<item name="android:textColorSecondary">@color/white1</item>-->
         <item name="android:alertDialogTheme">@style/AppTheme.Dialog</item>
+
+        <!-- It should be true otherwise action mode will not overlay toolbar -->
+        <item name="windowActionModeOverlay">true</item>
+
+        <!-- For Custom Action Mode Background Color/Drawable -->
+        <item name="actionModeBackground">@color/colorAccent</item>
     </style>
 
     <style name="SplashTheme" parent="AppTheme">
+        <!-- android:gravity property of layer-list is not properly managed in APIs 21 and 22 due to an Android bug,
+        so a different approach to create the splash has been necessary in those APIs until it is fixed -->
         <item name="android:windowBackground">@drawable/splash</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>

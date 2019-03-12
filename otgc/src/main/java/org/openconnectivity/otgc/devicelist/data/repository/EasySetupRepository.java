@@ -24,7 +24,7 @@ package org.openconnectivity.otgc.devicelist.data.repository;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.iotivity.base.OcResource;
 import org.iotivity.service.easysetup.mediator.DeviceProp;

@@ -38,7 +38,7 @@ import android.net.wifi.WifiConfiguration.KeyMgmt;
 import android.net.wifi.WifiConfiguration.PairwiseCipher;
 import android.net.wifi.WifiConfiguration.Protocol;
 import android.net.wifi.WifiManager;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.openconnectivity.otgc.common.data.model.WifiAdapterNotEnabledException;
 import org.openconnectivity.otgc.common.data.model.WifiNetworkNotEnabledException;

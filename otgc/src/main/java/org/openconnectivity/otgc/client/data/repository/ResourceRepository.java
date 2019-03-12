@@ -32,10 +32,14 @@ import org.iotivity.base.OcException;
 import org.iotivity.base.OcHeaderOption;
 import org.iotivity.base.OcRepresentation;
 import org.iotivity.base.OcResource;
+import org.iotivity.base.OicSecResr;
 import org.iotivity.base.QualityOfService;
+import org.openconnectivity.otgc.common.constant.OcfResourceType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +106,26 @@ public class ResourceRepository {
 
             emitter.onComplete();
         });
+    }
+
+    public List<OicSecResr> getVerticalResources(List<OcResource> ocResources) {
+        List<OicSecResr> resources = new ArrayList<>();
+        for (OcResource resource : ocResources) {
+            for (String resourceType : resource.getResourceTypes()) {
+                if (OcfResourceType.isVerticalResourceType(resourceType)) {
+                    OicSecResr res = new OicSecResr();
+                    res.setHref(resource.getUri());
+                    List<String> types = resource.getResourceTypes();
+                    res.setTypes(types);
+                    res.setTypeLen(types.size());
+                    List<String> interfaces = resource.getResourceInterfaces();
+                    res.setInterfaces(interfaces);
+                    res.setInterfaceLen(interfaces.size());
+                    resources.add(res);
+                }
+            }
+        }
+        return resources;
     }
 }
 

@@ -22,7 +22,7 @@
 
 package org.openconnectivity.otgc.client.domain.model;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import org.iotivity.base.OcResource;
 

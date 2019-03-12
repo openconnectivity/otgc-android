@@ -56,13 +56,7 @@ public class ConnectToWiFiUseCase {
 
         return wlanRepository.isWifiEnabled()
                 .andThen(wlanRepository.getWifiConfiguration(network.getName()))
-                .flatMap(config -> {
-                    if (config == null) {
-                        return configureWifiNetwork;
-                    } else {
-                        return Single.just(config);
-                    }
-                })
+                .onErrorResumeNext(configureWifiNetwork)
                 .flatMapCompletable(wlanRepository::connectToWifi);
     }
 }

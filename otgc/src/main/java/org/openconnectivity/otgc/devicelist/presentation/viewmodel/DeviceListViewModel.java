@@ -21,9 +21,9 @@
  */
 package org.openconnectivity.otgc.devicelist.presentation.viewmodel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 import org.iotivity.base.OcProvisioning;
 import org.openconnectivity.otgc.common.domain.model.NetworkDisconnectedException;

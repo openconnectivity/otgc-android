@@ -22,8 +22,8 @@
 
 package org.openconnectivity.otgc.devicelist.presentation.viewmodel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import org.iotivity.base.OcSecureResource;
 import org.iotivity.base.OxmType;
@@ -36,15 +36,18 @@ import org.openconnectivity.otgc.common.presentation.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.common.presentation.viewmodel.ViewModelErrorType;
 import org.openconnectivity.otgc.devicelist.domain.model.DeviceType;
 import org.openconnectivity.otgc.common.domain.usecase.GetDeviceNameUseCase;
+import org.openconnectivity.otgc.devicelist.domain.usecase.GetDeviceRoleUseCase;
 import org.openconnectivity.otgc.devicelist.domain.usecase.GetOTMethodsUseCase;
 import org.openconnectivity.otgc.devicelist.domain.usecase.OnboardUseCase;
 import org.openconnectivity.otgc.devicelist.domain.model.Device;
 import org.openconnectivity.otgc.common.presentation.viewmodel.Response;
 import org.openconnectivity.otgc.devicelist.domain.usecase.OffboardUseCase;
+import org.openconnectivity.otgc.devicelist.domain.usecase.PairwiseDevicesUseCase;
 import org.openconnectivity.otgc.devicelist.domain.usecase.ScanDevicesUseCase;
 import org.openconnectivity.otgc.devicelist.domain.usecase.SetDeviceNameUseCase;
 import org.openconnectivity.otgc.devicelist.domain.usecase.SetOTMethodUseCase;
 import org.openconnectivity.otgc.common.domain.rx.SchedulersFacade;
+import org.openconnectivity.otgc.devicelist.domain.usecase.UnlinkDevicesUseCase;
 import org.openconnectivity.otgc.devicelist.domain.usecase.WiFiEasySetupUseCase;
 import org.openconnectivity.otgc.wlanscan.domain.model.WifiNetwork;
 import org.openconnectivity.otgc.wlanscan.domain.usecase.RegisterScanResultsReceiverUseCase;
@@ -67,6 +70,9 @@ public class DoxsViewModel extends BaseViewModel {
     private final GetDeviceNameUseCase mGetDeviceNameUseCase;
     private final ScanWiFiNetworksUseCase mScanWiFiNetworksUseCase;
     private final WiFiEasySetupUseCase mWiFiEasySetupUseCase;
+    private final GetDeviceRoleUseCase mGetDeviceRoleUseCase;
+    private final PairwiseDevicesUseCase mPairwiseDevicesUseCase;
+    private final UnlinkDevicesUseCase mUnlinkDevicesUseCase;
 
     private final SchedulersFacade mSchedulersFacade;
 
@@ -92,6 +98,9 @@ public class DoxsViewModel extends BaseViewModel {
             GetDeviceNameUseCase getDeviceNameUseCase,
             ScanWiFiNetworksUseCase scanWiFiNetworksUseCase,
             WiFiEasySetupUseCase wiFiEasySetupUseCase,
+            GetDeviceRoleUseCase getDeviceRoleUseCase,
+            PairwiseDevicesUseCase pairwiseDevicesUseCase,
+            UnlinkDevicesUseCase unlinkDevicesUseCase,
             SchedulersFacade schedulersFacade) {
         this.mCheckConnectionUseCase = checkConnectionUseCase;
         this.mScanDevicesUseCase = scanDevicesUseCase;
@@ -104,6 +113,9 @@ public class DoxsViewModel extends BaseViewModel {
         this.mGetDeviceNameUseCase = getDeviceNameUseCase;
         this.mScanWiFiNetworksUseCase = scanWiFiNetworksUseCase;
         this.mWiFiEasySetupUseCase = wiFiEasySetupUseCase;
+        this.mGetDeviceRoleUseCase = getDeviceRoleUseCase;
+        this.mPairwiseDevicesUseCase = pairwiseDevicesUseCase;
+        this.mUnlinkDevicesUseCase = unlinkDevicesUseCase;
 
         this.mSchedulersFacade = schedulersFacade;
 
@@ -146,8 +158,12 @@ public class DoxsViewModel extends BaseViewModel {
                     .map(device -> {
                         device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device.getDeviceId()).blockingGet());
                         return device;
-                    })
-                    .map(device -> {
+                    }).map(device -> {
+                        device.setRole(
+                                mGetDeviceRoleUseCase.execute(device.getDeviceId()).blockingGet());
+
+                        return device;
+                    }).map(device -> {
                         if (device.getType().equals(DeviceType.OWNED_BY_SELF)) {
                             String storedDeviceName = mGetDeviceNameUseCase.execute(device.getDeviceId()).blockingGet();
                             if (storedDeviceName != null && !storedDeviceName.isEmpty()) {
@@ -191,6 +207,12 @@ public class DoxsViewModel extends BaseViewModel {
                             device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device.getDeviceId()).blockingGet());
                             return device;
                         }))
+                        .map(device -> {
+                            device.setRole(
+                                    mGetDeviceRoleUseCase.execute(device.getDeviceId()).blockingGet());
+
+                            return device;
+                        })
                 .subscribeOn(mSchedulersFacade.io())
                 .observeOn(mSchedulersFacade.ui())
                 .doOnSubscribe(__ -> otmResponse.setValue(Response.loading()))
@@ -263,11 +285,37 @@ public class DoxsViewModel extends BaseViewModel {
         );
     }
 
+    public void pairwiseDevices(String serverId, String clientId) {
+        mDisposables.add(mPairwiseDevicesUseCase.execute(serverId, clientId)
+                .subscribeOn(mSchedulersFacade.io())
+                .observeOn(mSchedulersFacade.ui())
+                .doOnSubscribe(__ -> mProcessing.setValue(true))
+                .doFinally(() -> mProcessing.setValue(false))
+                .subscribe(
+                        () -> {},
+                        throwable -> mError.setValue(new ViewModelError(Error.PAIRWISE_DEVICES, null))
+                ));
+    }
+
+    public void unlinkDevices(String serverId, String clientId) {
+        mDisposables.add(mUnlinkDevicesUseCase.execute(serverId, clientId)
+                .subscribeOn(mSchedulersFacade.io())
+                .observeOn(mSchedulersFacade.ui())
+                .doOnSubscribe(__ -> mProcessing.setValue(true))
+                .doFinally(() -> mProcessing.setValue(false))
+                .subscribe(
+                        () -> {},
+                        throwable -> mError.setValue(new ViewModelError(Error.UNLINK_DEVICES, null))
+                ));
+    }
+
     public interface SelectOxMListener {
         OxmType onGetOxM(List<OxmType> supportedOxm);
     }
 
     public enum Error implements ViewModelErrorType {
-        SCAN_DEVICES
+        SCAN_DEVICES,
+        PAIRWISE_DEVICES,
+        UNLINK_DEVICES
     }
 }

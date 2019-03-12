@@ -36,6 +36,10 @@
         app:showAsAction="never"
         android:title="@string/devices_cardview_menu_item_credentials" />
     <item
+        android:id="@+id/button_roles"
+        app:showAsAction="never"
+        android:title="@string/devices_cardview_menu_item_roles" />
+    <item
         android:id="@+id/menu_item_wifi_easy_setup"
         app:showAsAction="never"
         android:title="@string/devices_cardview_menu_item_wifi_easy_setup" />

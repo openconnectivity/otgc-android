@@ -23,11 +23,13 @@ package org.openconnectivity.otgc.devicelist.presentation.view;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.util.SortedList;
-import android.support.v7.widget.PopupMenu;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.widget.SortedList;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -40,6 +42,7 @@ import android.widget.TextView;
 import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.devicelist.domain.model.Device;
 import org.openconnectivity.otgc.devicelist.domain.model.DeviceType;
+import org.openconnectivity.otgc.devicelist.domain.model.Role;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,18 +50,21 @@ import butterknife.ButterKnife;
 public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsListViewHolder> {
     SortedList<Device> mDataset;
     private Context mContext;
+    private SelectionTracker mSelectionTracker;
     private static MyClickListener sMyClickListener;
     private static MyMenuItemClickListener sMyMenuItemClickListener;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    public static class DoxsListViewHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener, PopupMenu.OnMenuItemClickListener {
+    public class DoxsListViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener, PopupMenu.OnMenuItemClickListener, ViewHolderWithDetails {
         // each data item is just a string in this case
+        @BindView(R.id.card_view) View mView;
         @BindView(R.id.line_device_type) View mLineDeviceType;
         @BindView(R.id.text_device_name) TextView mDeviceName;
         @BindView(R.id.text_device_uuid) TextView mDeviceUuid;
+        @BindView(R.id.text_device_role) TextView mDeviceRole;
         @BindView(R.id.text_device_type) TextView mDeviceType;
         //@BindView(R.id.img_btn_bottom_right) ImageButton mImageButton;
         @BindView(R.id.img_btn_popup_menu) ImageButton mPopupButton;
@@ -104,6 +110,15 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
         @Override
         public boolean onMenuItemClick(MenuItem item) {
             return sMyMenuItemClickListener.onMenuItemClick(getAdapterPosition(), item);
+        }
+
+        @Override
+        public ItemDetailsLookup.ItemDetails getItemDetails() {
+            return new MyItemDetail(getAdapterPosition(), mDataset.get(getAdapterPosition()));
+        }
+
+        public final void bind(Device device, boolean isActive) {
+            mView.setActivated(isActive);
         }
     }
 
@@ -162,6 +177,10 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
         sMyMenuItemClickListener = myMenuItemClickListener;
     }
 
+    public void setSelectionTracker(SelectionTracker selectionTracker) {
+        this.mSelectionTracker = selectionTracker;
+    }
+
     // Create new views (invoked by the layout manager)
     @Override
     @NonNull
@@ -177,17 +196,18 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
     @Override
     public void onBindViewHolder(@NonNull DoxsListViewHolder holder, int position) {
         // - get element from your dataset at this position
+        Device device = mDataset.get(position);
         // - replace the contents of the view with that element
-        if (mDataset.get(position).getDeviceInfo() != null) {
+        if (device.getDeviceInfo() != null) {
             holder.mDeviceName.setText(
-                    mDataset.get(position).getDeviceInfo().getName().isEmpty() ?
+                    device.getDeviceInfo().getName().isEmpty() ?
                             mContext.getString(R.string.devices_cardview_unnamed_device) :
-                            mDataset.get(position).getDeviceInfo().getName()
+                            device.getDeviceInfo().getName()
             );
 
-            if (!mDataset.get(position).getDeviceInfo().getFormattedDeviceTypes().isEmpty()) {
+            if (!device.getDeviceInfo().getFormattedDeviceTypes().isEmpty()) {
                 holder.mDeviceType.setText(
-                        TextUtils.join(",", mDataset.get(position).getDeviceInfo().getFormattedDeviceTypes())
+                        TextUtils.join(",", device.getDeviceInfo().getFormattedDeviceTypes())
                 );
             } else {
                 holder.mDeviceType.setText(mContext.getString(R.string.devices_cardview_no_device_types));
@@ -197,14 +217,22 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
             holder.mDeviceType.setText(mContext.getString(R.string.devices_cardview_no_device_types));
         }
 
-        holder.mDeviceUuid.setText(mDataset.get(position).getDeviceId());
+        if (device.getRole().equals(Role.CLIENT)) {
+            holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_client));
+        } else if (device.getRole().equals(Role.SERVER)) {
+            holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_server));
+        } else {
+            holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_unknown));
+        }
+
+        holder.mDeviceUuid.setText(device.getDeviceId());
 
         holder.mPopupButton.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(mContext, holder.mPopupButton);
             popupMenu.inflate(R.menu.menu_owned_devices);
             popupMenu.setOnMenuItemClickListener(holder);
 
-            if (mDataset.get(position).getType().equals(DeviceType.OWNED_BY_OTHER)) {
+            if (device.getType().equals(DeviceType.OWNED_BY_OTHER)) {
                 popupMenu.getMenu().findItem(R.id.menu_item_set_device_name).setVisible(false);
             }
 
@@ -213,7 +241,7 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
 
         int color = ContextCompat.getColor(mContext, R.color.OCF_BLACK);
 
-        switch (mDataset.get(position).getType()) {
+        switch (device.getType()) {
             case UNOWNED:
                 color = ContextCompat.getColor(mContext, R.color.ocf_light_blue);
                 holder.mAddDeviceButton.setVisibility(View.VISIBLE);
@@ -237,6 +265,8 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
         }
 
         holder.mLineDeviceType.setBackgroundColor(color);
+
+        holder.bind(device, mSelectionTracker.isSelected(device));
     }
 
     // Return the size of your dataset (invoked by the layout manager)

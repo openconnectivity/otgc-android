@@ -22,7 +22,7 @@
 
 package org.openconnectivity.otgc.common.data.repository;
 
-import android.arch.persistence.room.EmptyResultSetException;
+import androidx.room.EmptyResultSetException;
 
 import org.junit.Before;
 import org.junit.Test;

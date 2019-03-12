@@ -30,6 +30,7 @@ import org.openconnectivity.otgc.common.domain.model.OcDevice;
 
 public class Device {
     private DeviceType mType;
+    private Role mRole;
     private String mDeviceId;
     private OcDevice mDeviceInfo;
     private OcSecureResource mOcSecureResource;
@@ -38,6 +39,7 @@ public class Device {
         super();
 
         this.mType = type;
+        this.mRole = Role.UNKNOWN;
         this.mDeviceId = deviceId;
         this.mDeviceInfo = deviceInfo;
         this.mOcSecureResource = ocSecureResource;
@@ -49,6 +51,14 @@ public class Device {
 
     public void setType(DeviceType type) {
         this.mType = type;
+    }
+
+    public Role getRole() {
+        return mRole;
+    }
+
+    public void setRole(Role role) {
+        this.mRole = role;
     }
 
     public String getDeviceId() {

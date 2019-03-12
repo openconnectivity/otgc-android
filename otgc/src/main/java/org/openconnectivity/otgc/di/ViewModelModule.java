@@ -22,8 +22,8 @@
 
 package org.openconnectivity.otgc.di;
 
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import org.openconnectivity.otgc.accesscontrol.presentation.viewmodel.AccessControlViewModel;
 import org.openconnectivity.otgc.accesscontrol.presentation.viewmodel.AceViewModel;
@@ -35,6 +35,7 @@ import org.openconnectivity.otgc.credential.presentation.viewmodel.CredentialsVi
 import org.openconnectivity.otgc.devicelist.presentation.viewmodel.DeviceListViewModel;
 import org.openconnectivity.otgc.devicelist.presentation.viewmodel.SharedViewModel;
 import org.openconnectivity.otgc.devicelist.presentation.viewmodel.DoxsViewModel;
+import org.openconnectivity.otgc.linkedroles.presentation.viewmodel.LinkedRolesViewModel;
 import org.openconnectivity.otgc.login.presentation.viewmodel.LoginViewModel;
 import org.openconnectivity.otgc.splash.presentation.viewmodel.SplashViewModel;
 import org.openconnectivity.otgc.wlanscan.presentation.viewmodel.WlanScanViewModel;
@@ -99,6 +100,11 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(GenericClientViewModel.class)
     abstract ViewModel bindGenericClientViewModel(GenericClientViewModel genericClientViewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(LinkedRolesViewModel.class)
+    abstract ViewModel bindLinkedRolesViewModel(LinkedRolesViewModel linkedRolesViewModel);
 
     @Binds
     @IntoMap

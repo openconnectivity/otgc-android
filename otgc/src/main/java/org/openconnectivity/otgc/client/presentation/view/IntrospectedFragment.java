@@ -22,12 +22,12 @@
 
 package org.openconnectivity.otgc.client.presentation.view;
 
-import android.arch.lifecycle.ViewModelProvider;
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.core.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

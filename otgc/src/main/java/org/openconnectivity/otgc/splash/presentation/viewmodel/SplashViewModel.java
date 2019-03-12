@@ -22,10 +22,10 @@
 
 package org.openconnectivity.otgc.splash.presentation.viewmodel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
-import android.arch.persistence.room.EmptyResultSetException;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+import androidx.room.EmptyResultSetException;
 
 import org.openconnectivity.otgc.common.presentation.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.common.domain.rx.SchedulersFacade;

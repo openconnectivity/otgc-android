@@ -22,7 +22,7 @@
 
 package org.openconnectivity.otgc.common.domain.usecase;
 
-import android.support.annotation.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 import com.upokecenter.cbor.CBOREncodeOptions;
 import com.upokecenter.cbor.CBORObject;
@@ -132,7 +132,10 @@ public class InitializeIotivityUseCase {
                     setDeviceUuid(jsonObject, uuid);
                     X509Certificate caCertificate = mIORepository.getAssetAsX509Certificate(CRT_FILE).blockingGet();
                     PrivateKey caPrivateKey = mIORepository.getAssetAsPrivateKey(PRIVATE_KEY_FILE).blockingGet();
-                    addTrustCa(jsonObject, uuid, bytesToHex(caCertificate.getEncoded()));
+                    ASN1Sequence pkSeqCa = (ASN1Sequence)ASN1Sequence.fromByteArray(caPrivateKey.getEncoded());
+                    PrivateKeyInfo pkInfoCa = PrivateKeyInfo.getInstance(pkSeqCa);
+                    ECPrivateKey devPrivateKeyCa = ECPrivateKey.getInstance(pkInfoCa.parsePrivateKey());
+                    addTrustCa(jsonObject, uuid,bytesToHex(devPrivateKeyCa.getEncoded()), bytesToHex(caCertificate.getEncoded()));
 
                     // public/private key pair that we are creating certificate for
                     ECGenParameterSpec ecParamSpec = new ECGenParameterSpec("secp256r1");
@@ -227,8 +230,8 @@ public class InitializeIotivityUseCase {
         jsonObject.getJSONObject("doxm").put("deviceuuid", deviceUuid);
     }
 
-    private void addTrustCa(JSONObject jsonObject, String deviceUuid, String derCertificate) throws JSONException {
-        addCertificate(jsonObject, deviceUuid, 2, derCertificate, null, "oic.sec.cred.trustca");
+    private void addTrustCa(JSONObject jsonObject, String deviceUuid, String rawPrivateKey, String derCertificate) throws JSONException {
+        addCertificate(jsonObject, deviceUuid, 2, derCertificate, rawPrivateKey, "oic.sec.cred.trustca");
     }
 
     private void addCert(JSONObject jsonObject, String deviceUuid, String rawPrivateKey, String derCertificate) throws JSONException {
@@ -256,7 +259,7 @@ public class InitializeIotivityUseCase {
         credObject.put("publicdata", publicDataObject);
 
         if (rawPrivateKey != null &&
-                (credUsage.equals("oic.sec.cred.cert") || credUsage.equals("oic.sec.cred.mfgcert"))) {
+                (credUsage.equals("oic.sec.cred.cert") || credUsage.equals("oic.sec.cred.mfgcert") || credUsage.equals("oic.sec.cred.trustca"))) {
             JSONObject privateDataObject = new JSONObject();
             privateDataObject.put("encoding", "oic.sec.encoding.raw");
             privateDataObject.put("data", rawPrivateKey);

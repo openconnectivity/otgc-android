@@ -25,7 +25,6 @@ import org.iotivity.base.OcSecureResource;
 import org.openconnectivity.otgc.devicelist.data.repository.DoxsRepository;
 import org.openconnectivity.otgc.devicelist.domain.model.Device;
 import org.openconnectivity.otgc.devicelist.domain.model.DeviceType;
-import org.openconnectivity.otgc.common.domain.model.OcDevice;
 import org.openconnectivity.otgc.common.data.repository.IotivityRepository;
 
 import java.util.concurrent.TimeUnit;
@@ -33,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import io.reactivex.Single;
+import io.reactivex.Observable;
 
 public class OnboardUseCase {
     private final DoxsRepository mDoxsRepository;
@@ -46,23 +46,17 @@ public class OnboardUseCase {
     }
 
     public Single<Device> execute(OcSecureResource deviceToOnboard) {
-        final Single<OcSecureResource> getUpdatedOcSecureResource =
-                iotivityRepository.scanOwnedDevices()
-                        .filter(ocSecureResource ->
-                                (ocSecureResource.getDeviceID().equals(deviceToOnboard.getDeviceID())
-                                        || ocSecureResource.getIpAddr().equals(deviceToOnboard.getIpAddr())))
-                        .singleOrError();
+        final Single<Device> getUpdatedOcSecureResource = Observable.concat(iotivityRepository.scanOwnedDevices(), iotivityRepository.scanUnownedDevices())
+                .filter(device -> device.getType() == DeviceType.OWNED_BY_SELF
+                            && (device.getDeviceId().equals(deviceToOnboard.getDeviceID())
+                            || device.getOcSecureResource().getIpAddr().equals(deviceToOnboard.getIpAddr())))
+                .singleOrError();
 
         return mDoxsRepository.doOwnershipTransfer(deviceToOnboard)
                 .delay(1, TimeUnit.SECONDS)
                 .andThen(getUpdatedOcSecureResource)
                 .onErrorResumeNext(error -> getUpdatedOcSecureResource
                         .retry(2)
-                        .onErrorResumeNext(Single.error(error)))
-                .map(ocSecureResource ->
-                        new Device(DeviceType.OWNED_BY_SELF,
-                                ocSecureResource.getDeviceID(),
-                                new OcDevice(),
-                                ocSecureResource));
+                        .onErrorResumeNext(Single.error(error)));
     }
 }

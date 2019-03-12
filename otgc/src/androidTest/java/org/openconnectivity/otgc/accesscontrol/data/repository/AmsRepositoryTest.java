@@ -22,7 +22,7 @@
 
 package org.openconnectivity.otgc.accesscontrol.data.repository;
 
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 
 import org.iotivity.base.AceSubjectType;
 import org.iotivity.base.OcException;

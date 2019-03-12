@@ -26,8 +26,6 @@ import org.iotivity.base.OcSecureResource;
 import org.openconnectivity.otgc.common.data.repository.PreferencesRepository;
 import org.openconnectivity.otgc.devicelist.data.repository.DoxsRepository;
 import org.openconnectivity.otgc.devicelist.domain.model.Device;
-import org.openconnectivity.otgc.devicelist.domain.model.DeviceType;
-import org.openconnectivity.otgc.common.domain.model.OcDevice;
 import org.openconnectivity.otgc.common.data.repository.IotivityRepository;
 
 import java.util.concurrent.TimeUnit;
@@ -51,11 +49,11 @@ public class OffboardUseCase {
     }
 
     public Single<Device> execute(OcSecureResource deviceToOffboard) {
-        final Single<OcSecureResource> getUpdatedOcSecureResource =
+        final Single<Device> getUpdatedOcSecureResource =
                 iotivityRepository.scanUnownedDevices()
-                        .filter(ocSecureResource ->
-                                (ocSecureResource.getDeviceID().equals(deviceToOffboard.getDeviceID())
-                                || ocSecureResource.getIpAddr().equals(deviceToOffboard.getIpAddr())))
+                        .filter(device ->
+                                (device.getDeviceId().equals(deviceToOffboard.getDeviceID())
+                                || device.getOcSecureResource().getIpAddr().equals(deviceToOffboard.getIpAddr())))
                         .singleOrError();
 
         return mDoxsRepository.resetDevice(deviceToOffboard,
@@ -64,12 +62,6 @@ public class OffboardUseCase {
                 .andThen(getUpdatedOcSecureResource)
                 .onErrorResumeNext(error -> getUpdatedOcSecureResource
                         .retry(2)
-                        .onErrorResumeNext(Single.error(error)))
-                .map(ocSecureResource ->
-                    new Device(DeviceType.UNOWNED,
-                            ocSecureResource.getDeviceID(),
-                            new OcDevice(),
-                            ocSecureResource)
-                );
+                        .onErrorResumeNext(Single.error(error)));
     }
 }

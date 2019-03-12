@@ -22,13 +22,13 @@
 package org.openconnectivity.otgc.devicelist.presentation.view;
 
 import android.app.AlertDialog;
-import android.arch.lifecycle.ViewModelProvider;
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.view.ContextThemeWrapper;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -193,6 +193,8 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.devices_fragment);
         if (fragment instanceof RecyclerWithSwipeFragment) {
             ((RecyclerWithSwipeFragment) fragment).onSwipeRefresh();
+        } else if (fragment instanceof DoxsFragment) {
+            ((DoxsFragment) fragment).onSwipeRefresh();
         }
     }
 

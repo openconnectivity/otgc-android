@@ -22,9 +22,9 @@
 
 package org.openconnectivity.otgc.wlanscan.presentation.viewmodel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 import android.net.wifi.SupplicantState;
 
 import org.openconnectivity.otgc.common.domain.usecase.CheckConnectionUseCase;

@@ -40,7 +40,7 @@ public class RetrieveVerticalResourcesUseCase {
 
     public Single<List<String>> execute(String deviceId) {
         return iotivityRepository.getDeviceCoapIpv6Host(deviceId)
-                .flatMap(iotivityRepository::findResource)
+                .flatMap(iotivityRepository::findResources)
                 .map(ocResources -> {
                     List<String> verticalResources = new ArrayList<>();
                     for (OcResource ocResource : ocResources) {

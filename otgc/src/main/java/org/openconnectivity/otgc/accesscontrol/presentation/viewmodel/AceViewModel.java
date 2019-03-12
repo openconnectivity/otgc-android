@@ -22,15 +22,13 @@
 
 package org.openconnectivity.otgc.accesscontrol.presentation.viewmodel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 import org.openconnectivity.otgc.accesscontrol.domain.usecase.CreateAclUseCase;
 import org.openconnectivity.otgc.accesscontrol.domain.usecase.RetrieveVerticalResourcesUseCase;
 import org.openconnectivity.otgc.accesscontrol.domain.usecase.UpdateAclUseCase;
-import org.openconnectivity.otgc.client.domain.model.SerializableResource;
-import org.openconnectivity.otgc.client.domain.usecase.GetResourcesUseCase;
 import org.openconnectivity.otgc.common.presentation.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.common.presentation.viewmodel.ViewModelErrorType;
 import org.openconnectivity.otgc.common.domain.rx.SchedulersFacade;

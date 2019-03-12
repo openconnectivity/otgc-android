@@ -22,11 +22,20 @@
 
 package org.openconnectivity.otgc.devicelist.data.repository;
 
+import org.iotivity.base.AceSubjectType;
+import org.iotivity.base.CredType;
+import org.iotivity.base.KeySize;
 import org.iotivity.base.OcException;
 import org.iotivity.base.OcSecureResource;
+import org.iotivity.base.OicSecAce;
+import org.iotivity.base.OicSecAceSubject;
+import org.iotivity.base.OicSecAcl;
+import org.iotivity.base.OicSecResr;
 import org.iotivity.base.OxmType;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -95,5 +104,46 @@ public class DoxsRepository {
             ocSecureResource.setOTMethod(selectedMethod);
             emitter.onComplete();
         });
+    }
+
+    public Completable pairwiseDevices(OcSecureResource clientResource, OcSecureResource serverResource, List<OicSecResr> resources) {
+        return Completable.create(emitter -> {
+            try {
+                // Create ACE to allow client to manage the server
+                List<OicSecAce> aces = new ArrayList<>();
+                OicSecAceSubject subject = new OicSecAceSubject(AceSubjectType.SUBJECT_UUID.getValue(), clientResource.getDeviceID(), null, null);
+                OicSecAce ace = new OicSecAce(0, subject, 31, resources, new ArrayList<>());
+                aces.add(ace);
+                OicSecAcl acl = new OicSecAcl(null, aces);
+
+                EnumSet<CredType> credTypes = EnumSet.of(CredType.SYMMETRIC_PAIR_WISE_KEY);
+                clientResource.provisionPairwiseDevices(credTypes, KeySize.OWNER_PSK_LENGTH_256, null, serverResource, acl, (results, hasError) ->
+                {
+                    if (hasError == 0) {
+                        emitter.onComplete();
+                    } else {
+                        emitter.onError(new IOException("Link Devices Exception"));
+                    }
+                });
+            } catch (OcException e) {
+                emitter.onError(e);
+            }
+        });
+    }
+
+
+    public Completable unlinkDevices(OcSecureResource serverOcSecureResource, OcSecureResource clientOcSecureResource) {
+        return Completable.create(emitter ->
+            serverOcSecureResource.unlinkDevices(
+                clientOcSecureResource,
+                (provisionResults, hasError) -> {
+                    if (hasError == 0) {
+                        emitter.onComplete();
+                    } else {
+                        emitter.onError(new IOException("Error"));
+                    }
+                }
+            )
+        );
     }
 }

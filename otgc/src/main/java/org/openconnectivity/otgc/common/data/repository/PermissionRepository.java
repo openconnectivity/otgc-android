@@ -25,7 +25,7 @@ package org.openconnectivity.otgc.common.data.repository;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
