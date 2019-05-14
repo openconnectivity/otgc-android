@@ -1,0 +1,4 @@
+[submodule "extlibs/iotivity-lite"]
+	path = extlibs/iotivity-lite
+	url = https://gerrit.iotivity.org/gerrit/iotivity-lite
+    branch = swig
