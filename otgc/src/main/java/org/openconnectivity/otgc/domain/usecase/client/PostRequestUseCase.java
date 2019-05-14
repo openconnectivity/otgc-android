@@ -41,6 +41,6 @@ public class PostRequestUseCase {
 
     public Completable execute(Device device, SerializableResource resource, OCRepresentation rep, Object valueArray) {
         return iotivityRepository.getSecureEndpoint(device)
-                .flatMapCompletable(endpoint -> iotivityRepository.post(endpoint, resource.getUri(), rep, valueArray));
+                .flatMapCompletable(endpoint -> iotivityRepository.post(endpoint, resource.getUri(), device.getDeviceId(), rep, valueArray));
     }
 }

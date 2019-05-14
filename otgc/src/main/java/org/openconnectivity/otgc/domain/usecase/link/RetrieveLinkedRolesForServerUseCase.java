@@ -50,7 +50,7 @@ public class RetrieveLinkedRolesForServerUseCase {
     public Single<List<String>> execute(Device device)
     {
         return iotivityRepository.getSecureEndpoint(device)
-                .flatMap(amsRepository::getAcl)
+                .flatMap(endpoint -> amsRepository.getAcl(endpoint, device.getDeviceId()))
                 .map(acl -> {
                     List<String> roles = new ArrayList<>();
 

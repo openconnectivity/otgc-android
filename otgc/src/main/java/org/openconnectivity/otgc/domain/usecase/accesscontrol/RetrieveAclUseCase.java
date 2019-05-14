@@ -44,6 +44,6 @@ public class RetrieveAclUseCase {
 
     public Single<OcAcl> execute(Device device) {
         return iotivityRepository.getSecureEndpoint(device)
-                .flatMap(amsRepository::getAcl);
+                .flatMap(endpoint -> amsRepository.getAcl(endpoint, device.getDeviceId()));
     }
 }

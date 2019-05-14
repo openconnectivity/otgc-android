@@ -53,14 +53,14 @@ public class UnlinkRoleForServerUseCase {
 
     public Completable execute(Device device, String roleId) {
         return iotivityRepository.getSecureEndpoint(device)
-                .flatMapCompletable(endpoint -> amsRepository.getAcl(endpoint)
+                .flatMapCompletable(endpoint -> amsRepository.getAcl(endpoint, device.getDeviceId())
                         .flatMapCompletable(ocAcl -> {
                             List<Completable> deleteAceList = new ArrayList<>();
                             for (OcAce ace : ocAcl.getAceList()) {
                                 if (ace.getSubject().getRoleId() != null && ace.getSubject().getRoleId().equals(roleId)) {
-                                    Completable deleteAce = pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFPRO)
-                                            .andThen(amsRepository.deleteAcl(endpoint, ace.getAceid()))
-                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFNOP));
+                                    Completable deleteAce = pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
+                                            .andThen(amsRepository.deleteAcl(endpoint, device.getDeviceId(), ace.getAceid()))
+                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP));
                                     deleteAceList.add(deleteAce);
                                 }
                             }

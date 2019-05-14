@@ -45,7 +45,7 @@ public class ObserveResourceUseCase {
 
     public Observable<SerializableResource> execute (Device device, SerializableResource resource) {
         return iotivityRepository.getSecureEndpoint(device)
-                .flatMapObservable(endpoint -> resourceRepository.observeResource(endpoint, resource));
+                .flatMapObservable(endpoint -> resourceRepository.observeResource(endpoint, device.getDeviceId(), resource));
 
     }
 }

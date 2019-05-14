@@ -53,14 +53,14 @@ public class UnlinkRoleForClientUseCase {
 
     public Completable execute(Device device, String roleId) {
         return iotivityRepository.getSecureEndpoint(device)
-                .flatMapCompletable(endpoint -> cmsRepository.getCredentials(endpoint)
+                .flatMapCompletable(endpoint -> cmsRepository.getCredentials(endpoint, device.getDeviceId())
                         .flatMapCompletable(ocCredentials -> {
                             List<Completable> deleteCredList = new ArrayList<>();
                             for(OcCredential cred : ocCredentials.getCredList()) {
                                 if (cred.getRoleid() != null && cred.getRoleid().getRole().equals(roleId)) {
-                                    Completable deleteCred = pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFPRO)
-                                            .andThen(cmsRepository.deleteCredential(endpoint, cred.getCredid()))
-                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFNOP));
+                                    Completable deleteCred = pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
+                                            .andThen(cmsRepository.deleteCredential(endpoint, device.getDeviceId(), cred.getCredid()))
+                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP));
                                     deleteCredList.add(deleteCred);
                                 }
                             }

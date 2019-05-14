@@ -495,10 +495,12 @@ public class IotivityRepository {
         });
     }
 
-    public Single<OCRepresentation> get(String host, String uri) {
+    public Single<OCRepresentation> get(String host, String uri, String deviceId) {
         return Single.create(emitter -> {
             OCEndpoint ep = OCEndpointUtil.newEndpoint();
             OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
+            OCEndpointUtil.setDi(ep, uuid);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -515,10 +517,12 @@ public class IotivityRepository {
         });
     }
 
-    public Completable post(String host, String uri, OCRepresentation rep, Object valueArray) {
+    public Completable post(String host, String uri, String deviceId, OCRepresentation rep, Object valueArray) {
         return Completable.create(emitter -> {
             OCEndpoint ep = OCEndpointUtil.newEndpoint();
             OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
+            OCEndpointUtil.setDi(ep, uuid);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();

@@ -55,15 +55,15 @@ public class UnlinkDevicesUseCase {
     public Completable execute(Device client, Device server)
     {
         Completable deleteClientPairwise = iotivityRepository.getSecureEndpoint(client)
-                .flatMapCompletable(endpoint -> cmsRepository.getCredentials(endpoint)
+                .flatMapCompletable(endpoint -> cmsRepository.getCredentials(endpoint, client.getDeviceId())
                         .flatMapCompletable(ocCredentials -> {
                             List<Completable> deleteCredList = new ArrayList<>();
                             for(OcCredential cred : ocCredentials.getCredList()) {
                                 if (cred.getSubjectuuid() != null && cred.getSubjectuuid().equals(server.getDeviceId())
                                         && cred.getCredtype() == OcfCredType.OC_CREDTYPE_PSK) {
-                                    Completable deleteCred = pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFPRO)
-                                            .andThen(cmsRepository.deleteCredential(endpoint, cred.getCredid()))
-                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFNOP));
+                                    Completable deleteCred = pstatRepository.changeDeviceStatus(endpoint, client.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
+                                            .andThen(cmsRepository.deleteCredential(endpoint, client.getDeviceId(), cred.getCredid()))
+                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, client.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP));
                                     deleteCredList.add(deleteCred);
                                 }
                             }
@@ -71,15 +71,15 @@ public class UnlinkDevicesUseCase {
                         }));
 
         Completable deleteServerPairwise = iotivityRepository.getSecureEndpoint(server)
-                .flatMapCompletable(endpoint -> cmsRepository.getCredentials(endpoint)
+                .flatMapCompletable(endpoint -> cmsRepository.getCredentials(endpoint, server.getDeviceId())
                         .flatMapCompletable(ocCredentials -> {
                             List<Completable> deleteCredList = new ArrayList<>();
                             for(OcCredential cred : ocCredentials.getCredList()) {
                                 if (cred.getSubjectuuid() != null && cred.getSubjectuuid().equals(client.getDeviceId())
                                         && cred.getCredtype() == OcfCredType.OC_CREDTYPE_PSK) {
-                                    Completable deleteCred = pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFPRO)
-                                            .andThen(cmsRepository.deleteCredential(endpoint, cred.getCredid()))
-                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFNOP));
+                                    Completable deleteCred = pstatRepository.changeDeviceStatus(endpoint, server.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
+                                            .andThen(cmsRepository.deleteCredential(endpoint, server.getDeviceId(), cred.getCredid()))
+                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, server.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP));
                                     deleteCredList.add(deleteCred);
                                 }
                             }

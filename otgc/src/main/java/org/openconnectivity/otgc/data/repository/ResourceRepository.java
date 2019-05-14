@@ -33,6 +33,8 @@ import org.iotivity.OCMain;
 import org.iotivity.OCQos;
 import org.iotivity.OCResponseHandler;
 import org.iotivity.OCStatus;
+import org.iotivity.OCUuid;
+import org.iotivity.OCUuidUtil;
 import org.openconnectivity.otgc.domain.model.client.SerializableResource;
 
 import javax.inject.Inject;
@@ -50,10 +52,12 @@ public class ResourceRepository {
     @Inject
     public ResourceRepository() {}
 
-    public Observable<SerializableResource> observeResource(String endpoint, SerializableResource resource) {
+    public Observable<SerializableResource> observeResource(String endpoint, String deviceId, SerializableResource resource) {
         return Observable.create(emitter -> {
             OCEndpoint ep = OCEndpointUtil.newEndpoint();
             OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
+            OCEndpointUtil.setDi(ep, uuid);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();

@@ -56,8 +56,8 @@ public class DeleteCredentialUseCase {
     public Completable execute(Device device, long credId) {
         return iotivityRepository.getSecureEndpoint(device)
                 .flatMapCompletable(endpoint ->
-                        mPstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(mCmsRepository.deleteCredential(endpoint, credId))
-                                .andThen(mPstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFNOP)));
+                        mPstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
+                                .andThen(mCmsRepository.deleteCredential(endpoint, device.getDeviceId(), credId))
+                                .andThen(mPstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
     }
 }

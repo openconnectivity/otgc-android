@@ -44,6 +44,6 @@ public class RetrieveCredentialsUseCase {
 
     public Single<OcCredentials> execute(Device targetDevice) {
         return iotivityRepository.getSecureEndpoint(targetDevice)
-                .flatMap(cmsRepository::getCredentials);
+                .flatMap(endpoint -> cmsRepository.getCredentials(endpoint, targetDevice.getDeviceId()));
     }
 }

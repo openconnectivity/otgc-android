@@ -60,15 +60,15 @@ public class PairwiseDevicesUseCase {
 
         Completable clientPairwise = iotivityRepository.getSecureEndpoint(client)
                 .flatMapCompletable(endpoint ->
-                        pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(cmsRepository.createPskCredential(endpoint, server.getDeviceId(), secretKey.getEncoded()))
-                                .andThen(pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFNOP)));
+                        pstatRepository.changeDeviceStatus(endpoint, client.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
+                                .andThen(cmsRepository.createPskCredential(endpoint, client.getDeviceId(), server.getDeviceId(), secretKey.getEncoded()))
+                                .andThen(pstatRepository.changeDeviceStatus(endpoint, client.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
 
         Completable serverPairwise = iotivityRepository.getSecureEndpoint(server)
                 .flatMapCompletable(endpoint ->
-                        pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(cmsRepository.createPskCredential(endpoint, client.getDeviceId(), secretKey.getEncoded()))
-                                .andThen(pstatRepository.changeDeviceStatus(endpoint, OcfDosType.OC_DOSTYPE_RFNOP)));
+                        pstatRepository.changeDeviceStatus(endpoint, server.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
+                                .andThen(cmsRepository.createPskCredential(endpoint, server.getDeviceId(), client.getDeviceId(), secretKey.getEncoded()))
+                                .andThen(pstatRepository.changeDeviceStatus(endpoint, server.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
 
         return clientPairwise
                 .andThen(serverPairwise);

@@ -40,7 +40,7 @@ public class GetRequestUseCase {
 
     public Single<SerializableResource> execute(Device device, SerializableResource resource){
         return iotivityRepository.getSecureEndpoint(device)
-                .flatMap(endpoint -> iotivityRepository.get(endpoint, resource.getUri()))
+                .flatMap(endpoint -> iotivityRepository.get(endpoint, resource.getUri(), device.getDeviceId()))
                 .map(ocRepresentation -> {
                     resource.setProperties(ocRepresentation);
                     return resource;

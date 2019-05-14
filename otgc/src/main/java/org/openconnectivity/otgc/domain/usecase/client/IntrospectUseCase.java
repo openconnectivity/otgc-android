@@ -53,7 +53,7 @@ public class IntrospectUseCase {
                 .flatMap(res -> {
                     OcResource introspectionResource = res.getResourceList().get(0);
                     OcEndpoint endpoint = introspectionResource.getEndpoints().get(0);
-                    return iotivityRepository.get(endpoint.getEndpoint(), introspectionResource.getHref());
+                    return iotivityRepository.get(endpoint.getEndpoint(), introspectionResource.getHref(), device.getDeviceId());
                 })
                 .flatMap(ocRepresentation -> {
                     OcIntrospection ocIntrospection = new OcIntrospection();
@@ -61,7 +61,7 @@ public class IntrospectUseCase {
                     OcIntrospectionUrlInfo ocIntrospectionUrlInfo = ocIntrospection.getCoapsIpv6Endpoint();
 
                     if (ocIntrospectionUrlInfo != null) {
-                        return iotivityRepository.get(ocIntrospectionUrlInfo.getHost(), ocIntrospectionUrlInfo.getUri());
+                        return iotivityRepository.get(ocIntrospectionUrlInfo.getHost(), ocIntrospectionUrlInfo.getUri(), device.getDeviceId());
                     } else {
                         return null;
                     }
