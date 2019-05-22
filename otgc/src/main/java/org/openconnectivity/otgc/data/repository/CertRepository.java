@@ -64,7 +64,9 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPublicKeySpec;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -78,6 +80,22 @@ public class CertRepository {
     public CertRepository() {
 
     }
+
+    /**
+     *
+     * BasicConstraints shall be present
+     *      Root and Intermediate cert shall be set to true
+     *      End cert shall be set to false
+     * KeyUsage shall be present
+     *      Root and Intermediate cert shall be assert KeyCertSign(5) and CrlSign(6)
+     *      End cert shall be assert DigitalSignature(0) and KeyAgreement(4)
+     * ExtendedKeyUsage
+     *  End cert
+     *      Server authentication (1.3.6.1.5.5.7.3.1)
+     *      Client authentication (1.3.6.1.5.5.7.3.2)
+     *      Identity cert (1.3.6.1.4.1.44924.1.6)
+     *      Role cert (1.3.6.1.4.1.44924.1.7)
+     */
 
     private Single<X509Certificate> generateCertificate(String deviceUuid, PublicKey publicKey, PrivateKey caPrivateKey, String roleId, String roleAuthority) {
         return Single.create(emitter -> {
@@ -102,11 +120,26 @@ public class CertRepository {
 
             certBuilder.addExtension(Extension.basicConstraints, false, new BasicConstraints(false));
             certBuilder.addExtension(Extension.keyUsage, true,
-                    new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment |
-                            KeyUsage.dataEncipherment | KeyUsage.keyAgreement));
+                    new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyAgreement));
 
-            ExtendedKeyUsage extendedKeyUsage = new ExtendedKeyUsage(KeyPurposeId.getInstance(new ASN1ObjectIdentifier("1.3.6.1.4.1.44924.1.6")));
-            certBuilder.addExtension(Extension.extendedKeyUsage, false, extendedKeyUsage);
+            List<ASN1ObjectIdentifier> asn1ObjectIdentifiersList = new ArrayList<>();
+            // Server authentication
+            asn1ObjectIdentifiersList.add(new ASN1ObjectIdentifier("1.3.6.1.5.5.7.3.1"));
+            // Client authentication
+            asn1ObjectIdentifiersList.add(new ASN1ObjectIdentifier("1.3.6.1.5.5.7.3.2"));
+            // Identity or role certificate
+            if (roleId == null) {
+                asn1ObjectIdentifiersList.add(new ASN1ObjectIdentifier("1.3.6.1.4.1.44924.1.6"));
+            } else {
+                asn1ObjectIdentifiersList.add(new ASN1ObjectIdentifier("1.3.6.1.4.1.44924.1.7"));
+            }
+
+            KeyPurposeId[] kps = new KeyPurposeId[asn1ObjectIdentifiersList.size()];
+            int i = 0;
+            for (ASN1ObjectIdentifier oid : asn1ObjectIdentifiersList) {
+                kps[i++] = KeyPurposeId.getInstance(oid);
+            }
+            certBuilder.addExtension(Extension.extendedKeyUsage, false, new ExtendedKeyUsage(kps));
 
             ContentSigner signer = new JcaContentSignerBuilder("SHA256withECDSA")
                     .setProvider(new BouncyCastleProvider()).build(caPrivateKey);
@@ -142,9 +175,9 @@ public class CertRepository {
 
     public Single<PKCS10CertificationRequest> getPKCS10CertRequest(OcCsr csr) {
         return Single.create(emitter -> {
-            if (csr.getEncoding().equals(OcfEncoding.OC_ENCODING_DER)) {
+            if (csr.getEncoding().equals(OcfEncoding.OC_ENCODING_DER.getValue())) {
                 emitter.onSuccess(new PKCS10CertificationRequest(csr.getDerCsr()));
-            } else if (csr.getEncoding().equals(OcfEncoding.OC_ENCODING_PEM)) {
+            } else if (csr.getEncoding().equals(OcfEncoding.OC_ENCODING_PEM.getValue())) {
                 Reader csrReader = new StringReader(csr.getPemCsr());
                 PEMParser pemParser = new PEMParser(csrReader);
                 Object pemObj = pemParser.readObject();
