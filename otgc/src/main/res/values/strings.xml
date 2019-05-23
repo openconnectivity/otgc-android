@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ ******************************************************************
+  ~  *****************************************************************
   ~
   ~  Copyright 2018 DEKRA Testing and Certification, S.A.U. All Rights Reserved.
   ~
-  ~  ******************************************************************
+  ~  *****************************************************************
   ~
   ~  Licensed under the Apache License, Version 2.0 (the "License");
   ~  you may not use this file except in compliance with the License.
   ~  You may obtain a copy of the License at
   ~
-  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~           http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~  Unless required by applicable law or agreed to in writing, software
   ~  distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,7 +17,7 @@
   ~  See the License for the specific language governing permissions and
   ~  limitations under the License.
   ~
-  ~  ******************************************************************
+  ~  *****************************************************************
   -->
 
 <resources>
@@ -149,6 +149,7 @@
     <string name="client_title_no_name">Unnamed</string>
     <string name="client_menu_item_info">Info</string>
     <string name="client_cannot_retrieve_device_name">Cannot retrieve device name from database</string>
+    <string name="cannot_access_to_db">Cannot access to database</string>
     <string name="client_cannot_retrieve_device_info">Cannot retrieve /oic/d properties</string>
     <string name="client_cannot_retrieve_platform_info">Cannot retrieve /oic/p properties</string>
     <string name="client_cannot_introspect_device">Cannot introspect device</string>

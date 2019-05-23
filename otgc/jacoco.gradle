@@ -1,0 +1,20 @@
+apply plugin: 'jacoco-android'
+
+jacoco {
+    toolVersion = "0.8.3"
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+    finalizedBy jacocoTestReport
+}
+
+jacocoAndroidUnitTestReport {
+
+    excludes += ['**/AutoValue_*.*',
+                 '**/*JavascriptBridge.class']
+
+    csv.enabled false
+    html.enabled false
+    xml.enabled true
+}

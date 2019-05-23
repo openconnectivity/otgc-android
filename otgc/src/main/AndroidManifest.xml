@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~  *****************************************************************
+  ~
+  ~  Copyright 2018 DEKRA Testing and Certification, S.A.U. All Rights Reserved.
+  ~
+  ~  *****************************************************************
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~           http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  ~  *****************************************************************
+  -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.openconnectivity.otgc">
 
@@ -22,7 +44,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".splash.presentation.view.SplashActivity"
+            android:name=".view.splash.SplashActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/SplashTheme">
             <intent-filter>
@@ -32,60 +54,60 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".login.presentation.view.LoginActivity"
+            android:name=".view.login.LoginActivity"
             android:alwaysRetainTaskState="true"
             android:configChanges="orientation|screenSize"
             android:icon="@mipmap/ic_launcher"
             android:launchMode="singleTop">
         </activity>
         <activity
-            android:name=".wlanscan.presentation.view.WlanScanActivity"
+            android:name=".view.wlanscan.WlanScanActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/wlan_scan_title" />
         <activity
-            android:name=".devicelist.presentation.view.DeviceListActivity"
+            android:name=".view.devicelist.DeviceListActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name" />
         <activity
-            android:name=".accesscontrol.presentation.view.AccessControlActivity"
+            android:name=".view.accesscontrol.AccessControlActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/access_control_title"
-            android:parentActivityName=".devicelist.presentation.view.DeviceListActivity"/>
+            android:parentActivityName=".view.devicelist.DeviceListActivity"/>
         <activity
-            android:name=".accesscontrol.presentation.view.AceActivity"
+            android:name=".view.accesscontrol.AceActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/access_control_ace_title"
-            android:parentActivityName=".accesscontrol.presentation.view.AccessControlActivity" />
+            android:parentActivityName=".view.accesscontrol.AccessControlActivity" />
         <activity
-            android:name=".credential.presentation.view.CredentialsActivity"
+            android:name=".view.credential.CredentialsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/credentials_title"
-            android:parentActivityName=".devicelist.presentation.view.DeviceListActivity" />
-        <activity android:name=".credential.presentation.view.CredActivity"
+            android:parentActivityName=".view.devicelist.DeviceListActivity" />
+        <activity android:name=".view.credential.CredActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/credentials_cred_title"
-            android:parentActivityName=".credential.presentation.view.CredentialsActivity" />
+            android:parentActivityName=".view.credential.CredentialsActivity" />
         <activity
-            android:name=".client.presentation.view.GenericClientActivity"
+            android:name=".view.client.GenericClientActivity"
             android:configChanges="orientation|screenSize"
-            android:parentActivityName=".devicelist.presentation.view.DeviceListActivity" />
+            android:parentActivityName=".view.devicelist.DeviceListActivity" />
         <activity
-            android:name=".linkedroles.presentation.view.LinkedRolesActivity"
+            android:name=".view.link.LinkedRolesActivity"
             android:label="@string/linked_roles_title"
             android:configChanges="orientation|screenSize"
-            android:parentActivityName=".devicelist.presentation.view.DeviceListActivity" />
+            android:parentActivityName=".view.devicelist.DeviceListActivity" />
         <activity
-            android:name=".logviewer.presentation.view.LogViewerActivity"
+            android:name=".view.logviewer.LogViewerActivity"
             android:configChanges="orientation|screenSize"
-            android:parentActivityName=".devicelist.presentation.view.DeviceListActivity" />
+            android:parentActivityName=".view.devicelist.DeviceListActivity" />
         <activity
-            android:name=".settings.presentation.view.SettingsActivity"
+            android:name=".view.settings.SettingsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/settings_title"
-            android:parentActivityName=".devicelist.presentation.view.DeviceListActivity" />
-        <activity android:name=".about.presentation.view.AboutActivity"
+            android:parentActivityName=".view.devicelist.DeviceListActivity" />
+        <activity android:name=".view.about.AboutActivity"
             android:configChanges="orientation|screenSize"
-            android:parentActivityName=".settings.presentation.view.SettingsActivity" />
+            android:parentActivityName=".view.settings.SettingsActivity" />
     </application>
 
 </manifest>

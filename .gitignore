@@ -7,3 +7,4 @@
 /captures
 .externalNativeBuild
 /iotivity-base-release/*.aar
+/otgc/src/main/jniLibs/
