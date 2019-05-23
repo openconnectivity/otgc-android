@@ -151,6 +151,14 @@ public class CredentialAdapter extends RecyclerView.Adapter<CredentialAdapter.Cr
         return mDataset != null ? mDataset.size() : 0;
     }
 
+    public void clearItems() {
+        mDataset.beginBatchedUpdates();
+        while (mDataset.size() > 0) {
+            mDataset.removeItemAt(mDataset.size() - 1);
+        }
+        mDataset.endBatchedUpdates();
+    }
+
     public void addItem(OcCredential item) {
         if (item != null) {
             mDataset.add(item);

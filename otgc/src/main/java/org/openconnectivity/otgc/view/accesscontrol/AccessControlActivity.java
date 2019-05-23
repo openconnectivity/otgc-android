@@ -91,6 +91,7 @@ public class AccessControlActivity extends AppCompatActivity implements Injectab
     @Override
     protected void onResume() {
         super.onResume();
+        mAdapter.clearItems();
         mViewModel.retrieveAcl(mDevice);
     }
 

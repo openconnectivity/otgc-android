@@ -91,6 +91,7 @@ public class CredentialsActivity extends AppCompatActivity implements Injectable
     @Override
     protected void onResume() {
         super.onResume();
+        mAdapter.clearItems();
         mViewModel.retrieveCredentials(mDevice);
     }
 

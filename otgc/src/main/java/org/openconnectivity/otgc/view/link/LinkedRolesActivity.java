@@ -117,6 +117,7 @@ public class LinkedRolesActivity extends AppCompatActivity implements Injectable
     @Override
     protected void onResume() {
         super.onResume();
+        mAdapter.clearItems();
         mViewModel.retrieveLinkedRoles(mDevice, mDeviceRole);
     }
 
