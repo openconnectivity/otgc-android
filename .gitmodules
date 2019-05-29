@@ -1,0 +1,3 @@
+[submodule "extlibs/iotivity"]
+	path = extlibs/iotivity
+	url = https://github.com/openconnectivity/1.3-rel-iotivity-otgc.git
