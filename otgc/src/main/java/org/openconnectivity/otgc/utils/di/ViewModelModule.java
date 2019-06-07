@@ -38,6 +38,7 @@ import org.openconnectivity.otgc.viewmodel.DoxsViewModel;
 import org.openconnectivity.otgc.viewmodel.LinkedRolesViewModel;
 import org.openconnectivity.otgc.viewmodel.LoginViewModel;
 import org.openconnectivity.otgc.viewmodel.SplashViewModel;
+import org.openconnectivity.otgc.viewmodel.TrustAnchorViewModel;
 import org.openconnectivity.otgc.viewmodel.WlanScanViewModel;
 
 import dagger.Binds;
@@ -113,4 +114,9 @@ abstract class ViewModelModule {
 
     @Binds
     abstract ViewModelProvider.Factory bindViewModelFactory(ViewModelFactory factory);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(TrustAnchorViewModel.class)
+    abstract ViewModel bindTrustAnchorsViewModel(TrustAnchorViewModel trustAnchorViewModel);
 }

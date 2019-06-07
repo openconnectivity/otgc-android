@@ -22,6 +22,8 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
+import com.upokecenter.cbor.CBORObject;
+
 import org.iotivity.CborEncoder;
 import org.iotivity.OCRep;
 import org.iotivity.OCRepresentation;
@@ -57,6 +59,44 @@ public class OcCredentials extends OcResourceBase {
         this.rowneruuid = rowneruuid;
     }
 
+    public void parseCbor(CBORObject cbor) {
+        /* creds */
+        CBORObject credsObj = cbor.get(OcfResourceAttributeKey.CREDENTIALS_KEY);
+        if (credsObj != null) {
+            List<OcCredential> credList = new ArrayList<>();
+            for (CBORObject credObj : credsObj.getValues()) {
+                OcCredential cred = new OcCredential();
+                cred.parseCbor(credObj);
+                credList.add(cred);
+            }
+            this.setCredList(credList);
+        }
+        /* rowneruuid */
+        CBORObject rowneruuidObj = cbor.get(OcfResourceAttributeKey.ROWNER_UUID_KEY);
+        if (rowneruuidObj != null) {
+            String rowneruuid = rowneruuidObj.AsString();
+            this.setRowneruuid(rowneruuid);
+        }
+        /* rt */
+        CBORObject rtsObj = cbor.get(OcfResourceAttributeKey.RESOURCE_TYPES_KEY);
+        if (rtsObj != null) {
+            List<String> resourceTypes = new ArrayList<>();
+            for (CBORObject rtObj : rtsObj.getValues()){
+                resourceTypes.add(rtObj.AsString());
+            }
+            this.setResourceTypes(resourceTypes);
+        }
+        /* if */
+        CBORObject ifsObj = cbor.get(OcfResourceAttributeKey.INTERFACES_KEY);
+        if (ifsObj != null) {
+            List<String> interfaces = new ArrayList<>();
+            for (CBORObject ifObj : ifsObj.getValues()){
+                interfaces.add(ifObj.AsString());
+            }
+            this.setInterfaces(interfaces);
+        }
+    }
+
     public void parseOCRepresentation(OCRepresentation rep) {
         /* creds */
         OCRepresentation credsObj = OCRep.getObjectArray(rep, OcfResourceAttributeKey.CREDENTIALS_KEY);
@@ -74,10 +114,10 @@ public class OcCredentials extends OcResourceBase {
         this.setRowneruuid(rowneruuid);
         /* rt */
         String[] resourceTypes = OCRep.getStringArray(rep, OcfResourceAttributeKey.RESOURCE_TYPES_KEY);
-        this.setResourceTypes(Arrays.asList(resourceTypes));
+        this.setResourceTypes(resourceTypes != null ? Arrays.asList(resourceTypes) : null);
         /* if */
         String[] interfaces = OCRep.getStringArray(rep, OcfResourceAttributeKey.INTERFACES_KEY);
-        this.setInterfaces(Arrays.asList(interfaces));
+        this.setInterfaces(interfaces != null ? Arrays.asList(interfaces) : null);
     }
 
     public CborEncoder parseToCbor() {

@@ -22,6 +22,8 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
+import com.upokecenter.cbor.CBORObject;
+
 import org.iotivity.CborEncoder;
 import org.iotivity.OCRep;
 import org.iotivity.OCRepresentation;
@@ -113,6 +115,56 @@ public class OcCredential {
 
     public void setPeriod(String period) {
         this.period = period;
+    }
+
+    public void parseCbor(CBORObject cbor) {
+        /* credid */
+        CBORObject credidObj = cbor.get(OcfResourceAttributeKey.CRED_ID_KEY);
+        if (credidObj != null) {
+            Long credid = credidObj.AsInt64();
+            this.setCredid(credid);
+        }
+        /* credtype */
+        CBORObject credtypeObj = cbor.get(OcfResourceAttributeKey.CRED_TYPE_KEY);
+        if (credtypeObj != null) {
+            Long credtype = credtypeObj.AsInt64();
+            this.setCredtype(OcfCredType.valueToEnum(credtype.intValue()));
+        }
+        /* credusage */
+        CBORObject credUsageObj = cbor.get(OcfResourceAttributeKey.CRED_USAGE_KEY);
+        if (credUsageObj != null) {
+            String credusage = credUsageObj.AsString();
+            this.setCredusage(credusage != null ? OcfCredUsage.valueToEnum(credusage) : null);
+        }
+        /* subjectuuid */
+        CBORObject subjectuuidObj = cbor.get(OcfResourceAttributeKey.SUBJECTUUID_KEY);
+        if (subjectuuidObj != null) {
+            String subjectuuid = subjectuuidObj.AsString();
+            this.setSubjectuuid(subjectuuid);
+        }
+        /* period */
+        CBORObject periodObj = cbor.get(OcfResourceAttributeKey.PERIOD_KEY);
+        if (periodObj != null) {
+            String period = periodObj.AsString();
+            this.setPeriod(period);
+        }
+        /* publicdata */
+        CBORObject publicdataObj = cbor.get(OcfResourceAttributeKey.PUBLIC_DATA_KEY);
+        if (publicdataObj != null) {
+            OcCredPublicData publicData = new OcCredPublicData();
+            publicData.parseCbor(publicdataObj);
+            this.setPublicData(publicData);
+        }
+        /* optionaldata */
+        // TODO:
+
+        /* roleid */
+        CBORObject roleidObj = cbor.get(OcfResourceAttributeKey.ROLE_ID_KEY);
+        if (roleidObj != null) {
+            OcCredRole roleid = new OcCredRole();
+            roleid.parseCbor(roleidObj);
+            this.setRoleid(roleid);
+        }
     }
 
     public void parseOCRepresentation(OCRepresentation rep) {

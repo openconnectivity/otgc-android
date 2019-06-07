@@ -32,6 +32,7 @@ import org.openconnectivity.otgc.view.devicelist.DeviceListActivity;
 import org.openconnectivity.otgc.view.link.LinkedRolesActivity;
 import org.openconnectivity.otgc.view.login.LoginActivity;
 import org.openconnectivity.otgc.view.splash.SplashActivity;
+import org.openconnectivity.otgc.view.trustanchor.TrustAnchorActivity;
 import org.openconnectivity.otgc.view.wlanscan.WlanScanActivity;
 
 import dagger.Module;
@@ -69,4 +70,7 @@ public interface BuildersModule {
 
     @ContributesAndroidInjector
     abstract LinkedRolesActivity bindLinkedRolesActivity();
+
+    @ContributesAndroidInjector
+    abstract TrustAnchorActivity bindTrustAnchorActivity();
 }
