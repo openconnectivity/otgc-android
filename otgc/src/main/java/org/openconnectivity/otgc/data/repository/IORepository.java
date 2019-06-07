@@ -24,6 +24,9 @@ package org.openconnectivity.otgc.data.repository;
 
 import android.content.Context;
 
+import com.upokecenter.cbor.CBORObject;
+
+import org.openconnectivity.otgc.utils.constant.OtgcConstant;
 import org.spongycastle.asn1.pkcs.PrivateKeyInfo;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.openssl.PEMKeyPair;
@@ -31,6 +34,7 @@ import org.spongycastle.openssl.PEMParser;
 import org.spongycastle.openssl.jcajce.JcaPEMKeyConverter;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -130,6 +134,23 @@ public class IORepository {
         });
     }
 
+    public Single<X509Certificate> getFileAsX509Certificate(String path) {
+        return Single.create(emitter -> {
+            try (InputStream inputStream = new FileInputStream(path)) {
+                Security.addProvider(new BouncyCastleProvider());
+                CertificateFactory factory = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME);
+                X509Certificate caCert = (X509Certificate) factory.generateCertificate(inputStream);
+                emitter.onSuccess(caCert);
+            } catch (FileNotFoundException e) {
+                Timber.e("File not found: %s", e.getMessage());
+                emitter.onError(e);
+            } catch (IOException e) {
+                Timber.e("%s file storage failed", path);
+                emitter.onError(e);
+            }
+        });
+    }
+
     public Single<byte[]> getBytesFromFile(String path) {
         return Single.fromCallable(() -> {
             byte[] fileBytes;
@@ -140,6 +161,17 @@ public class IORepository {
             }
 
             return fileBytes;
+        });
+    }
+
+    public Single<CBORObject> getAssetSvrAsCbor(String resource, long device) {
+        return Single.create(emitter -> {
+            try (FileInputStream stream = new FileInputStream(mContext.getFilesDir() +
+                                                    File.separator + OtgcConstant.OTGC_CREDS_DIR +
+                                                    File.separator + resource + "_" + device)) {
+                CBORObject cbor = CBORObject.Read(stream);
+                emitter.onSuccess(cbor);
+            }
         });
     }
 }

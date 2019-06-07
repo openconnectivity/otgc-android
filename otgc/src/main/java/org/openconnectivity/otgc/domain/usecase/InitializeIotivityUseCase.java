@@ -92,7 +92,7 @@ public class InitializeIotivityUseCase {
         // Store root CA as trusted anchor
         X509Certificate caCertificate = ioRepository.getAssetAsX509Certificate(OtgcConstant.ROOT_CERTIFICATE).blockingGet();
         String strCACertificate = certRepository.x509CertificateToPemString(caCertificate).blockingGet();
-        if (OCPki.addMfgTrustAnchor(device, strCACertificate.getBytes()) == -1) {
+        if (OCPki.addTrustAnchor(device, strCACertificate.getBytes()) == -1) {
             throw new Exception("Add trust anchor error");
         }
 
