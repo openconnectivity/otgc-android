@@ -84,11 +84,15 @@ public class ProvisionIdentityCertificateUseCase {
                                     // Get Private Key of Root CA
                                     PrivateKey caPrivateKey = ioRepository.getAssetAsPrivateKey(OtgcConstant.ROOT_PRIVATE_KEY).blockingGet();
 
+                                     // Get Root CA
+                                    X509Certificate rootCa = ioRepository.getAssetAsX509Certificate(OtgcConstant.ROOT_CERTIFICATE).blockingGet();
+                                    String rootCert = certRepository.x509CertificateToPemString(rootCa).blockingGet();
+
                                     // Generate the certificate in PEM format
                                     X509Certificate cert = certRepository.generateIdentityCertificate(device.getDeviceId(), publicKey, caPrivateKey).blockingGet();
                                     String identityCert = certRepository.x509CertificateToPemString(cert).blockingGet();
 
-                                    return cmsRepository.provisionIdentityCertificate(endpoint, device.getDeviceId(), identityCert);
+                                    return cmsRepository.provisionIdentityCertificate(endpoint, device.getDeviceId(), rootCert, identityCert);
                                 })
                                 .andThen(pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
     }
