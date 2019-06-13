@@ -102,6 +102,8 @@ public class EasySetupRepository {
             if (host.startsWith("coaps") && !host.contains(".")) {
                 coapsIpv6Host = host;
                 break;
+            } else if (host.startsWith("coaps")) {
+                coapsIpv6Host = host;
             }
         }
 
