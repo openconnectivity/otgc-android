@@ -88,8 +88,8 @@ public class LinkRolesForServerUseCase {
                                     String rootCert = certRepository.x509CertificateToPemString(rootCa).blockingGet();
 
                                     // Generate the certificate in PEM format
-                                    X509Certificate cert = certRepository.generateIdentityCertificate("*", publicKey, caPrivateKey).blockingGet();
-                                    //X509Certificate cert = certRepository.generateIdentityCertificate(device.getDeviceId(), publicKey, caPrivateKey).blockingGet();
+                                    //X509Certificate cert = certRepository.generateIdentityCertificate("*", publicKey, caPrivateKey).blockingGet();
+                                    X509Certificate cert = certRepository.generateIdentityCertificate(device.getDeviceId(), publicKey, caPrivateKey).blockingGet();
                                     String identityCert = certRepository.x509CertificateToPemString(cert).blockingGet();
 
                                     return cmsRepository.provisionIdentityCertificate(endpoint, device.getDeviceId(), rootCert, identityCert);
