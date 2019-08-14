@@ -109,8 +109,8 @@ public class PairwiseDevicesUseCase {
                                     String rootCert = certRepository.x509CertificateToPemString(rootCa).blockingGet();
 
                                     // Generate the identity certificate in PEM format
-                                    X509Certificate idCert = certRepository.generateIdentityCertificate("*", publicKey, caPrivateKey).blockingGet();
-                                    //X509Certificate idCert = certRepository.generateIdentityCertificate(device.getDeviceId(), publicKey, caPrivateKey).blockingGet();
+                                    //X509Certificate idCert = certRepository.generateIdentityCertificate("*", publicKey, caPrivateKey).blockingGet();
+                                    X509Certificate idCert = certRepository.generateIdentityCertificate(client.getDeviceId(), publicKey, caPrivateKey).blockingGet();
                                     String identityCert = certRepository.x509CertificateToPemString(idCert).blockingGet();
 
                                     return cmsRepository.provisionIdentityCertificate(endpoint, client.getDeviceId(), rootCert, identityCert);
@@ -136,8 +136,8 @@ public class PairwiseDevicesUseCase {
                                     String rootCert = certRepository.x509CertificateToPemString(rootCa).blockingGet();
 
                                     // Generate the certificate in PEM format
-                                    X509Certificate cert = certRepository.generateIdentityCertificate("*", publicKey, caPrivateKey).blockingGet();
-                                    //X509Certificate cert = certRepository.generateIdentityCertificate(device.getDeviceId(), publicKey, caPrivateKey).blockingGet();
+                                    //X509Certificate cert = certRepository.generateIdentityCertificate("*", publicKey, caPrivateKey).blockingGet();
+                                    X509Certificate cert = certRepository.generateIdentityCertificate(server.getDeviceId(), publicKey, caPrivateKey).blockingGet();
                                     String identityCert = certRepository.x509CertificateToPemString(cert).blockingGet();
 
                                     return cmsRepository.provisionIdentityCertificate(endpoint, server.getDeviceId(), rootCert, identityCert);

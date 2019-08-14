@@ -144,7 +144,7 @@ public class IotivityRepository {
                 public int initialize() {
                     Timber.d("In OCMainInitHandler.initilize()");
                     int ret = OCMain.initPlatform("OCF");
-                    ret |= OCMain.addDevice("/oic/d", "oic.d.phone", "OTGC", "ocf.1.0.0", "ocf.res.1.3.0");
+                    ret |= OCMain.addDevice("/oic/d", "oic.d.phone", "OTGC", "ocf.2.4.0", "ocf.res.1.3.0");
                     return ret;
                 }
 
