@@ -22,6 +22,8 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
+import com.upokecenter.cbor.CBORObject;
+
 import org.iotivity.CborEncoder;
 import org.iotivity.OCRep;
 import org.iotivity.OCRepresentation;
@@ -49,6 +51,21 @@ public class OcCredRole {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public void parseCbor(CBORObject cbor) {
+        /* role */
+        CBORObject roleObj = cbor.get(OcfResourceAttributeKey.ROLE_KEY);
+        if (roleObj != null) {
+            String role = roleObj.AsString();
+            this.setRole(role);
+        }
+        /* authority */
+        CBORObject authorityObj = cbor.get(OcfResourceAttributeKey.ROLE_AUTHORITY_KEY);
+        if (authorityObj != null) {
+            String authority = authorityObj.AsString();
+            this.setAuthority(authority);
+        }
     }
 
     public void parseOCRepresentation(OCRepresentation rep) {

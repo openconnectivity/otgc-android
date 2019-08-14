@@ -56,7 +56,12 @@ import org.openconnectivity.otgc.domain.model.devicelist.DeviceType;
 import org.openconnectivity.otgc.utils.constant.OcfResourceUri;
 import org.openconnectivity.otgc.utils.constant.OtgcConstant;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -120,7 +125,19 @@ public class IotivityRepository {
                 Timber.e("Failed to setup Storage Config.");
             }
 
-            OCIntrospection.setIntrospectionFile(0 /* First device */, filesDir + OtgcConstant.INTROSPECTION_CBOR_FILE);
+            File introspectionFile = new File(filesDir + OtgcConstant.INTROSPECTION_CBOR_FILE);
+            int size = (int) introspectionFile.length();
+            byte[] introspectionData = new byte[size];
+            try {
+                BufferedInputStream buf = new BufferedInputStream(new FileInputStream(introspectionFile));
+                buf.read(introspectionData, 0, introspectionData.length);
+                buf.close();
+            } catch (FileNotFoundException e) {
+                emitter.onError(e);
+            } catch (IOException e) {
+                emitter.onError(e);
+            }
+            OCIntrospection.setIntrospectionData(0 /* First device */, introspectionData);
 
             int ret = OCMain.mainInit(new OCMainInitHandler() {
                 @Override

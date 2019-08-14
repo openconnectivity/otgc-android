@@ -23,10 +23,14 @@
 package org.openconnectivity.otgc.view.splash;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.provider.Settings;
 import androidx.annotation.NonNull;
@@ -45,12 +49,17 @@ import org.openconnectivity.otgc.view.devicelist.DeviceListActivity;
 import org.openconnectivity.otgc.utils.di.Injectable;
 import org.openconnectivity.otgc.viewmodel.SplashViewModel;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 
 import javax.inject.Inject;
 
 public class SplashActivity extends AppCompatActivity implements Injectable {
 
+    private static final String PREFERENCE_EULA_ACCEPTED = "eula.accepted";
+    private static final String PREFERENCES_EULA = "eula";
     private static final int PERMISSIONS_REQUEST_CODE = 1;
 
     @Inject
@@ -68,7 +77,8 @@ public class SplashActivity extends AppCompatActivity implements Injectable {
 
         initViewModel();
 
-        mViewModel.checkIfPermissionsAreGranted();
+        showEulaDialog();
+        //mViewModel.checkIfPermissionsAreGranted();
     }
 
     @Override
@@ -125,6 +135,27 @@ public class SplashActivity extends AppCompatActivity implements Injectable {
             mViewModel.checkIfIsAuthenticated();
         } else {
             askForPermissions(missedPermissions);
+        }
+    }
+
+    private void showEulaDialog() {
+        final SharedPreferences preferences = this.getSharedPreferences(PREFERENCES_EULA, Activity.MODE_PRIVATE);
+
+        if (!preferences.getBoolean(PREFERENCE_EULA_ACCEPTED, false)) {
+            final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.eula_title);
+            builder.setCancelable(false);
+            builder.setPositiveButton(R.string.eula_accept_button,
+                    (DialogInterface dialog, int which) -> {
+                        preferences.edit().putBoolean(PREFERENCE_EULA_ACCEPTED, true).commit();
+                        mViewModel.checkIfPermissionsAreGranted();
+                    });
+            builder.setNegativeButton(R.string.eula_dismiss_button,
+                    (DialogInterface dialog, int which) -> this.finish());
+            builder.setMessage(R.string.eula_body);
+            builder.create().show();
+        } else {
+            mViewModel.checkIfPermissionsAreGranted();
         }
     }
 

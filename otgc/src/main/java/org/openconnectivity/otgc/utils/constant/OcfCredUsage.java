@@ -42,15 +42,15 @@ public enum OcfCredUsage {
     }
 
     public static OcfCredUsage valueToEnum(String credusage) {
-        if (credusage.equals(OC_CREDUSAGE_TRUSTCA)){
+        if (credusage.equals(OC_CREDUSAGE_TRUSTCA.getValue())){
             return OC_CREDUSAGE_TRUSTCA;
-        } else if (credusage.equals(OC_CREDUSAGE_CERT)) {
+        } else if (credusage.equals(OC_CREDUSAGE_CERT.getValue())) {
             return OC_CREDUSAGE_CERT;
-        } else if (credusage.equals(OC_CREDUSAGE_ROLECERT)) {
+        } else if (credusage.equals(OC_CREDUSAGE_ROLECERT.getValue())) {
             return OC_CREDUSAGE_ROLECERT;
-        } else if (credusage.equals(OC_CREDUSAGE_MFGTRUSTCA)) {
+        } else if (credusage.equals(OC_CREDUSAGE_MFGTRUSTCA.getValue())) {
             return OC_CREDUSAGE_MFGTRUSTCA;
-        } else if (credusage.equals(OC_CREDUSAGE_MFGCERT)) {
+        } else if (credusage.equals(OC_CREDUSAGE_MFGCERT.getValue())) {
             return OC_CREDUSAGE_MFGCERT;
         } else {
             return OC_CREDUSAGE_UNKNOWN;

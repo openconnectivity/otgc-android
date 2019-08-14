@@ -41,13 +41,13 @@ public enum OcfEncoding {
     }
 
     public static OcfEncoding valueToEnum(String encoding) {
-        if (encoding.equals(OC_ENCODING_BASE64)) {
+        if (encoding.equals(OC_ENCODING_BASE64.getValue())) {
             return OC_ENCODING_BASE64;
-        } else if (encoding.equals(OC_ENCODING_RAW)) {
+        } else if (encoding.equals(OC_ENCODING_RAW.getValue())) {
             return OC_ENCODING_RAW;
-        } else if (encoding.equals(OC_ENCODING_PEM)) {
+        } else if (encoding.equals(OC_ENCODING_PEM.getValue())) {
             return OC_ENCODING_PEM;
-        } else if (encoding.equals(OC_ENCODING_DER)) {
+        } else if (encoding.equals(OC_ENCODING_DER.getValue())) {
             return OC_ENCODING_DER;
         } else {
             return OC_ENCODING_UNKNOWN;

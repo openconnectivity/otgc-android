@@ -38,6 +38,7 @@ import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAceSubject;
 import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAceSubjectType;
 import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAcl;
 import org.openconnectivity.otgc.utils.constant.OcfResourceUri;
+import org.openconnectivity.otgc.utils.constant.OcfWildcard;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -201,7 +202,11 @@ public class AmsRepository {
         List<OcAceResource> resources = new ArrayList<>();
         for (String verticalResource : verticalResources) {
             OcAceResource res = new OcAceResource();
-            res.setHref(verticalResource);
+            if (OcfWildcard.isWildcard(verticalResource)) {
+                res.setWildCard(verticalResource);
+            } else {
+                res.setHref(verticalResource);
+            }
             /*List<String> types = new ArrayList<>();
             types.add("*");
             res.setResourceTypes(types);

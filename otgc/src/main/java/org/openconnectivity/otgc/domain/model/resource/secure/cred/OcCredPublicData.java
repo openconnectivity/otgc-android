@@ -22,6 +22,8 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
+import com.upokecenter.cbor.CBORObject;
+
 import org.iotivity.CborEncoder;
 import org.iotivity.OCRep;
 import org.iotivity.OCRepresentation;
@@ -60,6 +62,28 @@ public class OcCredPublicData {
 
     public void setDerData(byte[] derData) {
         this.derData = derData;
+    }
+
+    public void parseCbor(CBORObject cbor) {
+        /* encoding */
+        CBORObject encodingObj = cbor.get(OcfResourceAttributeKey.ENCODING_KEY);
+        if (encodingObj != null) {
+            String encoding = encodingObj.AsString();
+            this.setEncoding(OcfEncoding.valueToEnum(encoding));
+        }
+        /* data */
+        CBORObject dataObj = cbor.get(OcfResourceAttributeKey.DATA_KEY);
+        if (dataObj != null) {
+            if (encodingObj.AsString().equals(OcfEncoding.OC_ENCODING_DER.getValue())) {
+                /* data DER format */
+                byte[] dataDer = dataObj.GetByteString();
+                this.setDerData(dataDer);
+            } else if (encodingObj.AsString().equals(OcfEncoding.OC_ENCODING_PEM.getValue())) {
+                /* data PEM format */
+                String dataPem = dataObj.AsString();
+                this.setPemData(dataPem);
+            }
+        }
     }
 
     public void parseOCRepresentation(OCRepresentation rep) {
