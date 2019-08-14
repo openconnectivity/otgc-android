@@ -47,6 +47,7 @@ import org.openconnectivity.otgc.utils.view.EmptyRecyclerView;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.viewmodel.TrustAnchorViewModel;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
+import org.spongycastle.util.encoders.Base64;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -166,9 +167,22 @@ public class TrustAnchorActivity extends AppCompatActivity implements Injectable
                 // set title
                 alertDialogBuilder.setTitle("Trust Anchor - Information");
                 // set dialog message
-                alertDialogBuilder
-                        .setMessage(showX509CertificateInformation(mAdapter.mDataset.get(position).getPublicData().getDerData()))
-                        .setCancelable(false)
+				
+				if (mAdapter.mDataset.get(position).getPublicData().getDerData() != null) {
+					alertDialogBuilder
+                        .setMessage(showX509CertificateInformation(mAdapter.mDataset.get(position).getPublicData().getDerData()));
+				} else if (mAdapter.mDataset.get(position).getPublicData().getPemData() != null) {
+					String pem = mAdapter.mDataset.get(position).getPublicData().getPemData();
+					String base64 = pem.replaceAll("\\s", "")
+										.replaceAll("\\r\\n", "")
+										.replace("-----BEGINCERTIFICATE-----", "")
+										.replace("-----ENDCERTIFICATE-----", "");
+					byte[] der = Base64.decode(base64.getBytes());
+					alertDialogBuilder
+                        .setMessage(showX509CertificateInformation(der));
+				}
+                
+                alertDialogBuilder.setCancelable(false)
                         .setPositiveButton("OK", (dialog, id) -> dialog.dismiss());
 
                 // create alert dialog
