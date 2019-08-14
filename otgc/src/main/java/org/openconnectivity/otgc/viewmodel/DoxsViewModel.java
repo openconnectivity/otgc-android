@@ -303,7 +303,7 @@ public class DoxsViewModel extends BaseViewModel {
         );
     }
 
-    public void pairwiseDevices(Device server, Device client) {
+    public void pairwiseDevices(Device client, Device server) {
         mDisposables.add(mPairwiseDevicesUseCase.execute(client, server)
                 .subscribeOn(mSchedulersFacade.io())
                 .observeOn(mSchedulersFacade.ui())
@@ -315,7 +315,7 @@ public class DoxsViewModel extends BaseViewModel {
                 ));
     }
 
-    public void unlinkDevices(Device server, Device client) {
+    public void unlinkDevices(Device client, Device server) {
         mDisposables.add(mUnlinkDevicesUseCase.execute(client, server)
                 .subscribeOn(mSchedulersFacade.io())
                 .observeOn(mSchedulersFacade.ui())
