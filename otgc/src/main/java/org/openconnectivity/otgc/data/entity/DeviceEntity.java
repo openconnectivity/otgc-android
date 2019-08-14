@@ -63,9 +63,8 @@ public class DeviceEntity {
         mHosts = new ArrayList<>();
 
         while(endpoints != null) {
-            String[] endpointStr = new String[1];
-            OCEndpointUtil.toString(endpoints, endpointStr);
-            mHosts.add(endpointStr[0]);
+            String endpointStr = OCEndpointUtil.toString(endpoints);
+            mHosts.add(endpointStr);
 
             endpoints = endpoints.getNext();
         }

@@ -59,17 +59,16 @@ public class Device implements Comparable<Device>, Serializable {
         this.permits = permits;
 
         while(endpoints != null) {
-            String[] endpointStr = new String[1];
-            OCEndpointUtil.toString(endpoints, endpointStr);
+            String endpointStr = OCEndpointUtil.toString(endpoints);
 
-            if (endpointStr[0].startsWith("coaps://") && endpointStr[0].contains(".")) {
-                ipv4SecureHost = endpointStr[0];
-            } else if (endpointStr[0].startsWith("coaps://")) {
-                ipv6SecureHost = endpointStr[0];
-            } else if (endpointStr[0].startsWith("coap://") && endpointStr[0].contains(".")) {
-                ipv4Host = endpointStr[0];
-            } else if (endpointStr[0].startsWith("coap://")){
-                ipv6Host = endpointStr[0];
+            if (endpointStr.startsWith("coaps://") && endpointStr.contains(".")) {
+                ipv4SecureHost = endpointStr;
+            } else if (endpointStr.startsWith("coaps://")) {
+                ipv6SecureHost = endpointStr;
+            } else if (endpointStr.startsWith("coap://") && endpointStr.contains(".")) {
+                ipv4Host = endpointStr;
+            } else if (endpointStr.startsWith("coap://")){
+                ipv6Host = endpointStr;
             }
 
             endpoints = endpoints.getNext();
@@ -206,13 +205,38 @@ public class Device implements Comparable<Device>, Serializable {
 
     @Override
     public int compareTo(Device device) {
-        if (this.getDeviceInfo().getName().compareTo(device.getDeviceInfo().getName()) == 0) {
-            return this.getDeviceId().compareTo(device.getDeviceId());
-        } else if (this.getDeviceInfo().getName().isEmpty()) {
-            return "Unnamed".compareTo(device.getDeviceInfo().getName());
-        } else if (device.getDeviceInfo().getName().isEmpty()) {
-            return this.getDeviceInfo().getName().compareTo("Unnamed");
+        int res;
+
+        if (this.getDeviceType() ==  device.getDeviceType()) {     // Same types
+            int nameComparision;
+            if (this.getDeviceInfo().getName() == null && device.getDeviceInfo().getName() == null) {
+                nameComparision = 0;
+            } else if (this.getDeviceInfo().getName() == null) {
+                nameComparision = -1;
+            } else if (device.getDeviceInfo().getName() == null) {
+                nameComparision = 1;
+            } else {
+                nameComparision = this.getDeviceInfo().getName().compareTo(device.getDeviceInfo().getName());
+            }
+
+            int uuidComparision = this.getDeviceId().compareTo(device.getDeviceId());
+
+            // order by name or order by UUID if the names are equals
+            res = (nameComparision == 0) ? uuidComparision : nameComparision;
+
+        } else {    // Different types
+
+            if (this.getDeviceType() == DeviceType.UNOWNED) {    // Is device1 unowned?
+                res = -1;
+            } else if (device.getDeviceType() == DeviceType.UNOWNED) {     // Is device2 unowned?
+                res = 1;
+            } else {
+                int permissionComparision = this.getPermits() - device.getPermits();
+                res = -1 * permissionComparision;
+            }
+
         }
-        return this.getDeviceInfo().getName().compareTo(device.getDeviceInfo().getName());
+
+        return res;
     }
 }
