@@ -46,4 +46,14 @@
         <item>@string/client_drawer_platform_man_support_url</item>
         <item>@string/client_drawer_platform_man_system_time</item>
     </string-array>
+    <string-array name="pref_iotivity_discovery_entries_array">
+        <item>Link-Local scope</item>
+        <item>Site-Local scope</item>
+        <item>Realm-Local scope</item>
+    </string-array>
+    <string-array name="pref_iotivity_discovery_entry_values_array">
+        <item>Link-Local</item>
+        <item>Site-Local</item>
+        <item>Realm-Local</item>
+    </string-array>
 </resources>

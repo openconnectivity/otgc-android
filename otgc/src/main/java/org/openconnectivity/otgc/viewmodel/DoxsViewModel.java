@@ -26,6 +26,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import org.openconnectivity.otgc.domain.usecase.GetDeviceDatabaseUseCase;
+import org.openconnectivity.otgc.domain.usecase.accesscontrol.CreateAclUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.CheckConnectionUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceInfoUseCase;
 import org.openconnectivity.otgc.domain.model.exception.NetworkDisconnectedException;
@@ -52,6 +53,7 @@ import org.openconnectivity.otgc.domain.model.WifiNetwork;
 import org.openconnectivity.otgc.domain.usecase.wifi.RegisterScanResultsReceiverUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.ScanWiFiNetworksUseCase;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -63,6 +65,7 @@ public class DoxsViewModel extends BaseViewModel {
     private final ScanDevicesUseCase mScanDevicesUseCase;
     private final GetOTMethodsUseCase mGetOTMethodsUseCase;
     private final OnboardUseCase mOnboardUseCase;
+    private final CreateAclUseCase mCreateAclUseCase;
     private final OffboardUseCase mOffboardUseCase;
     private final GetDeviceInfoUseCase mGetDeviceInfoUseCase;
     private final SetDeviceNameUseCase mSetDeviceNameUseCase;
@@ -92,6 +95,7 @@ public class DoxsViewModel extends BaseViewModel {
             ScanDevicesUseCase scanDevicesUseCase,
             GetOTMethodsUseCase getOTMethodsUseCase,
             OnboardUseCase onboardUseCase,
+            CreateAclUseCase createAclUseCase,
             OffboardUseCase offboardUseCase,
             GetDeviceInfoUseCase getDeviceInfoUseCase,
             SetDeviceNameUseCase setDeviceNameUseCase,
@@ -107,6 +111,7 @@ public class DoxsViewModel extends BaseViewModel {
         this.mScanDevicesUseCase = scanDevicesUseCase;
         this.mGetOTMethodsUseCase = getOTMethodsUseCase;
         this.mOnboardUseCase = onboardUseCase;
+        this.mCreateAclUseCase = createAclUseCase;
         this.mOffboardUseCase = offboardUseCase;
         this.mGetDeviceInfoUseCase = getDeviceInfoUseCase;
         this.mSetDeviceNameUseCase = setDeviceNameUseCase;
@@ -228,7 +233,13 @@ public class DoxsViewModel extends BaseViewModel {
                             .subscribeOn(mSchedulersFacade.io())
                             .observeOn(mSchedulersFacade.ui())
                             .subscribe(
-                                    ownedDevice -> otmResponse.setValue(Response.success(ownedDevice)),
+                                    ownedDevice -> mCreateAclUseCase.execute(ownedDevice, true, Arrays.asList("*"), 31)
+                                                    .subscribeOn(mSchedulersFacade.io())
+                                                    .observeOn(mSchedulersFacade.ui())
+                                                    .subscribe(
+                                                            () -> otmResponse.setValue(Response.success(ownedDevice)),
+                                                            throwable -> otmResponse.setValue(Response.error(throwable))
+                                                    ),
                                     throwable -> {
                                         if (throwable instanceof NetworkDisconnectedException) {
                                             mError.setValue(new ViewModelError(CommonError.NETWORK_DISCONNECTED, null));

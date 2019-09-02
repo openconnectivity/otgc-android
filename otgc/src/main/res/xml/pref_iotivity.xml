@@ -32,4 +32,11 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/pref_iotivity_title_discovery_timeout" />
+    <ListPreference
+        android:key="discovery_scope"
+        android:title="@string/pref_iotivity_title_discovery_scope"
+        android:defaultValue="@string/pref_iotivity_default_discovery_scope"
+        android:entries="@array/pref_iotivity_discovery_entries_array"
+        android:entryValues="@array/pref_iotivity_discovery_entry_values_array"
+        android:summary="Select IPv6 scope" />
 </PreferenceScreen>
