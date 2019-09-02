@@ -247,6 +247,8 @@
     <string name="pref_iotivity_header" translatable="false">IoTivity</string>
     <string name="pref_iotivity_title_discovery_timeout">Discovery timeout (in seconds)</string>
     <string name="pref_iotivity_default_discovery_timeout" translatable="false">5</string>
+    <string name="pref_iotivity_title_discovery_scope">Multicast IPv6 scope</string>
+    <string name="pref_iotivity_default_discovery_scope">Link-Local</string>
     <string name="pref_help_header">Help</string>
     <string name="pref_help_app_info">App info</string>
 

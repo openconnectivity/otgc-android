@@ -32,7 +32,7 @@ import javax.inject.Singleton;
 @Singleton
 public class AndroidPreferencesRepository implements PreferencesRepository {
     private static final String DISCOVERY_TIMEOUT_DEFAULT = "5";
-    //private static final int DISCOVERY_TIMEOUT_DEFAULT = 5;
+    private static final String DISCOVERY_SCOPE_DEFAULT = "Link-Local";
 
     private final SharedPreferences mPreferences;
 
@@ -70,5 +70,10 @@ public class AndroidPreferencesRepository implements PreferencesRepository {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString("Piid", piid);
         editor.apply();
+    }
+
+    @Override
+    public String getDiscoveryScope() {
+        return mPreferences.getString("discovery_scope", DISCOVERY_SCOPE_DEFAULT);
     }
 }

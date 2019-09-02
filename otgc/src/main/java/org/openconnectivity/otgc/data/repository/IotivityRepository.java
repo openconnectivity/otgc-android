@@ -43,11 +43,13 @@ import org.iotivity.OCStorage;
 import org.iotivity.OCUuid;
 import org.iotivity.OCUuidUtil;
 
+import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.resource.virtual.d.OcDeviceInfo;
 import org.openconnectivity.otgc.domain.model.resource.virtual.p.OcPlatformInfo;
 import org.openconnectivity.otgc.domain.model.resource.virtual.res.OcEndpoint;
 import org.openconnectivity.otgc.domain.model.resource.virtual.res.OcRes;
 import org.openconnectivity.otgc.domain.model.resource.virtual.res.OcResource;
+import org.openconnectivity.otgc.utils.constant.DiscoveryScope;
 import org.openconnectivity.otgc.utils.constant.OcfResourceType;
 import org.openconnectivity.otgc.data.entity.DeviceEntity;
 import org.openconnectivity.otgc.data.persistence.dao.DeviceDao;
@@ -202,7 +204,15 @@ public class IotivityRepository {
                 unownedDevices.add(new Device(DeviceType.UNOWNED, deviceId, new OcDeviceInfo(), endpoints, Device.NOTHING_PERMITS));
             };
 
-            int ret = OCObt.discoverUnownedDevices(handler);
+            int ret;
+            String scope = preferencesRepository.getDiscoveryScope();
+            if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_SITE)) {
+                ret = OCObt.discoverUnownedDevicesSiteLocalIPv6(handler);
+            } else if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_REALM)) {
+                ret = OCObt.discoverUnownedDevicesRealmLocalIPv6(handler);
+            } else {
+                ret = OCObt.discoverUnownedDevices(handler);
+            }
             if (ret < 0) {
                 String error = "ERROR discovering un-owned Devices.";
                 Timber.e(error);
@@ -232,7 +242,15 @@ public class IotivityRepository {
                 ownedDevices.add(new Device(DeviceType.OWNED_BY_SELF, deviceId, new OcDeviceInfo(), endpoints, Device.FULL_PERMITS));
             };
 
-            int ret = OCObt.discoverOwnedDevices(handler);
+            int ret;
+            String scope = preferencesRepository.getDiscoveryScope();
+            if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_SITE)) {
+                ret = OCObt.discoverOwnedDevicesSiteLocalIPv6(handler);
+            } else if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_REALM)) {
+                ret = OCObt.discoverOwnedDevicesRealmLocalIPv6(handler);
+            } else {
+                ret = OCObt.discoverOwnedDevices(handler);
+            }
             if (ret < 0) {
                 String error = "ERROR discovering owned Devices.";
                 Timber.e(error);
@@ -273,8 +291,19 @@ public class IotivityRepository {
                 }
             };
 
-            if (!OCMain.doIPMulticast(OcfResourceUri.RES_URI, null, handler)) {
-                emitter.onError(new Exception("Error scanning hosts"));
+            String scope = preferencesRepository.getDiscoveryScope();
+            if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_SITE)) {
+                if (!OCMain.doRealmLocalIPv6Multicast(OcfResourceUri.RES_URI, null, handler)) {
+                    emitter.onError(new Exception("Error scanning hosts"));
+                }
+            } else if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_REALM)) {
+                if (!OCMain.doSiteLocalIPv6Multicast(OcfResourceUri.RES_URI, null, handler)) {
+                    emitter.onError(new Exception("Error scanning hosts"));
+                }
+            } else {
+                if (!OCMain.doIPMulticast(OcfResourceUri.RES_URI, null, handler)) {
+                    emitter.onError(new Exception("Error scanning hosts"));
+                }
             }
 
         }).timeout(getDiscoveryTimeout(), TimeUnit.SECONDS)
