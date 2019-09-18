@@ -195,6 +195,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference("discovery_timeout"));
+            bindPreferenceSummaryToValue(findPreference("requests_delay"));
         }
 
         @Override

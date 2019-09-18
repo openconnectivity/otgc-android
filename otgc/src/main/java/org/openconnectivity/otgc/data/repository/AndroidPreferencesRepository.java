@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 @Singleton
 public class AndroidPreferencesRepository implements PreferencesRepository {
     private static final String DISCOVERY_TIMEOUT_DEFAULT = "5";
+    private static final String REQUESTS_DELAY_DEFAULT = "1";
     private static final String DISCOVERY_SCOPE_DEFAULT = "Link-Local";
 
     private final SharedPreferences mPreferences;
@@ -46,6 +47,12 @@ public class AndroidPreferencesRepository implements PreferencesRepository {
         //return mPreferences.getInt("discovery_timeout", DISCOVERY_TIMEOUT_DEFAULT);
         return Integer.parseInt(
                 mPreferences.getString("discovery_timeout", DISCOVERY_TIMEOUT_DEFAULT));
+    }
+
+    @Override
+    public int getRequestsDelay() {
+        return Integer.parseInt(
+                mPreferences.getString("requests_delay", REQUESTS_DELAY_DEFAULT));
     }
 
     @Override

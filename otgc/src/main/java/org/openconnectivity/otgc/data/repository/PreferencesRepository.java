@@ -25,6 +25,7 @@ package org.openconnectivity.otgc.data.repository;
 public interface PreferencesRepository {
 
     int getDiscoveryTimeout();
+    int getRequestsDelay();
 
     boolean isFirstRun();
     void setFirstRun(boolean firstRun);
