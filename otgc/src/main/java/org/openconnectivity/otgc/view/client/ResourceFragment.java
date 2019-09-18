@@ -185,8 +185,10 @@ public class ResourceFragment extends Fragment implements Injectable {
                 errorId = R.string.cannot_access_to_db;
                 break;
             case OBSERVE:
+                errorId = R.string.cannot_observe_resource;
                 break;
             case CANCEL_OBSERVE:
+                errorId = R.string.cannot_cancel_observe_resource;
                 break;
         }
 
