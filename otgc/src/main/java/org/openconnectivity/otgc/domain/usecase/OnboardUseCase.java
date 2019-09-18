@@ -22,9 +22,11 @@
 package org.openconnectivity.otgc.domain.usecase;
 
 import org.openconnectivity.otgc.data.repository.DoxsRepository;
+import org.openconnectivity.otgc.data.repository.PreferencesRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.data.repository.IotivityRepository;
 import org.openconnectivity.otgc.utils.constant.OcfOxmType;
+import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 
 import java.util.concurrent.TimeUnit;
 
@@ -33,14 +35,23 @@ import javax.inject.Inject;
 import io.reactivex.Single;
 
 public class OnboardUseCase {
+    /* Repositories */
     private final IotivityRepository iotivityRepository;
     private final DoxsRepository doxsRepository;
+    private final PreferencesRepository preferencesRepository;
+    /* Scheduler */
+    private final SchedulersFacade schedulersFacade;
 
     @Inject
     public OnboardUseCase(IotivityRepository iotivityRepository,
-                          DoxsRepository doxsRepository) {
+                          DoxsRepository doxsRepository,
+                          PreferencesRepository preferencesRepository,
+                          SchedulersFacade schedulersFacade) {
         this.iotivityRepository = iotivityRepository;
         this.doxsRepository = doxsRepository;
+        this.preferencesRepository = preferencesRepository;
+
+        this.schedulersFacade = schedulersFacade;
     }
 
     public Single<Device> execute(Device deviceToOnboard, OcfOxmType oxm) {
@@ -50,7 +61,7 @@ public class OnboardUseCase {
                 .singleOrError();
 
         return doxsRepository.doOwnershipTransfer(deviceToOnboard.getDeviceId(), oxm)
-                .delay(1, TimeUnit.SECONDS)
+                .delay(preferencesRepository.getRequestsDelay(), TimeUnit.SECONDS, schedulersFacade.ui())
                 .andThen(getUpdatedOcSecureResource)
                 .onErrorResumeNext(error -> getUpdatedOcSecureResource
                         .retry(2)

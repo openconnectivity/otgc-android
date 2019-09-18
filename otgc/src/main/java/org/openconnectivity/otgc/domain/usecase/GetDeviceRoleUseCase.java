@@ -22,12 +22,14 @@
 
 package org.openconnectivity.otgc.domain.usecase;
 
+import org.openconnectivity.otgc.data.repository.PreferencesRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.domain.model.resource.virtual.res.OcResource;
 import org.openconnectivity.otgc.utils.constant.OcfResourceType;
 import org.openconnectivity.otgc.data.repository.IotivityRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.DeviceRole;
 import org.openconnectivity.otgc.utils.constant.OcfResourceUri;
+import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 
 import java.util.concurrent.TimeUnit;
 
@@ -36,11 +38,20 @@ import javax.inject.Inject;
 import io.reactivex.Single;
 
 public class GetDeviceRoleUseCase {
+    /* Repositories */
     private final IotivityRepository iotivityRepository;
+    private final PreferencesRepository preferencesRepository;
+    /* Scheduler */
+    private final SchedulersFacade schedulersFacade;
 
     @Inject
-    public GetDeviceRoleUseCase(IotivityRepository iotivityRepository) {
+    public GetDeviceRoleUseCase(IotivityRepository iotivityRepository,
+                                PreferencesRepository preferencesRepository,
+                                SchedulersFacade schedulersFacade) {
         this.iotivityRepository = iotivityRepository;
+        this.preferencesRepository = preferencesRepository;
+
+        this.schedulersFacade = schedulersFacade;
     }
 
     public Single<DeviceRole> execute(Device device) {
@@ -53,7 +64,7 @@ public class GetDeviceRoleUseCase {
                                     for (OcResource resource : ocRes.getResourceList()) {
                                         for (String resourceType : resource.getResourceTypes()) {
                                             if (OcfResourceType.isVerticalResourceType(resourceType)
-                                                && !resource.getHref().equals(OcfResourceUri.DEVICE_INFO_URI)) {
+                                                    && !resource.getHref().equals(OcfResourceUri.DEVICE_INFO_URI)) {
                                                 deviceRole = DeviceRole.SERVER;
                                                 break;
                                             }
@@ -63,6 +74,7 @@ public class GetDeviceRoleUseCase {
                                             break;
                                     }
                                     return deviceRole;
-                                }));
+                                }))
+                .delay(preferencesRepository.getRequestsDelay(), TimeUnit.SECONDS, schedulersFacade.ui());
     }
 }

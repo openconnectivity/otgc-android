@@ -23,23 +23,37 @@
 package org.openconnectivity.otgc.domain.usecase;
 
 import org.openconnectivity.otgc.data.repository.IotivityRepository;
+import org.openconnectivity.otgc.data.repository.PreferencesRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.domain.model.resource.virtual.d.OcDeviceInfo;
+import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
+
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
 import io.reactivex.Single;
 
 public class GetDeviceInfoUseCase {
+    /* Repositories */
     private final IotivityRepository iotivityRepository;
+    private final PreferencesRepository preferencesRepository;
+    /* Scheduler */
+    private final SchedulersFacade schedulersFacade;
 
     @Inject
-    public GetDeviceInfoUseCase(IotivityRepository iotivityRepository) {
+    public GetDeviceInfoUseCase(IotivityRepository iotivityRepository,
+                                PreferencesRepository preferencesRepository,
+                                SchedulersFacade schedulersFacade) {
         this.iotivityRepository = iotivityRepository;
+        this.preferencesRepository = preferencesRepository;
+
+        this.schedulersFacade = schedulersFacade;
     }
 
     public Single<OcDeviceInfo> execute(Device device) {
         return iotivityRepository.getNonSecureEndpoint(device)
-                .flatMap(iotivityRepository::getDeviceInfo);
+                .flatMap(iotivityRepository::getDeviceInfo)
+                .delay(preferencesRepository.getRequestsDelay(), TimeUnit.SECONDS, schedulersFacade.ui());
     }
 }
