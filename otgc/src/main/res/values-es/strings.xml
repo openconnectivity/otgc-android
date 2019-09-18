@@ -109,6 +109,8 @@
     <string name="client_fragment_get_request_failed">La petición GET falló</string>
     <string name="client_fragment_post_request_failed">La petición POST falló</string>
     <string name="client_fragment_put_request_failed">La petición PUT falló</string>
+    <string name="cannot_observe_resource">No se puede observar el recurso</string>
+    <string name="cannot_cancel_observe_resource">No se puede cancelar la observación del recurso</string>
     <string name="access_control_title">Control de Acceso</string>
     <string name="access_control_error_retrieve">Error al recuperar la ACL</string>
     <string name="access_control_ace_permission_hint">Permisos</string>
@@ -167,4 +169,8 @@
     <string name="linked_roles_dialog_add_role_no_option">Cancelar</string>
     <string name="linked_roles_dialog_role_id_hint">ID de rol</string>
     <string name="linked_roles_dialog_role_authority_hint">Autoridad de rol</string>
+    <string name="trust_anchor_title">Certificados de confianza</string>
+    <string name="pref_iotivity_header">Descubrimiento</string>
+    <string name="pref_iotivity_title_discovery_scope">Ámbito multicast IPv6</string>
+    <string name="pref_iotivity_title_requests_delay">Retardo en las peticiones (en segundos)</string>
 </resources>

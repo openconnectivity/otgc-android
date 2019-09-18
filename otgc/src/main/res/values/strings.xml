@@ -231,6 +231,8 @@
     <string name="client_fragment_get_request_failed">GET request failed</string>
     <string name="client_fragment_post_request_failed">POST request failed</string>
     <string name="client_fragment_put_request_failed">PUT request failed</string>
+    <string name="cannot_observe_resource">Cannot observe resource</string>
+    <string name="cannot_cancel_observe_resource">Cannot cancel the observation of the resource</string>
 
     <string name="linked_roles_title">Linked roles</string>
     <string name="linked_roles_error_retrieve">Error retrieving linked roles</string>
@@ -244,17 +246,19 @@
 
     <!-- Strings related to Settings -->
     <string name="settings_title">Settings</string>
-    <string name="pref_iotivity_header" translatable="false">IoTivity</string>
+    <string name="pref_iotivity_header">Discovery</string>
     <string name="pref_iotivity_title_discovery_timeout">Discovery timeout (in seconds)</string>
     <string name="pref_iotivity_default_discovery_timeout" translatable="false">5</string>
+    <string name="pref_iotivity_title_requests_delay">Requests delay (in seconds)</string>
+    <string name="pref_iotivity_default_requests_delay" translatable="false">1</string>
     <string name="pref_iotivity_title_discovery_scope">Multicast IPv6 scope</string>
-    <string name="pref_iotivity_default_discovery_scope">Link-Local</string>
+    <string name="pref_iotivity_default_discovery_scope" translatable="false">Link-Local</string>
     <string name="pref_help_header">Help</string>
     <string name="pref_help_app_info">App info</string>
 
     <string name="about_app_name" translatable="false">Onboarding Tool and Generic Client</string>
     <string name="about_app_version">Version %1$s</string>
-    <string name="about_copyright" translatable="false">&#169; 2018 Open Connectivity Foundation.</string>
+    <string name="about_copyright" translatable="false">&#169; 2019 Open Connectivity Foundation.</string>
     <string name="about_all_rights_reserved">All rights reserved.</string>
     <string name="about_powered_by">Powered by:</string>
     <string name="about_dekra_tc" translatable="false">DEKRA Testing and Certification, S.A.U.</string>
