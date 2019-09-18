@@ -270,22 +270,45 @@ public class IotivityRepository {
                     OcRes res = new OcRes();
                     res.parseOCRepresentation(response.getPayload());
 
-                    OcResource resource = res.getResourceList().get(0);
-                    String deviceId = resource.getAnchor().replace("ocf://", "");
-                    List<String> endpoints = new ArrayList<>();
-                    for (OcEndpoint ep : resource.getEndpoints()) {
-                        endpoints.add(ep.getEndpoint());
-                    }
+                    if (!res.getResourceList().isEmpty()) {
+                        OcResource resource = res.getResourceList().get(0);
+                        String deviceId = resource.getAnchor().replace("ocf://", "");
+                        List<String> endpoints = new ArrayList<>();
+                        for (OcEndpoint ep : resource.getEndpoints()) {
+                            endpoints.add(ep.getEndpoint());
+                        }
 
-                    DeviceEntity device = deviceDao.findById(deviceId).blockingGet();
-                    if (device == null) {
-                        deviceDao.insert(new DeviceEntity(deviceId, "", endpoints, DeviceType.OWNED_BY_OTHER, Device.NOTHING_PERMITS));
-                        allDevices.add(new Device(DeviceType.OWNED_BY_OTHER, deviceId, new OcDeviceInfo(), endpoints, Device.NOTHING_PERMITS));
-                    } else {
-                        deviceDao.insert(new DeviceEntity(deviceId, device.getName(), endpoints, device.getType(), device.getPermits()));
-                        allDevices.add(new Device(device.getType(), deviceId, new OcDeviceInfo(), endpoints, device.getPermits()));
-                    }
+                        DeviceEntity device = deviceDao.findById(deviceId).blockingGet();
+                        if (device == null) {
+                            deviceDao.insert(new DeviceEntity(deviceId, "", endpoints, DeviceType.OWNED_BY_OTHER, Device.NOTHING_PERMITS));
+                            allDevices.add(new Device(DeviceType.OWNED_BY_OTHER, deviceId, new OcDeviceInfo(), endpoints, Device.NOTHING_PERMITS));
+                        } else {
+                            boolean isUnowned = false;
+                            for (Device d : unownedDevices) {
+                                if (d.getDeviceId().equals(deviceId)) {
+                                    isUnowned = true;
+                                    break;
+                                }
+                            }
 
+                            boolean isOwned = false;
+                            for (Device d : ownedDevices) {
+                                if (d.getDeviceId().equals(deviceId)) {
+                                    isOwned = true;
+                                    break;
+                                }
+                            }
+
+                            if (!isUnowned && !isOwned) {
+                                DeviceType type = device.getType() == DeviceType.UNOWNED || device.getType() == DeviceType.OWNED_BY_SELF
+                                        ? DeviceType.OWNED_BY_OTHER
+                                        : device.getType();
+
+                                deviceDao.insert(new DeviceEntity(deviceId, device.getName(), endpoints, type, device.getPermits()));
+                                allDevices.add(new Device(type, deviceId, new OcDeviceInfo(), endpoints, device.getPermits()));
+                            }
+                        }
+                    }
                 }
             };
 
@@ -311,26 +334,6 @@ public class IotivityRepository {
     public Observable<Device> scanOwnedByOtherDevices() {
         return scanHosts()
                 .andThen(Observable.fromIterable(allDevices))
-                .filter(device -> {
-                    boolean isNotUnowned = true;
-                    for (Device d : unownedDevices) {
-                        if (d.getDeviceId().equals(device.getDeviceId())) {
-                            isNotUnowned = false;
-                        }
-                    }
-
-                    return isNotUnowned;
-                })
-                .filter(device -> {
-                    boolean isNotOwned = true;
-                    for (Device d : ownedDevices) {
-                        if (d.getDeviceId().equals(device.getDeviceId())) {
-                            isNotOwned = false;
-                        }
-                    }
-
-                    return isNotOwned;
-                })
                 .filter(device -> !device.getDeviceId().equals(getDeviceId().blockingGet()));
     }
 
