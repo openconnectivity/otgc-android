@@ -36,12 +36,14 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
 import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
+import org.openconnectivity.otgc.utils.constant.OcfWildcard;
 import org.openconnectivity.otgc.viewmodel.AceViewModel;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.utils.di.Injectable;
@@ -71,6 +73,11 @@ public class AceActivity extends AppCompatActivity implements Injectable {
     @BindView(R.id.checkbox_ace_permission_update) CheckBox mCheckBoxUpdate;
     @BindView(R.id.checkbox_ace_permission_delete) CheckBox mCheckBoxDelete;
     @BindView(R.id.checkbox_ace_permission_notify) CheckBox mCheckBoxNotify;
+    @BindView(R.id.checkbox_ace_wc) CheckBox mCheckBoxWc;
+    @BindView(R.id.checkbox_ace_wc_all) CheckBox mCheckBoxWcAll;
+    @BindView(R.id.checkbox_ace_wc_all_secure) CheckBox mCheckBoxWcAllSecure;
+    @BindView(R.id.checkbox_ace_wc_all_public) CheckBox mCheckBoxWcAllPublic;
+    @BindView(R.id.linear_layout_wc) LinearLayout mWildcardLayout;
     @BindView(R.id.radio_subject_conn_type_auth) RadioButton mConnTypeAuthCrypt;
     @BindView(R.id.list_resources) ListView mResources;
 
@@ -105,19 +112,60 @@ public class AceActivity extends AppCompatActivity implements Injectable {
         }
     }
 
+    @OnClick(R.id.checkbox_ace_wc)
+    public void onWildcardCheckBoxClicked(CheckBox wildcard) {
+        if (wildcard.isChecked()) {
+            mWildcardLayout.setVisibility(View.VISIBLE);
+            mResources.setVisibility(View.GONE);
+        } else {
+            mResources.setVisibility(View.VISIBLE);
+            mWildcardLayout.setVisibility(View.GONE);
+        }
+    }
+
+    @OnClick({R.id.checkbox_ace_wc_all, R.id.checkbox_ace_wc_all_public, R.id.checkbox_ace_wc_all_secure})
+    public void onWilcardValueClicked(CheckBox wildcard) {
+        switch (wildcard.getId()) {
+            case R.id.checkbox_ace_wc_all:
+                mCheckBoxWcAllSecure.setChecked(false);
+                mCheckBoxWcAllPublic.setChecked(false);
+                break;
+            case R.id.checkbox_ace_wc_all_secure:
+                mCheckBoxWcAll.setChecked(false);
+                mCheckBoxWcAllPublic.setChecked(false);
+                break;
+            case R.id.checkbox_ace_wc_all_public:
+                mCheckBoxWcAll.setChecked(false);
+                mCheckBoxWcAllSecure.setChecked(false);
+                break;
+        }
+    }
+
     @OnClick(R.id.floating_button_ace_save)
     protected void onSavePressed() {
         if (mDevice != null) {
             SparseBooleanArray checked = mResources.getCheckedItemPositions();
             List<String> resources = new ArrayList<>();
-            for (int i = 0; i < checked.size(); i++) {
-                // Item position in adapter
-                int position = checked.keyAt(i);
-                // Add sport if it is checked i.e.) == TRUE!
-                if (checked.valueAt(i)) {
-                    resources.add(mAdapter.getItem(position));
+
+            if (mCheckBoxWc.isChecked()) {
+                if (mCheckBoxWcAll.isChecked()) {
+                    resources.add(OcfWildcard.OC_WILDCARD_ALL_NCR);
+                } else if (mCheckBoxWcAllSecure.isChecked()) {
+                    resources.add(OcfWildcard.OC_WILDCARD_ALL_SECURE_NCR);
+                } else if (mCheckBoxWcAllPublic.isChecked()) {
+                    resources.add(OcfWildcard.OC_WILDCARD_ALL_NON_SECURE_NCR);
+                }
+            } else {
+                for (int i = 0; i < checked.size(); i++) {
+                    // Item position in adapter
+                    int position = checked.keyAt(i);
+                    // Add sport if it is checked i.e.) == TRUE!
+                    if (checked.valueAt(i)) {
+                        resources.add(mAdapter.getItem(position));
+                    }
                 }
             }
+
             if (resources.size() == 0) {
                 Toast.makeText(this, R.string.access_control_ace_error_select_resource, Toast.LENGTH_SHORT).show();
             } else {
