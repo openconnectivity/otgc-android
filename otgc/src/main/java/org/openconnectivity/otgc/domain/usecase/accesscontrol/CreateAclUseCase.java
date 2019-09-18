@@ -23,10 +23,7 @@
 package org.openconnectivity.otgc.domain.usecase.accesscontrol;
 
 import org.openconnectivity.otgc.data.repository.AmsRepository;
-import org.openconnectivity.otgc.data.repository.IotivityRepository;
-import org.openconnectivity.otgc.data.repository.PstatRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
-import org.openconnectivity.otgc.utils.constant.OcfDosType;
 
 import java.util.List;
 
@@ -35,17 +32,11 @@ import javax.inject.Inject;
 import io.reactivex.Completable;
 
 public class CreateAclUseCase {
-    private final IotivityRepository iotivityRepository;
     private final AmsRepository amsRepository;
-    private final PstatRepository pstatRepository;
 
     @Inject
-    public CreateAclUseCase(IotivityRepository iotivityRepository,
-                            AmsRepository amsRepository,
-                            PstatRepository pstatRepository) {
-        this.iotivityRepository = iotivityRepository;
+    public CreateAclUseCase(AmsRepository amsRepository) {
         this.amsRepository = amsRepository;
-        this.pstatRepository = pstatRepository;
     }
 
     /**
@@ -56,27 +47,14 @@ public class CreateAclUseCase {
      */
 
     public Completable execute(Device targetDevice, String subjectId, List<String> verticalResources, int permission) {
-        return iotivityRepository.getSecureEndpoint(targetDevice)
-                .flatMapCompletable(endpoint ->
-                        pstatRepository.changeDeviceStatus(endpoint, targetDevice.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(amsRepository.provisionUuidAcl(endpoint, targetDevice.getDeviceId(), subjectId, verticalResources, permission))
-                                .andThen(pstatRepository.changeDeviceStatus(endpoint, targetDevice.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
-
+        return amsRepository.provisionUuidAce(targetDevice.getDeviceId(), subjectId, verticalResources, permission);
     }
 
     public Completable execute(Device targetDevice, String roleId, String roleAuthority, List<String> verticalResources, int permission) {
-        return iotivityRepository.getSecureEndpoint(targetDevice)
-                .flatMapCompletable(endpoint ->
-                        pstatRepository.changeDeviceStatus(endpoint, targetDevice.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(amsRepository.provisionRoleAcl(endpoint, targetDevice.getDeviceId(), roleId, roleAuthority, verticalResources, permission))
-                                .andThen(pstatRepository.changeDeviceStatus(endpoint, targetDevice.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
+        return amsRepository.provisionRoleAce(targetDevice.getDeviceId(), roleId, roleAuthority, verticalResources, permission);
     }
 
     public Completable execute(Device targetDevice, boolean isAuthCrypt, List<String> verticalResources, int permission) {
-        return iotivityRepository.getSecureEndpoint(targetDevice)
-                .flatMapCompletable(endpoint ->
-                        pstatRepository.changeDeviceStatus(endpoint, targetDevice.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(amsRepository.provisionConntypeAcl(endpoint, targetDevice.getDeviceId(), isAuthCrypt, verticalResources, permission))
-                                .andThen(pstatRepository.changeDeviceStatus(endpoint, targetDevice.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
+        return amsRepository.provisionConntypeAce(targetDevice.getDeviceId(), isAuthCrypt, verticalResources, permission);
     }
 }

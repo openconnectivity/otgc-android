@@ -43,7 +43,6 @@ import org.iotivity.OCStorage;
 import org.iotivity.OCUuid;
 import org.iotivity.OCUuidUtil;
 
-import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.resource.virtual.d.OcDeviceInfo;
 import org.openconnectivity.otgc.domain.model.resource.virtual.p.OcPlatformInfo;
 import org.openconnectivity.otgc.domain.model.resource.virtual.res.OcEndpoint;
@@ -63,7 +62,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -394,8 +392,7 @@ public class IotivityRepository {
 
     public Single<OcDeviceInfo> getDeviceInfo(String endpoint) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -418,8 +415,7 @@ public class IotivityRepository {
 
     public Single<OcPlatformInfo> getPlatformInfo(String endpoint) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -483,8 +479,7 @@ public class IotivityRepository {
 
     public Single<OcRes> findResources(String host) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -512,8 +507,7 @@ public class IotivityRepository {
 
     public Single<OcRes> findResource(String host, String resourceType) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -543,8 +537,7 @@ public class IotivityRepository {
 
     public Single<OCRepresentation> get(String host, String uri, String deviceId) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
             OCEndpointUtil.setDi(ep, uuid);
 
@@ -565,8 +558,7 @@ public class IotivityRepository {
 
     public Completable post(String host, String uri, String deviceId, OCRepresentation rep, Object valueArray) {
         return Completable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
             OCEndpointUtil.setDi(ep, uuid);
 
@@ -631,5 +623,6 @@ public class IotivityRepository {
     public void close() {
         Timber.d("Calling OCMain.mainShutdown()");
         OCMain.mainShutdown();
+        OCObt.shutdown();
     }
 }
