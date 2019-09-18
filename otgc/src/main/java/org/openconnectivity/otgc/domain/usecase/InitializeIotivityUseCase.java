@@ -30,6 +30,7 @@ import org.openconnectivity.otgc.data.repository.IORepository;
 import org.openconnectivity.otgc.data.repository.IotivityRepository;
 import org.openconnectivity.otgc.data.repository.PreferencesRepository;
 import org.openconnectivity.otgc.utils.constant.OtgcConstant;
+import org.openconnectivity.otgc.utils.constant.OtgcMode;
 import org.spongycastle.asn1.ASN1Sequence;
 import org.spongycastle.asn1.pkcs.PrivateKeyInfo;
 import org.spongycastle.asn1.sec.ECPrivateKey;
@@ -54,9 +55,9 @@ public class InitializeIotivityUseCase {
 
     @Inject
     public InitializeIotivityUseCase(IotivityRepository iotivityRepository,
-                               CertRepository certRepository,
-                               IORepository ioRepository,
-                               PreferencesRepository settingRepository) {
+                                     CertRepository certRepository,
+                                     IORepository ioRepository,
+                                     PreferencesRepository settingRepository) {
         this.iotivityRepository = iotivityRepository;
         this.certRepository = certRepository;
         this.ioRepository = ioRepository;
@@ -71,10 +72,11 @@ public class InitializeIotivityUseCase {
             completable = completable
                     .andThen(ioRepository.copyFromAssetToFiles(OtgcConstant.INTROSPECTION_CBOR_FILE))
                     .andThen(initOic)
-                    .andThen(Completable.fromAction(() -> settingRepository.setFirstRun(false)));
+                    .andThen(Completable.fromAction(() -> settingRepository.setFirstRun(false)))
+                    .andThen(Completable.fromAction(() -> settingRepository.setMode(OtgcMode.OBT)));
         } else {
             completable = completable
-                            .andThen(initOic);
+                    .andThen(initOic);
         }
 
         return completable;

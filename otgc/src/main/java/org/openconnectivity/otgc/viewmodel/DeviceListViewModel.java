@@ -28,6 +28,9 @@ import androidx.lifecycle.ViewModel;
 import org.iotivity.OCRandomPinHandler;
 import org.openconnectivity.otgc.domain.model.exception.NetworkDisconnectedException;
 import org.openconnectivity.otgc.domain.usecase.CloseIotivityUseCase;
+import org.openconnectivity.otgc.domain.usecase.GetModeUseCase;
+import org.openconnectivity.otgc.domain.usecase.SetClientModeUseCase;
+import org.openconnectivity.otgc.domain.usecase.SetObtModeUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.CheckConnectionUseCase;
 import org.openconnectivity.otgc.domain.usecase.InitializeIotivityUseCase;
 import org.openconnectivity.otgc.domain.usecase.login.LogoutUseCase;
@@ -38,9 +41,8 @@ import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceIdUseCase;
 import org.openconnectivity.otgc.domain.usecase.SetDisplayPinListenerUseCase;
 import org.openconnectivity.otgc.domain.usecase.SetRandomPinListenerUseCase;
-import org.openconnectivity.otgc.domain.usecase.SetRfnopModeUseCase;
-import org.openconnectivity.otgc.domain.usecase.SetRfotmModeUseCase;
 import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
+import org.openconnectivity.otgc.utils.viewmodel.ViewModelErrorType;
 
 import javax.inject.Inject;
 
@@ -49,12 +51,13 @@ import io.reactivex.disposables.CompositeDisposable;
 public class DeviceListViewModel extends ViewModel {
 
     private final InitializeIotivityUseCase mInitializeIotivityUseCase;
+    private final GetModeUseCase mGetModeUseCase;
     private final CloseIotivityUseCase closeIotivityUseCase;
     private final LogoutUseCase logoutUseCase;
     private final SetRandomPinListenerUseCase setRandomPinListenerUseCase;
     private final SetDisplayPinListenerUseCase setDisplayPinListenerUseCase;
-    private final SetRfotmModeUseCase setRfotmModeUseCase;
-    private final SetRfnopModeUseCase setRfnopModeUseCase;
+    private final SetClientModeUseCase setClientModeUseCase;
+    private final SetObtModeUseCase setObtModeUseCase;
     private final CheckConnectionUseCase mCheckConnectionUseCase;
     private final GetDeviceIdUseCase mGetDeviceIdUseCase;
 
@@ -65,8 +68,9 @@ public class DeviceListViewModel extends ViewModel {
     private final MutableLiveData<ViewModelError> mError = new MutableLiveData<>();
 
     private final MutableLiveData<Boolean> mInit = new MutableLiveData<>();
-    private final MutableLiveData<Response<Void>> rfotmResponse = new MutableLiveData<>();
-    private final MutableLiveData<Response<Void>> rfnopResponse = new MutableLiveData<>();
+    private final MutableLiveData<String> mMode = new MutableLiveData<>();
+    private final MutableLiveData<Response<Void>> clientModeResponse = new MutableLiveData<>();
+    private final MutableLiveData<Response<Void>> obtModeResponse = new MutableLiveData<>();
     private final MutableLiveData<Response<Void>> logoutResponse = new MutableLiveData<>();
     private final MutableLiveData<Response<Boolean>> connectedResponse = new MutableLiveData<>();
     private final MutableLiveData<String> mDeviceId = new MutableLiveData<>();
@@ -74,22 +78,24 @@ public class DeviceListViewModel extends ViewModel {
     @Inject
     DeviceListViewModel(
             InitializeIotivityUseCase initializeIotivityUseCase,
+            GetModeUseCase getModeUseCase,
             CloseIotivityUseCase closeIotivityUseCase,
             LogoutUseCase logoutUseCase,
             SetRandomPinListenerUseCase setRandomPinListenerUseCase,
             SetDisplayPinListenerUseCase setDisplayPinListenerUseCase,
-            SetRfotmModeUseCase setRfotmModeUseCase,
-            SetRfnopModeUseCase setRfnopModeUseCase,
+            SetClientModeUseCase setClientModeUseCase,
+            SetObtModeUseCase setObtModeUseCase,
             CheckConnectionUseCase checkConnectionUseCase,
             GetDeviceIdUseCase getDeviceIdUseCase,
             SchedulersFacade schedulersFacade) {
         this.mInitializeIotivityUseCase = initializeIotivityUseCase;
+        this.mGetModeUseCase = getModeUseCase;
         this.closeIotivityUseCase = closeIotivityUseCase;
         this.logoutUseCase = logoutUseCase;
         this.setRandomPinListenerUseCase = setRandomPinListenerUseCase;
         this.setDisplayPinListenerUseCase = setDisplayPinListenerUseCase;
-        this.setRfotmModeUseCase = setRfotmModeUseCase;
-        this.setRfnopModeUseCase = setRfnopModeUseCase;
+        this.setClientModeUseCase = setClientModeUseCase;
+        this.setObtModeUseCase = setObtModeUseCase;
         this.mCheckConnectionUseCase = checkConnectionUseCase;
         this.mGetDeviceIdUseCase = getDeviceIdUseCase;
 
@@ -109,12 +115,16 @@ public class DeviceListViewModel extends ViewModel {
         return mInit;
     }
 
-    public LiveData<Response<Void>> getRfotmResponse() {
-        return rfotmResponse;
+    public LiveData<String> getMode() {
+        return mMode;
     }
 
-    public LiveData<Response<Void>> getRfnopResponse() {
-        return rfnopResponse;
+    public LiveData<Response<Void>> getClientModeResponse() {
+        return clientModeResponse;
+    }
+
+    public LiveData<Response<Void>> getObtModeResponse() {
+        return obtModeResponse;
     }
 
     public LiveData<Response<Void>> getLogoutResponse() {
@@ -134,7 +144,16 @@ public class DeviceListViewModel extends ViewModel {
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(
-                        () -> mInit.setValue(true),
+                        () ->  {
+                            mInit.setValue(true);
+                            disposables.add(mGetModeUseCase.execute()
+                                    .subscribeOn(schedulersFacade.io())
+                                    .observeOn(schedulersFacade.ui())
+                                    .subscribe(
+                                        mode -> mMode.setValue(mode),
+                                        throwable -> mError.setValue(new ViewModelError(Error.GET_MODE, throwable.getMessage()))
+                                    ));
+                        },
                         throwable -> {
                             // mError.setValue()
                             mInit.setValue(false);
@@ -164,38 +183,43 @@ public class DeviceListViewModel extends ViewModel {
         setDisplayPinListenerUseCase.execute(displayPinListener);
     }
 
-    public void setRfotmMode() {
-        disposables.add(mCheckConnectionUseCase.executeCompletable()
-                .andThen(setRfotmModeUseCase.execute())
+    public void setClientMode() {
+        disposables.add(setClientModeUseCase.execute()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
-                .doOnSubscribe(__ -> rfotmResponse.setValue(Response.loading()))
+                .doOnSubscribe(__ -> clientModeResponse.setValue(Response.loading()))
                 .subscribe(
-                        () -> rfotmResponse.setValue(Response.success(null)),
-                        throwable -> {
-                            if (throwable instanceof NetworkDisconnectedException) {
-                                mError.setValue(new ViewModelError(CommonError.NETWORK_DISCONNECTED, null));
-                            } else {
-                                rfotmResponse.setValue(Response.error(throwable));
-                            }
-                        }
+                        () -> {
+                            clientModeResponse.setValue(Response.success(null));
+                            disposables.add(mGetModeUseCase.execute()
+                                    .subscribeOn(schedulersFacade.io())
+                                    .observeOn(schedulersFacade.ui())
+                                    .subscribe(
+                                            mode -> mMode.setValue(mode),
+                                            throwable -> mError.setValue(new ViewModelError(Error.GET_MODE, throwable.getMessage()))
+                                    ));
+                        },
+                        throwable -> clientModeResponse.setValue(Response.error(throwable))
                 ));
     }
 
-    public void setRfnopMode() {
-        disposables.add(setRfnopModeUseCase.execute()
+    public void setObtMode() {
+        disposables.add(setObtModeUseCase.execute()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
-                .doOnSubscribe(__ -> rfnopResponse.setValue(Response.loading()))
+                .doOnSubscribe(__ -> obtModeResponse.setValue(Response.loading()))
                 .subscribe(
-                        () -> rfnopResponse.setValue(Response.success(null)),
-                        throwable -> {
-                            if (throwable instanceof NetworkDisconnectedException) {
-                                mError.setValue(new ViewModelError(CommonError.NETWORK_DISCONNECTED, null));
-                            } else {
-                                rfnopResponse.setValue(Response.error(throwable));
-                            }
-                        }
+                        () -> {
+                            obtModeResponse.setValue(Response.success(null));
+                            disposables.add(mGetModeUseCase.execute()
+                                    .subscribeOn(schedulersFacade.io())
+                                    .observeOn(schedulersFacade.ui())
+                                    .subscribe(
+                                            mode -> mMode.setValue(mode),
+                                            throwable -> mError.setValue(new ViewModelError(Error.GET_MODE, throwable.getMessage()))
+                                    ));
+                        },
+                        throwable -> obtModeResponse.setValue(Response.error(throwable))
                 ));
     }
 
@@ -223,5 +247,9 @@ public class DeviceListViewModel extends ViewModel {
                         mDeviceId::setValue,
                         throwable -> {}
                 ));
+    }
+
+    public enum Error implements ViewModelErrorType {
+        GET_MODE
     }
 }

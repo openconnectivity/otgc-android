@@ -26,6 +26,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import org.openconnectivity.otgc.utils.constant.OtgcMode;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -76,6 +78,18 @@ public class AndroidPreferencesRepository implements PreferencesRepository {
     public void setPiid(String piid) {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString("Piid", piid);
+        editor.apply();
+    }
+
+    @Override
+    public String getMode() {
+        return mPreferences.getString("Mode", OtgcMode.OBT);
+    }
+
+    @Override
+    public void setMode(String mode) {
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString("Mode", mode);
         editor.apply();
     }
 

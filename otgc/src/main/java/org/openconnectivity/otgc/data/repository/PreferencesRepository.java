@@ -31,6 +31,8 @@ public interface PreferencesRepository {
     void setFirstRun(boolean firstRun);
     void setPiid(String piid);
     String getPiid();
+    String getMode();
+    void setMode(String mode);
 
     String getDiscoveryScope();
 }

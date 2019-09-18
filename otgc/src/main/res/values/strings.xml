@@ -114,8 +114,9 @@
     <string name="devices_dialog_set_device_name_title">Insert device name</string>
     <string name="devices_dialog_set_device_name_yes_option">Confirm</string>
     <string name="devices_dialog_set_device_name_no_option">Cancel</string>
-    <string name="devices_menu_item_rfotm" translatable="false">RFOTM</string>
-    <string name="devices_menu_item_rfnop" translatable="false">RFNOP</string>
+    <string name="devices_menu_item_reset" translatable="false">Reset</string>
+    <string name="devices_menu_item_client_mode">Client mode</string>
+    <string name="devices_menu_item_obt_mode">OBT mode</string>
     <string name="devices_menu_item_trust_anchor">Trust Anchor Management</string>
     <string name="devices_menu_item_logs">Show log</string>
     <string name="devices_menu_item_settings">Settings</string>
@@ -145,12 +146,16 @@
     <string name="devices_dialog_onboarding_otm_message">Transferring ownership&#8230;</string>
     <string name="devices_dialog_offboarding_title" translatable="false">Offboarding</string>
     <string name="devices_dialog_offboarding_reset_message">Resetting device&#8230;</string>
+    <string name="devices_dialog_confirm_reset_device_title">Reset device</string>
+    <string name="devices_dialog_confirm_reset_device_message">Are you sure you want to delete all linked devices?</string>
+    <string name="devices_dialog_confirm_reset_device_yes_option" translatable="false">OK</string>
+    <string name="devices_dialog_confirm_reset_device_no_option" translatable="false">Cancel</string>
     <string name="devices_error_scanning_devices">Error scanning devices</string>
     <string name="devices_error_pairing_devices">Error pairing devices</string>
     <string name="devices_error_transferring_ownership">Ownership transfer failed</string>
     <string name="devices_error_offboard_failed">Offboard failed</string>
-    <string name="devices_error_rfotm_failed">Error setting RFOTM mode</string>
-    <string name="devices_error_rfnop_failed">Error setting RFNOP mode</string>
+    <string name="devices_error_client_mode_failed">Error setting client mode</string>
+    <string name="devices_error_obt_mode_failed">Error setting OBT mode</string>
 
     <string name="access_control_title">Access Control</string>
     <string name="access_control_error_retrieve">Error retrieving ACL</string>
@@ -164,6 +169,10 @@
     <string name="access_control_cardview_permission_update" translatable="false">U</string>
     <string name="access_control_cardview_permission_delete" translatable="false">D</string>
     <string name="access_control_cardview_permission_notify" translatable="false">N</string>
+    <string name="access_control_cardview_wc" translatable="false">Wildcard</string>
+    <string name="access_control_cardview_wc_all">All resources</string>
+    <string name="access_control_cardview_wc_all_secure">All secure resources</string>
+    <string name="access_control_cardview_wc_all_public">All public resources</string>
     <string name="access_control_ace_title">Create Access Policy</string>
     <string name="access_control_ace_subject_radio_title">Subject type</string>
     <string name="access_control_ace_subject_radio_uuid" translatable="false">UUID</string>

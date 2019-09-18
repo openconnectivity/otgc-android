@@ -34,16 +34,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import org.iotivity.OCRandomPinHandler;
+import org.openconnectivity.otgc.utils.constant.OtgcMode;
 import org.openconnectivity.otgc.utils.handler.OCSetRandomPinHandler;
 import org.openconnectivity.otgc.utils.view.RecyclerWithSwipeFragment;
 import org.openconnectivity.otgc.utils.viewmodel.CommonError;
 import org.openconnectivity.otgc.utils.viewmodel.Response;
 import org.openconnectivity.otgc.utils.viewmodel.Status;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
+import org.openconnectivity.otgc.view.link.LinkedRolesActivity;
 import org.openconnectivity.otgc.view.trustanchor.TrustAnchorActivity;
 import org.openconnectivity.otgc.viewmodel.DeviceListViewModel;
 import org.openconnectivity.otgc.viewmodel.SharedViewModel;
@@ -72,6 +75,9 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
 
     @BindView(R.id.progress_bar) ProgressBar mProgressBar;
     @BindView(R.id.toolbar) Toolbar mToolbar;
+
+    private MenuItem obtMenuItem;
+    private MenuItem clientMenuItem;
 
     private DeviceListViewModel mViewModel;
 
@@ -164,17 +170,36 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_devices, menu);
 
+        for (int i=0; i<menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            String title = item.getTitle().toString().toLowerCase();
+            if (title.contains(OtgcMode.CLIENT.toLowerCase())) {
+                clientMenuItem = item;
+            } else if (title.contains(OtgcMode.OBT.toLowerCase())) {
+                obtMenuItem = item;
+            }
+        }
+
+        mViewModel.initializeIotivityStack();
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_item_rfotm:
-                onRfotmPressed();
+            case R.id.menu_item_reset:
+                if (!obtMenuItem.isVisible()) {
+                    showConfirmSetMode(OtgcMode.OBT);
+                } else if (!clientMenuItem.isVisible()) {
+                    showConfirmSetMode(OtgcMode.CLIENT);
+                }
                 break;
-            case R.id.menu_item_rfnop:
-                onRfnopPressed();
+            case R.id.menu_item_obt_mode:
+                showConfirmSetMode(OtgcMode.OBT);
+                break;
+            case R.id.menu_item_client_mode:
+                showConfirmSetMode(OtgcMode.CLIENT);
                 break;
             case R.id.menu_item_trust_anchor:
                 onTrustAnchorManagement();
@@ -202,6 +227,8 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
 
     @OnClick(R.id.floating_button_device_scan)
     protected void onScanPressed() {
+        mViewModel.retrieveDeviceId();
+
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.devices_fragment);
         if (fragment instanceof RecyclerWithSwipeFragment) {
             ((RecyclerWithSwipeFragment) fragment).onSwipeRefresh();
@@ -222,16 +249,15 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
             if (success != null && success) {
                 mViewModel.setRandomPinListener(randomPinCallbackListener);
                 mViewModel.setDisplayPinListener(displayPinListener);
-                mViewModel.retrieveDeviceId();
+                retrieveId();
             }
         });
-        mViewModel.getRfotmResponse().observe(this, this::processRfotmResponse);
-        mViewModel.getRfnopResponse().observe(this, this::processRfnopResponse);
+        mViewModel.getMode().observe(this, this::processModeResponse);
+        mViewModel.getClientModeResponse().observe(this, this::processClientModeResponse);
+        mViewModel.getObtModeResponse().observe(this, this::processObtModeResponse);
         mViewModel.getLogoutResponse().observe(this, this::processLogoutResponse);
         mViewModel.getConnectedResponse().observe(this, this::processConnectedResponse);
         mViewModel.getDeviceId().observe(this, mToolbar::setSubtitle);
-
-        mViewModel.initializeIotivityStack();
 
         SharedViewModel sharedViewModel = ViewModelProviders.of(this, mViewModelFactory).get(SharedViewModel.class);
         sharedViewModel.getLoading().observe(this, this::processing);
@@ -241,6 +267,10 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
         });
     }
 
+    public void retrieveId() {
+        mViewModel.retrieveDeviceId();
+    }
+
     private void handleError(ViewModelError error) {
         if (error.getType().equals(CommonError.NETWORK_DISCONNECTED)) {
             processing(false);
@@ -248,34 +278,46 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
         }
     }
 
-    private void processRfotmResponse(Response<Void> response) {
+    private void processModeResponse(String mode) {
+        if (mode.equals(OtgcMode.OBT)) {
+            obtMenuItem.setVisible(false);
+            clientMenuItem.setVisible(true);
+        } else if (mode.equals(OtgcMode.CLIENT)) {
+            obtMenuItem.setVisible(true);
+            clientMenuItem.setVisible(false);
+        }
+    }
+
+    private void processClientModeResponse(Response<Void> response) {
         switch (response.status) {
             case LOADING:
                 mProgressBar.setVisibility(View.VISIBLE);
                 break;
             case SUCCESS:
                 mProgressBar.setVisibility(View.GONE);
-                mViewModel.retrieveDeviceId();
+                retrieveId();
                 onScanPressed();
                 break;
             default:
                 mProgressBar.setVisibility(View.GONE);
-                Toast.makeText(this, R.string.devices_error_rfotm_failed, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.devices_error_client_mode_failed, Toast.LENGTH_SHORT).show();
                 break;
         }
     }
 
-    private void processRfnopResponse(Response<Void> response) {
+    private void processObtModeResponse(Response<Void> response) {
         switch (response.status) {
             case LOADING:
                 mProgressBar.setVisibility(View.VISIBLE);
                 break;
             case SUCCESS:
                 mProgressBar.setVisibility(View.GONE);
+                retrieveId();
+                onScanPressed();
                 break;
             default:
                 mProgressBar.setVisibility(View.GONE);
-                Toast.makeText(this, R.string.devices_error_rfnop_failed, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.devices_error_obt_mode_failed, Toast.LENGTH_SHORT).show();
                 break;
         }
     }
@@ -308,14 +350,6 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
         mViewModel.logout();
     }
 
-    private void onRfotmPressed() {
-        mViewModel.setRfotmMode();
-    }
-
-    private void onRfnopPressed() {
-        mViewModel.setRfnopMode();
-    }
-
     private void onTrustAnchorManagement() {
         Intent trustAnchorIntent = new Intent().setClass(DeviceListActivity.this, TrustAnchorActivity.class);
         startActivity(trustAnchorIntent);
@@ -340,5 +374,21 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
                     ).create();
             mConnectToWifiDialog.show();
         }
+    }
+
+    private void showConfirmSetMode(String mode) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(DeviceListActivity.this, R.style.AppTheme));
+        alertDialog.setTitle(this.getString(R.string.devices_dialog_confirm_reset_device_title));
+
+        alertDialog.setMessage(R.string.devices_dialog_confirm_reset_device_message);
+        alertDialog.setPositiveButton(this.getString(R.string.devices_dialog_confirm_reset_device_yes_option), (dialog, which) -> {
+            dialog.dismiss();
+            if (mode.equals(OtgcMode.OBT)) {
+                mViewModel.setObtMode();
+            } else if (mode.equals(OtgcMode.CLIENT)) {
+                mViewModel.setClientMode();
+            }
+        });
+        alertDialog.setNegativeButton(this.getString(R.string.devices_dialog_confirm_reset_device_no_option), (dialog, which) -> dialog.dismiss()).show();
     }
 }

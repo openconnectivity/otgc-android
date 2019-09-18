@@ -58,6 +58,9 @@
     <string name="devices_dialog_insert_randompin_yes_option">Confirmar</string>
     <string name="devices_dialog_insert_randompin_no_option">Cancelar</string>
     <string name="devices_dialog_show_randompin_yes_option">Cerrar</string>
+    <string name="devices_menu_item_client_mode">Modo cliente</string>
+    <string name="devices_menu_item_obt_mode">Modo OBT</string>
+    <string name="devices_menu_item_trust_anchor">Certificados de confianza</string>
     <string name="devices_menu_item_logs">Mostrar trazas</string>
     <string name="devices_menu_item_settings">Ajustes</string>
     <string name="devices_cardview_unnamed_device">Sin nombre</string>
@@ -71,11 +74,13 @@
     <string name="devices_dialog_wifi_negative_button_text">Cancelar</string>
     <string name="devices_dialog_onboarding_otm_message">El dispositivo está siendo añadido a su red OCF. Por favor, espere…</string>
     <string name="devices_dialog_offboarding_reset_message">El dispositivo está siendo eliminado de su red OCF. Por favor, espere…</string>
+    <string name="devices_dialog_confirm_reset_device_title">Reiniciar el dispositivo</string>
+    <string name="devices_dialog_confirm_reset_device_message">¿Está seguro de que desea eliminar todos los dispositivos vinculados?</string>
     <string name="devices_cardview_menu_item_offboard">Desvincular</string>
     <string name="devices_error_scanning_devices">Error buscando dispositivos</string>
     <string name="devices_error_transferring_ownership">La transferencia de propiedad falló</string>
-    <string name="devices_error_rfotm_failed">Error al cambiar a modo RFOTM</string>
-    <string name="devices_error_rfnop_failed">Error al cambiar a modo RFNOP</string>
+    <string name="devices_error_client_mode_failed">Error al cambiar a modo Cliente</string>
+    <string name="devices_error_obt_mode_failed">Error al cambiar a modo OBT</string>
     <string name="client_title_no_name">Sin nombre</string>
     <string name="client_menu_item_info">Información</string>
     <string name="devices_error_offboard_failed">La desvinculación del dispositivo falló</string>
@@ -135,6 +140,9 @@
     <string name="access_control_ace_subject_conn_type_radio_title">Tipo de conexión</string>
     <string name="access_control_ace_subject_conn_type_radio_anon">Anónima</string>
     <string name="access_control_ace_subject_conn_type_radio_auth">Autenticada</string>
+    <string name="access_control_cardview_wc_all">Todos los recursos</string>
+    <string name="access_control_cardview_wc_all_secure">Todos los recursos seguros</string>
+    <string name="access_control_cardview_wc_all_public">Todos los recursos públicos</string>
     <string name="access_control_ace_resources_all">Todos los recursos</string>
     <string name="access_control_cardview_subject_connection_type">Tipo de conexión: %1$s</string>
     <string name="access_control_cardview_subject_role">ID de rol: %1$s, Autoridad de rol: %2$s</string>
