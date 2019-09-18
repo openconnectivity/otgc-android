@@ -26,11 +26,13 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import org.openconnectivity.otgc.domain.usecase.GetDeviceDatabaseUseCase;
+import org.openconnectivity.otgc.domain.usecase.GetModeUseCase;
 import org.openconnectivity.otgc.domain.usecase.accesscontrol.CreateAclUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.CheckConnectionUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceInfoUseCase;
 import org.openconnectivity.otgc.domain.model.exception.NetworkDisconnectedException;
 import org.openconnectivity.otgc.utils.constant.OcfOxmType;
+import org.openconnectivity.otgc.utils.constant.OtgcMode;
 import org.openconnectivity.otgc.utils.viewmodel.BaseViewModel;
 import org.openconnectivity.otgc.utils.viewmodel.CommonError;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
@@ -62,6 +64,7 @@ import javax.inject.Inject;
 public class DoxsViewModel extends BaseViewModel {
 
     private final CheckConnectionUseCase mCheckConnectionUseCase;
+    private final GetModeUseCase mGetModeUseCase;
     private final ScanDevicesUseCase mScanDevicesUseCase;
     private final GetOTMethodsUseCase mGetOTMethodsUseCase;
     private final OnboardUseCase mOnboardUseCase;
@@ -92,6 +95,7 @@ public class DoxsViewModel extends BaseViewModel {
     @Inject
     DoxsViewModel(RegisterScanResultsReceiverUseCase registerScanResultsReceiverUseCase,
             CheckConnectionUseCase checkConnectionUseCase,
+            GetModeUseCase getModeUseCase,
             ScanDevicesUseCase scanDevicesUseCase,
             GetOTMethodsUseCase getOTMethodsUseCase,
             OnboardUseCase onboardUseCase,
@@ -108,6 +112,7 @@ public class DoxsViewModel extends BaseViewModel {
             GetDeviceDatabaseUseCase getDeviceDatabaseUseCase,
             SchedulersFacade schedulersFacade) {
         this.mCheckConnectionUseCase = checkConnectionUseCase;
+        this.mGetModeUseCase = getModeUseCase;
         this.mScanDevicesUseCase = scanDevicesUseCase;
         this.mGetOTMethodsUseCase = getOTMethodsUseCase;
         this.mOnboardUseCase = onboardUseCase;
@@ -165,18 +170,15 @@ public class DoxsViewModel extends BaseViewModel {
     public void onScanRequested() {
         mDisposables.add(mCheckConnectionUseCase.executeCompletable()
                 .andThen(mScanDevicesUseCase.execute()
-                    .delay(1, TimeUnit.SECONDS)
                     .map(device -> {
                         device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device).blockingGet());
                         return device;
                     })
-                    .delay(1, TimeUnit.SECONDS)
                     .map(device -> {
                         device.setDeviceRole(
                                 mGetDeviceRoleUseCase.execute(device).blockingGet());
                         return device;
                     })
-                    .delay(1, TimeUnit.SECONDS)
                     .map(device -> {
                         if (device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
                             String storedDeviceName = mGetDeviceNameUseCase.execute(device.getDeviceId()).blockingGet();
@@ -206,76 +208,102 @@ public class DoxsViewModel extends BaseViewModel {
     }
 
     public void doOwnershipTransfer(Device deviceToOnboard) {
-        mDisposables.add(mCheckConnectionUseCase.executeCompletable()
-                .andThen(mGetOTMethodsUseCase.execute(deviceToOnboard)
-                        .map(oxms -> {
-                            if (oxms.size() > 1) {
-                                return mOxmListener.onGetOxM(oxms);
-                            } else {
-                                return oxms.get(0);
-                            }
-                        }).filter(oxm -> oxm != null))
-                .subscribeOn(mSchedulersFacade.io())
-                .observeOn(mSchedulersFacade.ui())
-                .doOnSubscribe(__ -> otmResponse.setValue(Response.loading()))
-                .subscribe(
-                        oxm -> mOnboardUseCase.execute(deviceToOnboard, oxm)
-                                .delay(1, TimeUnit.SECONDS)
-                                .map(device -> {
-                                    device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device).blockingGet());
-                                    return device;
-                                })
-                                .delay(1, TimeUnit.SECONDS)
-                                .map(device -> {
-                                    device.setDeviceRole( mGetDeviceRoleUseCase.execute(device).blockingGet());
-                                    return device;
-                                })
-                            .subscribeOn(mSchedulersFacade.io())
-                            .observeOn(mSchedulersFacade.ui())
-                            .subscribe(
-                                    ownedDevice -> mCreateAclUseCase.execute(ownedDevice, true, Arrays.asList("*"), 31)
-                                                    .subscribeOn(mSchedulersFacade.io())
-                                                    .observeOn(mSchedulersFacade.ui())
-                                                    .subscribe(
-                                                            () -> otmResponse.setValue(Response.success(ownedDevice)),
-                                                            throwable -> otmResponse.setValue(Response.error(throwable))
-                                                    ),
-                                    throwable -> {
-                                        if (throwable instanceof NetworkDisconnectedException) {
-                                            mError.setValue(new ViewModelError(CommonError.NETWORK_DISCONNECTED, null));
-                                        } else {
-                                            otmResponse.setValue(Response.error(throwable));
-                                        }
+        mDisposables.add(mGetModeUseCase.execute()
+                        .subscribeOn(mSchedulersFacade.io())
+                        .observeOn(mSchedulersFacade.ui())
+                        .doOnSubscribe(__ -> mProcessing.setValue(true))
+                        .doFinally(() -> mProcessing.setValue(false))
+                        .subscribe(
+                                mode -> {
+                                    if (mode.equals(OtgcMode.OBT)) {
+                                        mCheckConnectionUseCase.executeCompletable()
+                                                .andThen(mGetOTMethodsUseCase.execute(deviceToOnboard)
+                                                        .map(oxms -> {
+                                                            if (oxms.size() > 1) {
+                                                                return mOxmListener.onGetOxM(oxms);
+                                                            } else {
+                                                                return oxms.get(0);
+                                                            }
+                                                        }).filter(oxm -> oxm != null))
+                                                .subscribeOn(mSchedulersFacade.io())
+                                                .observeOn(mSchedulersFacade.ui())
+                                                .doOnSubscribe(__ -> otmResponse.setValue(Response.loading()))
+                                                .subscribe(
+                                                        oxm -> mOnboardUseCase.execute(deviceToOnboard, oxm)
+                                                                .map(device -> {
+                                                                    device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device).blockingGet());
+                                                                    return device;
+                                                                })
+                                                                .map(device -> {
+                                                                    device.setDeviceRole( mGetDeviceRoleUseCase.execute(device).blockingGet());
+                                                                    return device;
+                                                                })
+                                                                .subscribeOn(mSchedulersFacade.io())
+                                                                .observeOn(mSchedulersFacade.ui())
+                                                                .subscribe(
+                                                                        ownedDevice -> mCreateAclUseCase.execute(ownedDevice, true, Arrays.asList("*"), 31)
+                                                                                .subscribeOn(mSchedulersFacade.io())
+                                                                                .observeOn(mSchedulersFacade.ui())
+                                                                                .subscribe(
+                                                                                        () -> otmResponse.setValue(Response.success(ownedDevice)),
+                                                                                        throwable -> otmResponse.setValue(Response.error(throwable))
+                                                                                ),
+                                                                        throwable -> {
+                                                                            if (throwable instanceof NetworkDisconnectedException) {
+                                                                                mError.setValue(new ViewModelError(CommonError.NETWORK_DISCONNECTED, null));
+                                                                            } else {
+                                                                                otmResponse.setValue(Response.error(throwable));
+                                                                            }
+                                                                        }
+                                                                )
+                                                );
+                                    } else {
+                                        mError.setValue((new ViewModelError(Error.CLIENT_MODE, null)));
                                     }
-                            )
-                ));
+                                },
+                                throwable -> otmResponse.setValue(Response.error(throwable))
+
+                        ));
     }
 
     public void offboard(Device deviceToOffboard) {
-        mDisposables.add(mCheckConnectionUseCase.executeCompletable()
-                .andThen(mOffboardUseCase.execute(deviceToOffboard)
-                        .delay(1, TimeUnit.SECONDS)
-                        .map(device -> {
-                            device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device).blockingGet());
-                            return device;
-                        })
-                        .delay(1, TimeUnit.SECONDS)
-                        .map(device -> {
-                            device.setDeviceRole(mGetDeviceRoleUseCase.execute(device).blockingGet());
-                            return device;
-                        }))
+        mDisposables.add(mGetModeUseCase.execute()
                 .subscribeOn(mSchedulersFacade.io())
                 .observeOn(mSchedulersFacade.ui())
-                .doOnSubscribe(__ -> offboardResponse.setValue(Response.loading()))
+                .doOnSubscribe(__ -> mProcessing.setValue(true))
+                .doFinally(() -> mProcessing.setValue(false))
                 .subscribe(
-                        unownedDevice -> offboardResponse.setValue(Response.success(unownedDevice)),
-                        throwable -> {
-                            if (throwable instanceof NetworkDisconnectedException) {
-                                mError.setValue(new ViewModelError(CommonError.NETWORK_DISCONNECTED, null));
+                        mode -> {
+                            if (mode.equals(OtgcMode.OBT)) {
+                                mCheckConnectionUseCase.executeCompletable()
+                                        .andThen(mOffboardUseCase.execute(deviceToOffboard)
+                                                .map(device -> {
+                                                    device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device).blockingGet());
+                                                    return device;
+                                                })
+                                                .map(device -> {
+                                                    device.setDeviceRole(mGetDeviceRoleUseCase.execute(device).blockingGet());
+                                                    return device;
+                                                }))
+                                        .subscribeOn(mSchedulersFacade.io())
+                                        .observeOn(mSchedulersFacade.ui())
+                                        .doOnSubscribe(__ -> offboardResponse.setValue(Response.loading()))
+                                        .subscribe(
+                                                unownedDevice -> offboardResponse.setValue(Response.success(unownedDevice)),
+                                                throwable -> {
+                                                    if (throwable instanceof NetworkDisconnectedException) {
+                                                        mError.setValue(new ViewModelError(CommonError.NETWORK_DISCONNECTED, null));
+                                                    } else {
+                                                        otmResponse.setValue(Response.error(throwable));
+                                                    }
+                                                }
+                                        );
                             } else {
-                                otmResponse.setValue(Response.error(throwable));
+                                mError.setValue((new ViewModelError(Error.CLIENT_MODE, null)));
                             }
-                        }
+                        },
+                        throwable -> otmResponse.setValue(Response.error(throwable))
+
                 ));
     }
 
@@ -358,6 +386,7 @@ public class DoxsViewModel extends BaseViewModel {
         SCAN_DEVICES,
         PAIRWISE_DEVICES,
         UNLINK_DEVICES,
-        DB_ERROR
+        DB_ERROR,
+        CLIENT_MODE
     }
 }
