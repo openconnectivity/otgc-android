@@ -24,11 +24,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/menu_item_rfotm"
-        android:title="@string/devices_menu_item_rfotm" />
+        android:id="@+id/menu_item_reset"
+        android:title="@string/devices_menu_item_reset" />
     <item
-        android:id="@+id/menu_item_rfnop"
-        android:title="@string/devices_menu_item_rfnop" />
+        android:id="@+id/menu_item_obt_mode"
+        android:title="@string/devices_menu_item_obt_mode" />
+    <item
+        android:id="@+id/menu_item_client_mode"
+        android:title="@string/devices_menu_item_client_mode" />
     <item
         android:id="@+id/menu_item_trust_anchor"
         android:title="@string/devices_menu_item_trust_anchor" />

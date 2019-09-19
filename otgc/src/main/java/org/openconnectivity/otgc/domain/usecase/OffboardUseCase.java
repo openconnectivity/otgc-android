@@ -23,8 +23,10 @@
 package org.openconnectivity.otgc.domain.usecase;
 
 import org.openconnectivity.otgc.data.repository.DoxsRepository;
+import org.openconnectivity.otgc.data.repository.PreferencesRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.data.repository.IotivityRepository;
+import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 
 import java.util.concurrent.TimeUnit;
 
@@ -33,14 +35,22 @@ import javax.inject.Inject;
 import io.reactivex.Single;
 
 public class OffboardUseCase {
+    /* Repositories */
     private final IotivityRepository iotivityRepository;
     private final DoxsRepository doxsRepository;
+    private final PreferencesRepository preferencesRepository;
+    /* Scheduler */
+    private final SchedulersFacade schedulersFacade;
 
     @Inject
     public OffboardUseCase(IotivityRepository iotivityRepository,
-                                 DoxsRepository doxsRepository) {
+                           DoxsRepository doxsRepository,
+                           PreferencesRepository preferencesRepository,
+                           SchedulersFacade schedulersFacade) {
         this.iotivityRepository = iotivityRepository;
         this.doxsRepository = doxsRepository;
+        this.preferencesRepository = preferencesRepository;
+        this.schedulersFacade = schedulersFacade;
     }
 
     public Single<Device> execute(Device deviceToOffboard) {
@@ -51,7 +61,7 @@ public class OffboardUseCase {
                         .singleOrError();
 
         return doxsRepository.resetDevice(deviceToOffboard.getDeviceId())
-                .delay(1, TimeUnit.SECONDS)
+                .delay(preferencesRepository.getRequestsDelay(), TimeUnit.SECONDS, schedulersFacade.ui())
                 .andThen(getUpdatedOcSecureResource)
                 .onErrorResumeNext(error -> getUpdatedOcSecureResource
                         .retry(2)

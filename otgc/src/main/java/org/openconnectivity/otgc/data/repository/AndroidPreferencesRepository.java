@@ -26,12 +26,15 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import org.openconnectivity.otgc.utils.constant.OtgcMode;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
 public class AndroidPreferencesRepository implements PreferencesRepository {
     private static final String DISCOVERY_TIMEOUT_DEFAULT = "5";
+    private static final String REQUESTS_DELAY_DEFAULT = "1";
     private static final String DISCOVERY_SCOPE_DEFAULT = "Link-Local";
 
     private final SharedPreferences mPreferences;
@@ -46,6 +49,12 @@ public class AndroidPreferencesRepository implements PreferencesRepository {
         //return mPreferences.getInt("discovery_timeout", DISCOVERY_TIMEOUT_DEFAULT);
         return Integer.parseInt(
                 mPreferences.getString("discovery_timeout", DISCOVERY_TIMEOUT_DEFAULT));
+    }
+
+    @Override
+    public int getRequestsDelay() {
+        return Integer.parseInt(
+                mPreferences.getString("requests_delay", REQUESTS_DELAY_DEFAULT));
     }
 
     @Override
@@ -69,6 +78,18 @@ public class AndroidPreferencesRepository implements PreferencesRepository {
     public void setPiid(String piid) {
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.putString("Piid", piid);
+        editor.apply();
+    }
+
+    @Override
+    public String getMode() {
+        return mPreferences.getString("Mode", OtgcMode.OBT);
+    }
+
+    @Override
+    public void setMode(String mode) {
+        SharedPreferences.Editor editor = mPreferences.edit();
+        editor.putString("Mode", mode);
         editor.apply();
     }
 

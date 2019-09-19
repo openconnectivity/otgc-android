@@ -134,6 +134,8 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
 
         mSwipeToRefreshView.setOnRefreshListener(() -> {
             mSwipeToRefreshView.setRefreshing(false);
+            ((DeviceListActivity)getActivity()).retrieveId();
+
             onSwipeRefresh();
         });
 
@@ -356,6 +358,10 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
                     break;
                 case PAIRWISE_DEVICES:
                     Toast.makeText(getActivity(), R.string.devices_error_pairing_devices, Toast.LENGTH_SHORT).show();
+                    break;
+                case CLIENT_MODE:
+                    Toast.makeText(getActivity(), R.string.devices_error_onboard_client_mode, Toast.LENGTH_SHORT).show();
+                    break;
                 default:
                     break;
             }

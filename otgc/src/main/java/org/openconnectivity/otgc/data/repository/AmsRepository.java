@@ -23,12 +23,18 @@
 package org.openconnectivity.otgc.data.repository;
 
 import org.iotivity.CborEncoder;
+import org.iotivity.OCAceConnectionType;
+import org.iotivity.OCAceResource;
+import org.iotivity.OCAceWildcard;
 import org.iotivity.OCClientResponse;
 import org.iotivity.OCEndpoint;
 import org.iotivity.OCEndpointUtil;
 import org.iotivity.OCMain;
+import org.iotivity.OCObt;
+import org.iotivity.OCObtDeviceStatusHandler;
 import org.iotivity.OCQos;
 import org.iotivity.OCResponseHandler;
+import org.iotivity.OCSecurityAce;
 import org.iotivity.OCStatus;
 import org.iotivity.OCUuid;
 import org.iotivity.OCUuidUtil;
@@ -61,8 +67,7 @@ public class AmsRepository {
 
     public Single<OcAcl> getAcl(String endpoint, String deviceId) {
         return  Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
             OCEndpointUtil.setDi(ep, uuid);
 
@@ -87,8 +92,7 @@ public class AmsRepository {
 
     private Completable provisionAcl(String endpoint, String deviceId, OcAcl acl) {
         return Completable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
             OCEndpointUtil.setDi(ep, uuid);
 
@@ -122,6 +126,42 @@ public class AmsRepository {
         });
     }
 
+    private Completable provisionAce(String deviceId, OCSecurityAce ace, List<String> verticalResources, long permission) {
+        return Completable.create(emitter -> {
+            int ret;
+            OCUuid di = OCUuidUtil.stringToUuid(deviceId);
+
+            ret = setAceResources(ace, verticalResources);
+            if (ret == -1) {
+                String errorMsg = "ERROR: Could not create ACE resources";
+                Timber.e(errorMsg);
+                emitter.onError(new Exception(errorMsg));
+            }
+
+            OCObt.aceAddPermission(ace, (int)permission);
+
+            OCObtDeviceStatusHandler handler = (OCUuid uuid, int status) -> {
+                if (status >= 0) {
+                    Timber.d("Successfully provisioned ACE to device " + OCUuidUtil.uuidToString(uuid));
+                    emitter.onComplete();
+                } else {
+                    String errorMsg = "ERROR provisioning ACE to device " + OCUuidUtil.uuidToString(uuid);
+                    Timber.e(errorMsg);
+                    emitter.onError(new Exception(errorMsg));
+                }
+            };
+
+            ret = OCObt.provisionAce(di, ace, handler);
+            if (ret >= 0) {
+                Timber.d("Successfully issued request to provision ACE");
+            } else {
+                String errorMsg = "ERROR issuing request to provision ACE";
+                Timber.e(errorMsg);
+                emitter.onError(new Exception(errorMsg));
+            }
+        });
+    }
+
     public Completable provisionUuidAcl(String endpoint, String deviceId, String subjectId, List<String> verticalResources, long permission) {
         OcAceSubject subject = new OcAceSubject();
         subject.setType(OcAceSubjectType.UUID_TYPE);
@@ -136,6 +176,19 @@ public class AmsRepository {
         OcAcl acl = new OcAcl();
         acl.setAceList(aceList);
         return provisionAcl(endpoint, deviceId, acl);
+    }
+
+    public Completable provisionUuidAce(String deviceId, String subjectId, List<String> verticalResources, long permission) {
+        OCUuid di = OCUuidUtil.stringToUuid(subjectId);
+
+        OCSecurityAce ace = OCObt.newAceForSubject(di);
+        if (ace == null) {
+            String errorMsg = "ERROR: Could not create ACE";
+            Timber.e(errorMsg);
+            return Completable.error(new Exception(errorMsg));
+        }
+
+        return provisionAce(deviceId, ace, verticalResources, permission);
     }
 
     public Completable provisionRoleAcl(String endpoint, String deviceId, String roleId, String roleAuthority, List<String> verticalResources, long permission) {
@@ -155,6 +208,17 @@ public class AmsRepository {
         return provisionAcl(endpoint, deviceId, acl);
     }
 
+    public Completable provisionRoleAce(String deviceId, String roleId, String roleAuthority, List<String> verticalResources, long permission) {
+        OCSecurityAce ace = OCObt.newAceForRole(roleId, roleAuthority);
+        if (ace == null) {
+            String errorMsg = "ERROR: Could not create ACE";
+            Timber.e(errorMsg);
+            return Completable.error(new Exception(errorMsg));
+        }
+
+        return provisionAce(deviceId, ace, verticalResources, permission);
+    }
+
     public Completable provisionConntypeAcl(String endpoint, String deviceId, boolean isAuthCrypt, List<String> verticalResources, long permission) {
         OcAceSubject subject = new OcAceSubject();
         subject.setType(OcAceSubjectType.CONN_TYPE);
@@ -171,10 +235,72 @@ public class AmsRepository {
         return provisionAcl(endpoint, deviceId, acl);
     }
 
+    public Completable provisionConntypeAce(String deviceId, boolean isAuthCrypt, List<String> verticalResources, long permission) {
+        OCSecurityAce ace = OCObt.newAceForConnection(isAuthCrypt ? OCAceConnectionType.OC_CONN_AUTH_CRYPT : OCAceConnectionType.OC_CONN_ANON_CLEAR);
+        if (ace == null) {
+            String errorMsg = "ERROR: Could not create ACE";
+            Timber.e(errorMsg);
+            return Completable.error(new Exception(errorMsg));
+        }
+
+        return provisionAce(deviceId, ace, verticalResources, permission);
+    }
+
+    public Completable provisionAuthWildcardAce(String deviceId) {
+        return Completable.create(emitter -> {
+            OCUuid di = OCUuidUtil.stringToUuid(deviceId);
+
+            OCObtDeviceStatusHandler handler = (OCUuid uuid, int status) -> {
+                if (status >= 0) {
+                    Timber.d("Successfully provisioned auth-crypt * ACE to device " + OCUuidUtil.uuidToString(uuid));
+                    emitter.onComplete();
+                } else {
+                    String errorMsg = "ERROR provisioning ACE to device " + OCUuidUtil.uuidToString(uuid);
+                    Timber.e(errorMsg);
+                    emitter.onError(new IOException(errorMsg));
+                }
+            };
+
+            int ret = OCObt.provisionAuthWildcardAce(di, handler);
+            if (ret >= 0) {
+                Timber.d("Successfully issued request to provision auth-crypt * ACE");
+            } else {
+                String errorMsg = "ERROR issuing request to provision auth-crypt * ACE";
+                Timber.e(errorMsg);
+                emitter.onError(new IOException(errorMsg));
+            }
+        });
+    }
+
+    public Completable provisionRoleWildcardAce(String deviceId, String roleId, String roleAuthority) {
+        return Completable.create(emitter -> {
+            OCUuid di = OCUuidUtil.stringToUuid(deviceId);
+
+            OCObtDeviceStatusHandler handler = (OCUuid uuid, int status) -> {
+                if (status >= 0) {
+                    Timber.d("Successfully provisioned role * ACE to device " + OCUuidUtil.uuidToString(uuid));
+                    emitter.onComplete();
+                } else {
+                    String errorMsg = "ERROR provisioning ACE to device " + OCUuidUtil.uuidToString(uuid);
+                    Timber.e(errorMsg);
+                    emitter.onError(new IOException(errorMsg));
+                }
+            };
+
+            int ret = OCObt.provisionRoleWildcardAce(di, roleId, roleAuthority, handler);
+            if (ret >= 0) {
+                Timber.d("Successfully issued request to provision role * ACE");
+            } else {
+                String errorMsg = "ERROR issuing request to provision role * ACE";
+                Timber.e(errorMsg);
+                emitter.onError(new IOException(errorMsg));
+            }
+        });
+    }
+
     public Completable deleteAcl(String endpoint, String deviceId, long aceId) {
         return Completable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
             OCEndpointUtil.setDi(ep, uuid);
 
@@ -217,5 +343,36 @@ public class AmsRepository {
         }
 
         return resources;
+    }
+
+    private int setAceResources(OCSecurityAce ace, List<String> resources) {
+        for (String resource : resources) {
+            OCAceResource res = OCObt.aceNewResource(ace);
+            if (res == null) {
+                String errorMsg = "ERROR: Could not allocate new resource for ACE";
+                Timber.e(errorMsg);
+                OCObt.freeAce(ace);
+                return -1;
+            }
+
+            if (OcfWildcard.isWildcard(resource)) {
+                if (resource.equals(OcfWildcard.OC_WILDCARD_ALL_NCR)) {
+                    OCObt.aceResourceSetWc(res, OCAceWildcard.OC_ACE_WC_ALL);
+                } else if (resource.equals(OcfWildcard.OC_WILDCARD_ALL_SECURE_NCR)) {
+                    OCObt.aceResourceSetWc(res, OCAceWildcard.OC_ACE_WC_ALL_SECURED);
+                } else if (resource.equals(OcfWildcard.OC_WILDCARD_ALL_NON_SECURE_NCR)) {
+                    OCObt.aceResourceSetWc(res, OCAceWildcard.OC_ACE_WC_ALL_PUBLIC);
+                }
+            } else {
+                OCObt.aceResourceSetHref(res, resource);
+                OCObt.aceResourceSetWc(res, OCAceWildcard.OC_ACE_NO_WC);
+            }
+
+            // TODO: Set resource types
+
+            // TODO: Set interfaces
+        }
+
+        return 0;
     }
 }

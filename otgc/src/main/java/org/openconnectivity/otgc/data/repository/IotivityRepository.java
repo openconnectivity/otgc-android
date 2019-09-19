@@ -43,7 +43,6 @@ import org.iotivity.OCStorage;
 import org.iotivity.OCUuid;
 import org.iotivity.OCUuidUtil;
 
-import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.resource.virtual.d.OcDeviceInfo;
 import org.openconnectivity.otgc.domain.model.resource.virtual.p.OcPlatformInfo;
 import org.openconnectivity.otgc.domain.model.resource.virtual.res.OcEndpoint;
@@ -63,7 +62,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -272,22 +270,45 @@ public class IotivityRepository {
                     OcRes res = new OcRes();
                     res.parseOCRepresentation(response.getPayload());
 
-                    OcResource resource = res.getResourceList().get(0);
-                    String deviceId = resource.getAnchor().replace("ocf://", "");
-                    List<String> endpoints = new ArrayList<>();
-                    for (OcEndpoint ep : resource.getEndpoints()) {
-                        endpoints.add(ep.getEndpoint());
-                    }
+                    if (!res.getResourceList().isEmpty()) {
+                        OcResource resource = res.getResourceList().get(0);
+                        String deviceId = resource.getAnchor().replace("ocf://", "");
+                        List<String> endpoints = new ArrayList<>();
+                        for (OcEndpoint ep : resource.getEndpoints()) {
+                            endpoints.add(ep.getEndpoint());
+                        }
 
-                    DeviceEntity device = deviceDao.findById(deviceId).blockingGet();
-                    if (device == null) {
-                        deviceDao.insert(new DeviceEntity(deviceId, "", endpoints, DeviceType.OWNED_BY_OTHER, Device.NOTHING_PERMITS));
-                        allDevices.add(new Device(DeviceType.OWNED_BY_OTHER, deviceId, new OcDeviceInfo(), endpoints, Device.NOTHING_PERMITS));
-                    } else {
-                        deviceDao.insert(new DeviceEntity(deviceId, device.getName(), endpoints, device.getType(), device.getPermits()));
-                        allDevices.add(new Device(device.getType(), deviceId, new OcDeviceInfo(), endpoints, device.getPermits()));
-                    }
+                        DeviceEntity device = deviceDao.findById(deviceId).blockingGet();
+                        if (device == null) {
+                            deviceDao.insert(new DeviceEntity(deviceId, "", endpoints, DeviceType.OWNED_BY_OTHER, Device.NOTHING_PERMITS));
+                            allDevices.add(new Device(DeviceType.OWNED_BY_OTHER, deviceId, new OcDeviceInfo(), endpoints, Device.NOTHING_PERMITS));
+                        } else {
+                            boolean isUnowned = false;
+                            for (Device d : unownedDevices) {
+                                if (d.getDeviceId().equals(deviceId)) {
+                                    isUnowned = true;
+                                    break;
+                                }
+                            }
 
+                            boolean isOwned = false;
+                            for (Device d : ownedDevices) {
+                                if (d.getDeviceId().equals(deviceId)) {
+                                    isOwned = true;
+                                    break;
+                                }
+                            }
+
+                            if (!isUnowned && !isOwned) {
+                                DeviceType type = device.getType() == DeviceType.UNOWNED || device.getType() == DeviceType.OWNED_BY_SELF
+                                        ? DeviceType.OWNED_BY_OTHER
+                                        : device.getType();
+
+                                deviceDao.insert(new DeviceEntity(deviceId, device.getName(), endpoints, type, device.getPermits()));
+                                allDevices.add(new Device(type, deviceId, new OcDeviceInfo(), endpoints, device.getPermits()));
+                            }
+                        }
+                    }
                 }
             };
 
@@ -313,26 +334,6 @@ public class IotivityRepository {
     public Observable<Device> scanOwnedByOtherDevices() {
         return scanHosts()
                 .andThen(Observable.fromIterable(allDevices))
-                .filter(device -> {
-                    boolean isNotUnowned = true;
-                    for (Device d : unownedDevices) {
-                        if (d.getDeviceId().equals(device.getDeviceId())) {
-                            isNotUnowned = false;
-                        }
-                    }
-
-                    return isNotUnowned;
-                })
-                .filter(device -> {
-                    boolean isNotOwned = true;
-                    for (Device d : ownedDevices) {
-                        if (d.getDeviceId().equals(device.getDeviceId())) {
-                            isNotOwned = false;
-                        }
-                    }
-
-                    return isNotOwned;
-                })
                 .filter(device -> !device.getDeviceId().equals(getDeviceId().blockingGet()));
     }
 
@@ -394,8 +395,7 @@ public class IotivityRepository {
 
     public Single<OcDeviceInfo> getDeviceInfo(String endpoint) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -418,8 +418,7 @@ public class IotivityRepository {
 
     public Single<OcPlatformInfo> getPlatformInfo(String endpoint) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -483,8 +482,7 @@ public class IotivityRepository {
 
     public Single<OcRes> findResources(String host) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -512,8 +510,7 @@ public class IotivityRepository {
 
     public Single<OcRes> findResource(String host, String resourceType) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
 
             OCResponseHandler handler = (OCClientResponse response) -> {
                 OCStatus code = response.getCode();
@@ -543,8 +540,7 @@ public class IotivityRepository {
 
     public Single<OCRepresentation> get(String host, String uri, String deviceId) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
             OCEndpointUtil.setDi(ep, uuid);
 
@@ -565,8 +561,7 @@ public class IotivityRepository {
 
     public Completable post(String host, String uri, String deviceId, OCRepresentation rep, Object valueArray) {
         return Completable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(host, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
             OCEndpointUtil.setDi(ep, uuid);
 
@@ -631,5 +626,6 @@ public class IotivityRepository {
     public void close() {
         Timber.d("Calling OCMain.mainShutdown()");
         OCMain.mainShutdown();
+        OCObt.shutdown();
     }
 }

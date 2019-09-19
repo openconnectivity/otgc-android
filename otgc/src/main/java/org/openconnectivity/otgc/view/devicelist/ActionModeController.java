@@ -32,6 +32,7 @@ import org.openconnectivity.otgc.domain.model.devicelist.DeviceType;
 import org.openconnectivity.otgc.domain.model.devicelist.DeviceRole;
 import org.openconnectivity.otgc.domain.usecase.link.RetrieveLinkedDevicesUseCase;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -68,9 +69,11 @@ public class ActionModeController implements ActionMode.Callback {
             Iterator<Device> deviceIterable = mSelectionTracker.getSelection().iterator();
             while (deviceIterable.hasNext()) {
                 Device device = deviceIterable.next();
-                if (device.getDeviceRole().equals(DeviceRole.SERVER) && device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
+                if (device.getDeviceRole().equals(DeviceRole.SERVER)
+                        && device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
                     server = device;
-                } else if (device.getDeviceRole().equals(DeviceRole.CLIENT) && device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
+                } else if (device.getDeviceRole().equals(DeviceRole.CLIENT)
+                                && device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
                     client = device;
                 }
             }
@@ -80,20 +83,24 @@ public class ActionModeController implements ActionMode.Callback {
                 final Device c = client;
                 final Device s = server;
 
-                List<String> linkClientDevices = retrieveLinkedDevicesUseCase.execute(client).blockingGet();
+                List<String> linkClientDevices = retrieveLinkedDevicesUseCase.execute(client)
+                                                    .onErrorReturnItem(new ArrayList<>())
+                                                    .blockingGet();
 
-                if (linkClientDevices.contains(serverId)) {
-                    unlinkMenuItem.setOnMenuItemClickListener(menuItem -> {
-                        actionMode.finish();
-                        return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
-                    });
-                    unlinkMenuItem.setVisible(true);
-                } else {
-                    linkMenuItem.setOnMenuItemClickListener(menuItem -> {
-                        actionMode.finish();
-                        return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
-                    });
-                    linkMenuItem.setVisible(true);
+                if (serverId != null) {
+                    if (linkClientDevices.contains(serverId)) {
+                        unlinkMenuItem.setOnMenuItemClickListener(menuItem -> {
+                            actionMode.finish();
+                            return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
+                        });
+                        unlinkMenuItem.setVisible(true);
+                    } else {
+                        linkMenuItem.setOnMenuItemClickListener(menuItem -> {
+                            actionMode.finish();
+                            return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
+                        });
+                        linkMenuItem.setVisible(true);
+                    }
                 }
             }
         } else {

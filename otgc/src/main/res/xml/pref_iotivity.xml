@@ -32,6 +32,14 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/pref_iotivity_title_discovery_timeout" />
+    <EditTextPreference
+        android:defaultValue="@string/pref_iotivity_default_requests_delay"
+        android:inputType="number"
+        android:key="requests_delay"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_iotivity_title_requests_delay" />
     <ListPreference
         android:key="discovery_scope"
         android:title="@string/pref_iotivity_title_discovery_scope"

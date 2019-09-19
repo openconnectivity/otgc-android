@@ -186,6 +186,44 @@
                 android:text="@string/access_control_cardview_permission_notify"
                 android:textSize="@dimen/font_size_notes" />
         </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            <CheckBox
+                android:id="@+id/checkbox_ace_wc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/access_control_cardview_wc"
+                android:textSize="@dimen/font_size_notes" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/linear_layout_wc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+            <CheckBox
+                android:id="@+id/checkbox_ace_wc_all"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/access_control_cardview_wc_all"
+                android:textSize="@dimen/font_size_notes" />
+            <CheckBox
+                android:id="@+id/checkbox_ace_wc_all_secure"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/access_control_cardview_wc_all_secure"
+                android:textSize="@dimen/font_size_notes" />
+            <CheckBox
+                android:id="@+id/checkbox_ace_wc_all_public"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/access_control_cardview_wc_all_public"
+                android:textSize="@dimen/font_size_notes" />
+        </LinearLayout>
         <!--<CheckBox
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -114,8 +114,9 @@
     <string name="devices_dialog_set_device_name_title">Insert device name</string>
     <string name="devices_dialog_set_device_name_yes_option">Confirm</string>
     <string name="devices_dialog_set_device_name_no_option">Cancel</string>
-    <string name="devices_menu_item_rfotm" translatable="false">RFOTM</string>
-    <string name="devices_menu_item_rfnop" translatable="false">RFNOP</string>
+    <string name="devices_menu_item_reset" translatable="false">Reset</string>
+    <string name="devices_menu_item_client_mode">Client mode</string>
+    <string name="devices_menu_item_obt_mode">OBT mode</string>
     <string name="devices_menu_item_trust_anchor">Trust Anchor Management</string>
     <string name="devices_menu_item_logs">Show log</string>
     <string name="devices_menu_item_settings">Settings</string>
@@ -145,12 +146,17 @@
     <string name="devices_dialog_onboarding_otm_message">Transferring ownership&#8230;</string>
     <string name="devices_dialog_offboarding_title" translatable="false">Offboarding</string>
     <string name="devices_dialog_offboarding_reset_message">Resetting device&#8230;</string>
+    <string name="devices_dialog_confirm_reset_device_title">Reset device</string>
+    <string name="devices_dialog_confirm_reset_device_message">Are you sure you want to delete all linked devices?</string>
+    <string name="devices_dialog_confirm_reset_device_yes_option" translatable="false">OK</string>
+    <string name="devices_dialog_confirm_reset_device_no_option" translatable="false">Cancel</string>
     <string name="devices_error_scanning_devices">Error scanning devices</string>
     <string name="devices_error_pairing_devices">Error pairing devices</string>
+    <string name="devices_error_onboard_client_mode">OTM is not available for Client mode.</string>
     <string name="devices_error_transferring_ownership">Ownership transfer failed</string>
     <string name="devices_error_offboard_failed">Offboard failed</string>
-    <string name="devices_error_rfotm_failed">Error setting RFOTM mode</string>
-    <string name="devices_error_rfnop_failed">Error setting RFNOP mode</string>
+    <string name="devices_error_client_mode_failed">Error setting client mode</string>
+    <string name="devices_error_obt_mode_failed">Error setting OBT mode</string>
 
     <string name="access_control_title">Access Control</string>
     <string name="access_control_error_retrieve">Error retrieving ACL</string>
@@ -164,6 +170,10 @@
     <string name="access_control_cardview_permission_update" translatable="false">U</string>
     <string name="access_control_cardview_permission_delete" translatable="false">D</string>
     <string name="access_control_cardview_permission_notify" translatable="false">N</string>
+    <string name="access_control_cardview_wc" translatable="false">Wildcard</string>
+    <string name="access_control_cardview_wc_all">All resources</string>
+    <string name="access_control_cardview_wc_all_secure">All secure resources</string>
+    <string name="access_control_cardview_wc_all_public">All public resources</string>
     <string name="access_control_ace_title">Create Access Policy</string>
     <string name="access_control_ace_subject_radio_title">Subject type</string>
     <string name="access_control_ace_subject_radio_uuid" translatable="false">UUID</string>
@@ -231,6 +241,8 @@
     <string name="client_fragment_get_request_failed">GET request failed</string>
     <string name="client_fragment_post_request_failed">POST request failed</string>
     <string name="client_fragment_put_request_failed">PUT request failed</string>
+    <string name="cannot_observe_resource">Cannot observe resource</string>
+    <string name="cannot_cancel_observe_resource">Cannot cancel the observation of the resource</string>
 
     <string name="linked_roles_title">Linked roles</string>
     <string name="linked_roles_error_retrieve">Error retrieving linked roles</string>
@@ -244,17 +256,19 @@
 
     <!-- Strings related to Settings -->
     <string name="settings_title">Settings</string>
-    <string name="pref_iotivity_header" translatable="false">IoTivity</string>
+    <string name="pref_iotivity_header">Discovery</string>
     <string name="pref_iotivity_title_discovery_timeout">Discovery timeout (in seconds)</string>
     <string name="pref_iotivity_default_discovery_timeout" translatable="false">5</string>
+    <string name="pref_iotivity_title_requests_delay">Requests delay (in seconds)</string>
+    <string name="pref_iotivity_default_requests_delay" translatable="false">1</string>
     <string name="pref_iotivity_title_discovery_scope">Multicast IPv6 scope</string>
-    <string name="pref_iotivity_default_discovery_scope">Link-Local</string>
+    <string name="pref_iotivity_default_discovery_scope" translatable="false">Link-Local</string>
     <string name="pref_help_header">Help</string>
     <string name="pref_help_app_info">App info</string>
 
     <string name="about_app_name" translatable="false">Onboarding Tool and Generic Client</string>
     <string name="about_app_version">Version %1$s</string>
-    <string name="about_copyright" translatable="false">&#169; 2018 Open Connectivity Foundation.</string>
+    <string name="about_copyright" translatable="false">&#169; 2019 Open Connectivity Foundation.</string>
     <string name="about_all_rights_reserved">All rights reserved.</string>
     <string name="about_powered_by">Powered by:</string>
     <string name="about_dekra_tc" translatable="false">DEKRA Testing and Certification, S.A.U.</string>

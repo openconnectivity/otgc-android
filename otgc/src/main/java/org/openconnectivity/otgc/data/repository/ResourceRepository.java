@@ -54,8 +54,7 @@ public class ResourceRepository {
 
     public Observable<SerializableResource> observeResource(String endpoint, String deviceId, SerializableResource resource) {
         return Observable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.newEndpoint();
-            OCEndpointUtil.stringToEndpoint(endpoint, ep, new String[1]);
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
             OCEndpointUtil.setDi(ep, uuid);
 
@@ -85,16 +84,16 @@ public class ResourceRepository {
         return Completable.create(emitter -> {
             OCEndpoint ep = observeMap.get(resourceUri);
             if (ep != null) {
-                if (!OCMain.stopObserve(resourceUri, ep)) {
+                if (OCMain.stopObserve(resourceUri, ep)) {
+                    // Delete callback from map
+                    OCEndpointUtil.freeEndpoint(ep);
+                    observeMap.remove(resourceUri);
+                    ObservableEmitter observableEmitter = emitterMap.get(resourceUri);
+                    observableEmitter.onComplete();
+                    emitterMap.remove(resourceUri);
+                } else {
                     emitter.onError(new Exception("Stop observe resource " + resourceUri + " error"));
                 }
-
-                // Delete callback from map
-                OCEndpointUtil.freeEndpoint(ep);
-                observeMap.remove(resourceUri);
-                ObservableEmitter observableEmitter = emitterMap.get(resourceUri);
-                observableEmitter.onComplete();
-                emitterMap.remove(resourceUri);
             }
             emitter.onComplete();
         });
