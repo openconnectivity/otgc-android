@@ -27,40 +27,45 @@ IoTivity uses the [Android Java Coding Standard](https://source.android.com/setu
   
 ## Project Setup
 
-The OTGC Android App uses the binary distribution of the [IoTivity Base Android API](#iotivity-base-android-api).
+The OTGC Android App uses the binary distribution of the IoTivity-lite Android API.
 
-IoTivity Base Android API is compiled for a minimum SDK of API 21: Android 5.0 (Lollipop), so OTGC Android App shall use the same value.
+IoTivity-lite Android API is compiled for a minimum SDK of API 21: Android 5.0 (Lollipop), so OTGC Android App shall use the same value.
 
-To import the IoTivity Base Android API Binary into the OTGC Android App project:
+To import the IoTivity-lite Android API Binary into the OTGC Android App project:
 
-1. From the File menu, select **New Module**.
-2. In the **Choose Module Type** window, do the following:
-  1. Select **Import .JAR or .AAR Package**.
-  2. Click **Next**.
-3. In the Create New Module window, click the **...** button to locate the .aar file.
-4. Navigate to the <iotivity>/java/iotivity-android/base/build/outputs/aar directory and select the .aar file. In the example below, iotivity-base-armeabi-release.aar is selected.
-5. Click **OK**. Then in the Create New Module window, click **Finish**.
-6. In the Android Studio project view, right click the dependent module and select **Open Module Settings**.
-7. In the Project Structure window, select the **Dependencies** tab.
-8. Right click the **+** icon. From the dropdown, select **Module dependency**.
-9. Select the iotivity-base-&lt;target_arch>-&lt;release> module from the list of available modules and click **OK**. In the example below, iotivity-base-armeabi-release.aar is selected.
-10. In the Project Structure Window, click **OK**.
+1. Go to &lt;iotivity-lite>/swig/iotivity-lite-java/libs.
+
+2. Copy **iotivity-lite.jar** into &lt;otgc-android>/otgc/src/main/jniLibs.
+
+3. Copy **libiotivity-lite-jni.so** into &lt;otgc-android>/otgc/src/main/&lt;target_arch>
+
+where &lt;target_arch> is one of the following values: x86, x86_64, armeabi, armeabi-v7a, armeabi-v7a-hard or arm64-v8a.
     
-    Android Studio rebuilds the module, including the contents of the library module the next time the project or module is built. IoTivity Base Android APIs can now be used in the OTGC Android App project.
+Android Studio loads the library, including the contents of the library module. IoTivity-lite Android APIs can now be used in the OTGC Android App project.
   
 ## Build
 
-### IoTivity Base Android API
+### IoTivity-lite Android API
 
-The binary distribution of the IoTivity Base Android API (a .aar file) can be built following the [Android build instructions](https://wiki.iotivity.org/android_build_instructions). Once built, it can be found at:
+The steps required to build the binary of the IoTivity-lite Android API is shown below:
 
-    <iotivity>/java/iotivity-android/build/outputs/aar/iotivity-base-<your arch>-<release mode>.aar
+1. Change to the **swig** branch.
+```
+git checkout swig
+```
+2. Go to the **android** directory.
+```
+cd <iotivity-lite>/port/android
+```
+3. Execute the command to build the library.
+```
+make NDK_HOME=<ndk-directory> ANDROID_API=21 DEBUG=1 SECURE=1 IPV4=1 TCP=0 PKI=1 DYNAMIC=1 CLOUD=0 JAVA=1 IDD=1
+```
 
-Currently, this binary cannot be built using Windows but Linux as host system. The command required to build the binary is shown below.
-
-    scons TARGET_OS=android TARGET_ARCH=<target_arch>
-    
-where &lt;target_arch> is one of the following values: x86, x86_64, armeabi, armeabi-v7a, armeabi-v7a-hard or arm64-v8a.
+Once built, the library can be found at:
+```
+<iotivity-lite>/swig/iotivity-lite-java/libs
+```
   
 ## Testing
   
