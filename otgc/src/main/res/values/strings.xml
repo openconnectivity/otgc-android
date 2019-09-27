@@ -100,7 +100,7 @@
     <string name="wlan_scan_dialog_password_negative_button_text">Cancel</string>
     <string name="wlan_scan_dialog_connect_to_wifi_message">Connecting to the Wi-Fi network…</string>
 
-    <string name="devices_select_oxm_title">Select OXM</string>
+    <string name="devices_select_oxm_title">Select OTM</string>
     <string name="devices_oxm_just_works" translatable="false">Just Works</string>
     <string name="devices_oxm_random_pin">Random PIN</string>
     <string name="devices_oxm_man_cert">Manufacturer Certificate</string>
@@ -152,11 +152,17 @@
     <string name="devices_dialog_confirm_reset_device_no_option" translatable="false">Cancel</string>
     <string name="devices_error_scanning_devices">Error scanning devices</string>
     <string name="devices_error_pairing_devices">Error pairing devices</string>
-    <string name="devices_error_onboard_client_mode">OTM is not available for Client mode.</string>
+    <string name="devices_error_onboard_client_mode">OTM is not available for Client mode</string>
     <string name="devices_error_transferring_ownership">Ownership transfer failed</string>
+    <string name="devices_error_device_info">Get device info has failed</string>
+    <string name="devices_error_device_role">Get device role has failed</string>
+    <string name="devices_error_provision_ace_otm">Provision ACE has failed</string>
     <string name="devices_error_offboard_failed">Offboard failed</string>
     <string name="devices_error_client_mode_failed">Error setting client mode</string>
     <string name="devices_error_obt_mode_failed">Error setting OBT mode</string>
+    <string name="dialog_wait_title">Loading</string>
+    <string name="dialog_wait_message">Loading. Please, wait...</string>
+    <string name="devices_link_error">Get linked devices has failed</string>
 
     <string name="access_control_title">Access Control</string>
     <string name="access_control_error_retrieve">Error retrieving ACL</string>

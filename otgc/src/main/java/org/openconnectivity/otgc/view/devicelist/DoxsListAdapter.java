@@ -213,84 +213,86 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(@NonNull DoxsListViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        Device device = mDataset.get(position);
-        // - replace the contents of the view with that element
-        if (device.getDeviceInfo() != null) {
-            holder.mDeviceName.setText(
-                    device.getDeviceInfo().getName().isEmpty() ?
-                            mContext.getString(R.string.devices_cardview_unnamed_device) :
-                            device.getDeviceInfo().getName()
-            );
-
-            if (!device.getDeviceInfo().getFormattedDeviceTypes().isEmpty()) {
-                holder.mDeviceType.setText(
-                        TextUtils.join(",", device.getDeviceInfo().getFormattedDeviceTypes())
+        if (position != RecyclerView.NO_POSITION) {
+            // - get element from your dataset at this position
+            Device device = mDataset.get(position);
+            // - replace the contents of the view with that element
+            if (device.getDeviceInfo() != null) {
+                holder.mDeviceName.setText(
+                        device.getDeviceInfo().getName().isEmpty() ?
+                                mContext.getString(R.string.devices_cardview_unnamed_device) :
+                                device.getDeviceInfo().getName()
                 );
+
+                if (!device.getDeviceInfo().getFormattedDeviceTypes().isEmpty()) {
+                    holder.mDeviceType.setText(
+                            TextUtils.join(",", device.getDeviceInfo().getFormattedDeviceTypes())
+                    );
+                } else {
+                    holder.mDeviceType.setText(mContext.getString(R.string.devices_cardview_no_device_types));
+                }
             } else {
+                holder.mDeviceName.setText(mContext.getString(R.string.devices_cardview_unnamed_device));
                 holder.mDeviceType.setText(mContext.getString(R.string.devices_cardview_no_device_types));
             }
-        } else {
-            holder.mDeviceName.setText(mContext.getString(R.string.devices_cardview_unnamed_device));
-            holder.mDeviceType.setText(mContext.getString(R.string.devices_cardview_no_device_types));
-        }
 
-        if (device.getDeviceRole().equals(DeviceRole.CLIENT)) {
-            holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_client));
-        } else if (device.getDeviceRole().equals(DeviceRole.SERVER)) {
-            holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_server));
-        } else {
-            holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_unknown));
-        }
-
-        holder.mDeviceUuid.setText(device.getDeviceId());
-
-        holder.mPopupButton.setOnClickListener(v -> {
-            PopupMenu popupMenu = new PopupMenu(mContext, holder.mPopupButton);
-            popupMenu.inflate(R.menu.menu_owned_devices);
-            popupMenu.setOnMenuItemClickListener(holder);
-
-            if (device.getDeviceType().equals(DeviceType.OWNED_BY_OTHER)) {
-                popupMenu.getMenu().findItem(R.id.menu_item_set_device_name).setVisible(false);
+            if (device.getDeviceRole().equals(DeviceRole.CLIENT)) {
+                holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_client));
+            } else if (device.getDeviceRole().equals(DeviceRole.SERVER)) {
+                holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_server));
+            } else {
+                holder.mDeviceRole.setText(mContext.getString(R.string.devices_cardview_role_unknown));
             }
 
-            popupMenu.show();
-        });
+            holder.mDeviceUuid.setText(device.getDeviceId());
 
-        int color = ContextCompat.getColor(mContext, R.color.OCF_BLACK);
+            holder.mPopupButton.setOnClickListener(v -> {
+                PopupMenu popupMenu = new PopupMenu(mContext, holder.mPopupButton);
+                popupMenu.inflate(R.menu.menu_owned_devices);
+                popupMenu.setOnMenuItemClickListener(holder);
 
-        switch (device.getDeviceType()) {
-            case UNOWNED:
-                color = ContextCompat.getColor(mContext, R.color.ocf_light_blue);
-                holder.mAddDeviceButton.setVisibility(View.VISIBLE);
-                holder.mClientButton.setVisibility(View.GONE);
-                holder.mPopupButton.setVisibility(View.GONE);
-                break;
-            case OWNED_BY_SELF:
-                color = ContextCompat.getColor(mContext, R.color.ocf_green);
-                holder.mAddDeviceButton.setVisibility(View.GONE);
-                holder.mClientButton.setVisibility(View.VISIBLE);
-                holder.mPopupButton.setVisibility(View.VISIBLE);
-                break;
-            case OWNED_BY_OTHER:
-                color = ContextCompat.getColor(mContext, R.color.OCF_ORANGE);
-                holder.mAddDeviceButton.setVisibility(View.GONE);
-                holder.mClientButton.setVisibility(View.VISIBLE);
-                holder.mPopupButton.setVisibility(View.VISIBLE);
-                break;
-            case OWNED_BY_OTHER_WITH_PERMITS:
-                color = ContextCompat.getColor(mContext, R.color.OCF_YELLOW);
-                holder.mAddDeviceButton.setVisibility(View.GONE);
-                holder.mClientButton.setVisibility(View.VISIBLE);
-                holder.mPopupButton.setVisibility(View.VISIBLE);
-                break;
-            default:
-                break;
+                if (device.getDeviceType().equals(DeviceType.OWNED_BY_OTHER)) {
+                    popupMenu.getMenu().findItem(R.id.menu_item_set_device_name).setVisible(false);
+                }
+
+                popupMenu.show();
+            });
+
+            int color = ContextCompat.getColor(mContext, R.color.OCF_BLACK);
+
+            switch (device.getDeviceType()) {
+                case UNOWNED:
+                    color = ContextCompat.getColor(mContext, R.color.ocf_light_blue);
+                    holder.mAddDeviceButton.setVisibility(View.VISIBLE);
+                    holder.mClientButton.setVisibility(View.GONE);
+                    holder.mPopupButton.setVisibility(View.GONE);
+                    break;
+                case OWNED_BY_SELF:
+                    color = ContextCompat.getColor(mContext, R.color.ocf_green);
+                    holder.mAddDeviceButton.setVisibility(View.GONE);
+                    holder.mClientButton.setVisibility(View.VISIBLE);
+                    holder.mPopupButton.setVisibility(View.VISIBLE);
+                    break;
+                case OWNED_BY_OTHER:
+                    color = ContextCompat.getColor(mContext, R.color.OCF_ORANGE);
+                    holder.mAddDeviceButton.setVisibility(View.GONE);
+                    holder.mClientButton.setVisibility(View.VISIBLE);
+                    holder.mPopupButton.setVisibility(View.VISIBLE);
+                    break;
+                case OWNED_BY_OTHER_WITH_PERMITS:
+                    color = ContextCompat.getColor(mContext, R.color.OCF_YELLOW);
+                    holder.mAddDeviceButton.setVisibility(View.GONE);
+                    holder.mClientButton.setVisibility(View.VISIBLE);
+                    holder.mPopupButton.setVisibility(View.VISIBLE);
+                    break;
+                default:
+                    break;
+            }
+
+            holder.mLineDeviceType.setBackgroundColor(color);
+
+            holder.bind(device, mSelectionTracker.isSelected(device));
         }
-
-        holder.mLineDeviceType.setBackgroundColor(color);
-
-        holder.bind(device, mSelectionTracker.isSelected(device));
     }
 
     // Return the size of your dataset (invoked by the layout manager)

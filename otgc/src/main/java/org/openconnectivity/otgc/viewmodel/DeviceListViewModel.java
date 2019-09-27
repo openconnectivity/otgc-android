@@ -29,6 +29,8 @@ import org.iotivity.OCRandomPinHandler;
 import org.openconnectivity.otgc.domain.model.exception.NetworkDisconnectedException;
 import org.openconnectivity.otgc.domain.usecase.CloseIotivityUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetModeUseCase;
+import org.openconnectivity.otgc.domain.usecase.ResetClientModeUseCase;
+import org.openconnectivity.otgc.domain.usecase.ResetObtModeUseCase;
 import org.openconnectivity.otgc.domain.usecase.SetClientModeUseCase;
 import org.openconnectivity.otgc.domain.usecase.SetObtModeUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.CheckConnectionUseCase;
@@ -57,7 +59,9 @@ public class DeviceListViewModel extends ViewModel {
     private final SetRandomPinListenerUseCase setRandomPinListenerUseCase;
     private final SetDisplayPinListenerUseCase setDisplayPinListenerUseCase;
     private final SetClientModeUseCase setClientModeUseCase;
+    private final ResetClientModeUseCase resetClientModeUseCase;
     private final SetObtModeUseCase setObtModeUseCase;
+    private final ResetObtModeUseCase resetObtModeUseCase;
     private final CheckConnectionUseCase mCheckConnectionUseCase;
     private final GetDeviceIdUseCase mGetDeviceIdUseCase;
 
@@ -84,7 +88,9 @@ public class DeviceListViewModel extends ViewModel {
             SetRandomPinListenerUseCase setRandomPinListenerUseCase,
             SetDisplayPinListenerUseCase setDisplayPinListenerUseCase,
             SetClientModeUseCase setClientModeUseCase,
+            ResetClientModeUseCase resetClientModeUseCase,
             SetObtModeUseCase setObtModeUseCase,
+            ResetObtModeUseCase resetObtModeUseCase,
             CheckConnectionUseCase checkConnectionUseCase,
             GetDeviceIdUseCase getDeviceIdUseCase,
             SchedulersFacade schedulersFacade) {
@@ -95,7 +101,9 @@ public class DeviceListViewModel extends ViewModel {
         this.setRandomPinListenerUseCase = setRandomPinListenerUseCase;
         this.setDisplayPinListenerUseCase = setDisplayPinListenerUseCase;
         this.setClientModeUseCase = setClientModeUseCase;
+        this.resetClientModeUseCase = resetClientModeUseCase;
         this.setObtModeUseCase = setObtModeUseCase;
+        this.resetObtModeUseCase = resetObtModeUseCase;
         this.mCheckConnectionUseCase = checkConnectionUseCase;
         this.mGetDeviceIdUseCase = getDeviceIdUseCase;
 
@@ -203,8 +211,48 @@ public class DeviceListViewModel extends ViewModel {
                 ));
     }
 
+    public void resetClientMode() {
+        disposables.add(resetClientModeUseCase.execute()
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .doOnSubscribe(__ -> clientModeResponse.setValue(Response.loading()))
+                .subscribe(
+                        () -> {
+                            clientModeResponse.setValue(Response.success(null));
+                            disposables.add(mGetModeUseCase.execute()
+                                    .subscribeOn(schedulersFacade.io())
+                                    .observeOn(schedulersFacade.ui())
+                                    .subscribe(
+                                            mode -> mMode.setValue(mode),
+                                            throwable -> mError.setValue(new ViewModelError(Error.GET_MODE, throwable.getMessage()))
+                                    ));
+                        },
+                        throwable -> clientModeResponse.setValue(Response.error(throwable))
+                ));
+    }
+
     public void setObtMode() {
         disposables.add(setObtModeUseCase.execute()
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .doOnSubscribe(__ -> obtModeResponse.setValue(Response.loading()))
+                .subscribe(
+                        () -> {
+                            obtModeResponse.setValue(Response.success(null));
+                            disposables.add(mGetModeUseCase.execute()
+                                    .subscribeOn(schedulersFacade.io())
+                                    .observeOn(schedulersFacade.ui())
+                                    .subscribe(
+                                            mode -> mMode.setValue(mode),
+                                            throwable -> mError.setValue(new ViewModelError(Error.GET_MODE, throwable.getMessage()))
+                                    ));
+                        },
+                        throwable -> obtModeResponse.setValue(Response.error(throwable))
+                ));
+    }
+
+    public void resetObtMode() {
+        disposables.add(resetObtModeUseCase.execute()
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .doOnSubscribe(__ -> obtModeResponse.setValue(Response.loading()))
