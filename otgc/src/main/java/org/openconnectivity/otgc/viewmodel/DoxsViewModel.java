@@ -57,7 +57,6 @@ import org.openconnectivity.otgc.domain.usecase.wifi.ScanWiFiNetworksUseCase;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -227,7 +226,6 @@ public class DoxsViewModel extends BaseViewModel {
                                                         }).filter(oxm -> oxm != null))
                                                 .subscribeOn(mSchedulersFacade.io())
                                                 .observeOn(mSchedulersFacade.ui())
-                                                .doOnSubscribe(__ -> otmResponse.setValue(Response.loading()))
                                                 .subscribe(
                                                         oxm -> mOnboardUseCase.execute(deviceToOnboard, oxm)
                                                                 .map(device -> {
@@ -240,6 +238,7 @@ public class DoxsViewModel extends BaseViewModel {
                                                                 })
                                                                 .subscribeOn(mSchedulersFacade.io())
                                                                 .observeOn(mSchedulersFacade.ui())
+                                                                .doOnSubscribe(__ -> otmResponse.setValue(Response.loading()))
                                                                 .subscribe(
                                                                         ownedDevice -> mCreateAclUseCase.execute(ownedDevice, true, Arrays.asList("*"), 31)
                                                                                 .subscribeOn(mSchedulersFacade.io())
