@@ -57,6 +57,8 @@
                     android:id="@+id/text_device_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLength="255"
+                    android:singleLine="true"
                     android:textSize="@dimen/font_size_default" />
                 <TextView
                     android:id="@+id/text_device_uuid"
