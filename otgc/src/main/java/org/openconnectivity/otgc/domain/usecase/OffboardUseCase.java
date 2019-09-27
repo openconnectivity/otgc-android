@@ -62,9 +62,10 @@ public class OffboardUseCase {
 
         return doxsRepository.resetDevice(deviceToOffboard.getDeviceId())
                 .delay(preferencesRepository.getRequestsDelay(), TimeUnit.SECONDS, schedulersFacade.ui())
-                .andThen(getUpdatedOcSecureResource)
-                .onErrorResumeNext(error -> getUpdatedOcSecureResource
-                        .retry(2)
-                        .onErrorResumeNext(Single.error(error)));
+                .andThen(getUpdatedOcSecureResource
+                            .onErrorResumeNext(error -> getUpdatedOcSecureResource
+                                    .retry(2)
+                                    .onErrorResumeNext(Single.error(error)))
+                );
     }
 }
