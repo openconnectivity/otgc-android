@@ -319,6 +319,16 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
         getActivity().runOnUiThread(() -> {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
             alertDialog.setTitle(R.string.devices_select_oxm_title);
+            alertDialog.setOnCancelListener((dialog) -> {
+                dialog.dismiss();
+                try {
+                    synchronized (lock) {
+                        lock.notifyAll();
+                    }
+                } catch (Exception e) {
+                    Timber.e(e);
+                }
+            });
             alertDialog.setItems(options.toArray(new CharSequence[0]), (dialog, which) -> {
                 dialog.dismiss();
                 try {

@@ -313,11 +313,11 @@ public class IotivityRepository {
             };
 
             String scope = preferencesRepository.getDiscoveryScope();
-            if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_SITE)) {
+            if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_REALM)) {
                 if (!OCMain.doRealmLocalIPv6Multicast(OcfResourceUri.RES_URI, null, handler)) {
                     emitter.onError(new Exception("Error scanning hosts"));
                 }
-            } else if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_REALM)) {
+            } else if (scope.equals(DiscoveryScope.DISCOVERY_SCOPE_SITE)) {
                 if (!OCMain.doSiteLocalIPv6Multicast(OcfResourceUri.RES_URI, null, handler)) {
                     emitter.onError(new Exception("Error scanning hosts"));
                 }
