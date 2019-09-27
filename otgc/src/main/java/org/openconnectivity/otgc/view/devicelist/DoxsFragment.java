@@ -48,6 +48,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.openconnectivity.otgc.R;
+import org.openconnectivity.otgc.domain.model.devicelist.DeviceType;
 import org.openconnectivity.otgc.domain.usecase.link.RetrieveLinkedDevicesUseCase;
 import org.openconnectivity.otgc.utils.constant.OcfOxmType;
 import org.openconnectivity.otgc.view.accesscontrol.AccessControlActivity;
@@ -267,6 +268,9 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
 
         mViewModel.getDeviceFound().observe(this, this::processDeviceFound);
         mViewModel.getOtmResponse().observe(this, this::processOtmResponse);
+        mViewModel.getDeviceInfoResponse().observe(this, this::processDeviceInfoResponse);
+        mViewModel.getDeviceRoleResponse().observe(this, this::processDeviceRoleResponse);
+        mViewModel.provisionAceOtmResponse().observe(this, this::processProvisionAceOtmResponse);
         mViewModel.getOffboardResponse().observe(this, this::processOffboardResponse);
         mViewModel.getUpdatedDevice().observe(this, this::processUpdateDevice);
 
@@ -386,43 +390,81 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
     private void processOtmResponse(Response<Device> response) {
         switch (response.status) {
             case LOADING:
-                renderOtmLoadingState();
+                adPersonal = UiUtils.createProgressDialog(getActivity(),
+                        getString(R.string.devices_dialog_onboarding_otm_message));
                 break;
             case SUCCESS:
-                renderOtmDataState(response.data);
                 break;
             case ERROR:
-                renderOtmErrorState(response.message);
+                if (adPersonal != null && adPersonal.isShowing()) {
+                    adPersonal.dismiss();
+                }
+                Toast.makeText(getActivity(), R.string.devices_error_transferring_ownership, Toast.LENGTH_SHORT).show();
                 break;
         }
     }
 
-    private void renderOtmLoadingState() {
-        adPersonal = UiUtils.createProgressDialog(getActivity(),
-                getString(R.string.devices_dialog_onboarding_otm_message));
-    }
-
-    private void renderOtmDataState(Device data) {
-        if (adPersonal != null && adPersonal.isShowing()) {
-            adPersonal.dismiss();
-        }
-
-        if (data != null) {
-            positionBeingUpdated = mAdapter.updateItem(positionBeingUpdated, data);
-            showSetDeviceNameDialog(
-                    positionBeingUpdated,
-                    mAdapter.mDataset.get(positionBeingUpdated).getDeviceId(),
-                    mAdapter.mDataset.get(positionBeingUpdated).getDeviceInfo().getName()
-            );
-            positionBeingUpdated = 0;
+    private void processDeviceInfoResponse(Response<Device> response) {
+        switch (response.status) {
+            case LOADING:
+                break;
+            case SUCCESS:
+                break;
+            case ERROR:
+                if (adPersonal != null && adPersonal.isShowing()) {
+                    adPersonal.dismiss();
+                }
+                Toast.makeText(getActivity(), R.string.devices_error_device_info, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
         }
     }
 
-    private void renderOtmErrorState(String message) {
-        if (adPersonal != null && adPersonal.isShowing()) {
-            adPersonal.dismiss();
+    private void processDeviceRoleResponse(Response<Device> response) {
+        switch (response.status) {
+            case LOADING:
+                break;
+            case SUCCESS:
+                if (adPersonal != null && adPersonal.isShowing()) {
+                    adPersonal.dismiss();
+                }
+
+                if (response.data != null) {
+                    positionBeingUpdated = mAdapter.updateItem(positionBeingUpdated, response.data);
+                    if (response.data.getDeviceType() == DeviceType.OWNED_BY_SELF) {
+                        showSetDeviceNameDialog(
+                                positionBeingUpdated,
+                                mAdapter.mDataset.get(positionBeingUpdated).getDeviceId(),
+                                mAdapter.mDataset.get(positionBeingUpdated).getDeviceInfo().getName()
+                        );
+                    }
+                    positionBeingUpdated = 0;
+                }
+                break;
+            case ERROR:
+                if (adPersonal != null && adPersonal.isShowing()) {
+                    adPersonal.dismiss();
+                }
+                Toast.makeText(getActivity(), R.string.devices_error_device_role, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
         }
-        Toast.makeText(getActivity(), R.string.devices_error_transferring_ownership, Toast.LENGTH_SHORT).show();
+    }
+
+    private void processProvisionAceOtmResponse(Response<Device> response) {
+        switch (response.status) {
+            case LOADING:
+                break;
+            case SUCCESS:
+                break;
+            case ERROR:
+                Toast.makeText(getActivity(), R.string.devices_error_provision_ace_otm, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
     }
 
     private void processOffboardResponse(Response<Device> response) {
@@ -432,13 +474,6 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
                         getString(R.string.devices_dialog_offboarding_reset_message));
                 break;
             case SUCCESS:
-                if (adPersonal != null && adPersonal.isShowing()) {
-                    adPersonal.dismiss();
-                }
-                if (response.data != null) {
-                    mAdapter.updateItem(positionBeingUpdated, response.data);
-                    positionBeingUpdated = 0;
-                }
                 break;
             default:
                 if (adPersonal != null && adPersonal.isShowing()) {

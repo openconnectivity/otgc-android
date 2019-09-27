@@ -78,10 +78,13 @@
     <string name="devices_dialog_confirm_reset_device_message">¿Está seguro de que desea eliminar todos los dispositivos vinculados?</string>
     <string name="devices_cardview_menu_item_offboard">Desvincular</string>
     <string name="devices_error_scanning_devices">Error buscando dispositivos</string>
-    <string name="devices_error_onboard_client_mode">OTM no está disponible para el modo Cliente.</string>
+    <string name="devices_error_onboard_client_mode">OTM no está disponible para el modo Client</string>
     <string name="devices_error_transferring_ownership">La transferencia de propiedad falló</string>
     <string name="devices_error_client_mode_failed">Error al cambiar a modo Cliente</string>
     <string name="devices_error_obt_mode_failed">Error al cambiar a modo OBT</string>
+    <string name="devices_error_device_info">Error al obtener la información del dispositivo</string>
+    <string name="devices_error_device_role">Error al obtener el rol del dispositivo</string>
+    <string name="devices_error_provision_ace_otm">Error al crear la ACE</string>
     <string name="dialog_wait_title">Cargando</string>
     <string name="dialog_wait_message">Cargando. Por favor, espere...</string>
     <string name="devices_link_error">Error al obtener los dispositivos vinculados</string>

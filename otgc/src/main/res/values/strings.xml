@@ -152,8 +152,11 @@
     <string name="devices_dialog_confirm_reset_device_no_option" translatable="false">Cancel</string>
     <string name="devices_error_scanning_devices">Error scanning devices</string>
     <string name="devices_error_pairing_devices">Error pairing devices</string>
-    <string name="devices_error_onboard_client_mode">OTM is not available for Client mode.</string>
+    <string name="devices_error_onboard_client_mode">OTM is not available for Client mode</string>
     <string name="devices_error_transferring_ownership">Ownership transfer failed</string>
+    <string name="devices_error_device_info">Get device info has failed</string>
+    <string name="devices_error_device_role">Get device role has failed</string>
+    <string name="devices_error_provision_ace_otm">Provision ACE has failed</string>
     <string name="devices_error_offboard_failed">Offboard failed</string>
     <string name="devices_error_client_mode_failed">Error setting client mode</string>
     <string name="devices_error_obt_mode_failed">Error setting OBT mode</string>
