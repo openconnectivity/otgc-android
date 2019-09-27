@@ -22,22 +22,26 @@
 
 package org.openconnectivity.otgc.view.devicelist;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.domain.model.devicelist.DeviceType;
 import org.openconnectivity.otgc.domain.model.devicelist.DeviceRole;
 import org.openconnectivity.otgc.domain.usecase.link.RetrieveLinkedDevicesUseCase;
+import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.selection.SelectionTracker;
+
+import io.reactivex.disposables.CompositeDisposable;
 
 public class ActionModeController implements ActionMode.Callback {
     private final Context mContext;
@@ -83,25 +87,39 @@ public class ActionModeController implements ActionMode.Callback {
                 final Device c = client;
                 final Device s = server;
 
-                List<String> linkClientDevices = retrieveLinkedDevicesUseCase.execute(client)
-                                                    .onErrorReturnItem(new ArrayList<>())
-                                                    .blockingGet();
+                // Create dialog
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle(R.string.dialog_wait_title);
+                builder.setMessage(R.string.dialog_wait_message);
+                AlertDialog waitDialog = builder.create();
 
-                if (serverId != null) {
-                    if (linkClientDevices.contains(serverId)) {
-                        unlinkMenuItem.setOnMenuItemClickListener(menuItem -> {
-                            actionMode.finish();
-                            return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
-                        });
-                        unlinkMenuItem.setVisible(true);
-                    } else {
-                        linkMenuItem.setOnMenuItemClickListener(menuItem -> {
-                            actionMode.finish();
-                            return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
-                        });
-                        linkMenuItem.setVisible(true);
-                    }
-                }
+                new CompositeDisposable().add(retrieveLinkedDevicesUseCase.execute(c)
+                        .onErrorReturnItem(new ArrayList<>())
+                        .subscribeOn(new SchedulersFacade().io())
+                        .observeOn(new SchedulersFacade().ui())
+                        .doOnSubscribe(__ -> waitDialog.show())
+                        .doFinally(() -> waitDialog.dismiss())
+                        .subscribe(
+                                linkClientDevices -> {
+                                    if (serverId != null) {
+                                        if (linkClientDevices.contains(serverId)) {
+                                            unlinkMenuItem.setOnMenuItemClickListener(menuItem -> {
+                                                actionMode.finish();
+                                                return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
+                                            });
+                                            unlinkMenuItem.setVisible(true);
+                                        } else {
+                                            linkMenuItem.setOnMenuItemClickListener(menuItem -> {
+                                                actionMode.finish();
+                                                return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
+                                            });
+                                            linkMenuItem.setVisible(true);
+                                        }
+                                    }
+                                },
+                                throwable -> Toast.makeText(mContext, R.string.devices_link_error, Toast.LENGTH_SHORT)
+                        ));
+
             }
         } else {
             linkMenuItem.setVisible(false);
