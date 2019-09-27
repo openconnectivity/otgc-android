@@ -144,7 +144,7 @@ public class IotivityRepository {
                 public int initialize() {
                     Timber.d("In OCMainInitHandler.initilize()");
                     int ret = OCMain.initPlatform("OCF");
-                    ret |= OCMain.addDevice("/oic/d", "oic.d.phone", "OTGC", "ocf.2.4.0", "ocf.res.1.3.0");
+                    ret |= OCMain.addDevice("/oic/d", "oic.wk.d", "OTGC", "ocf.2.4.0", "ocf.res.1.3.0");
                     return ret;
                 }
 
@@ -468,7 +468,7 @@ public class IotivityRepository {
                     List<OcResource> resourceList = new ArrayList<>();
                     for (OcResource resource : ocRes.getResourceList()) {
                         for (String resourceType : resource.getResourceTypes()) {
-                            if (!RESOURCE_TYPES_TO_FILTER.contains(resourceType)
+                            if (OcfResourceType.isVerticalResourceType(resourceType)
                                     && !resourceType.startsWith("oic.d.")) {
                                 resourceList.add(resource);
                                 break;
