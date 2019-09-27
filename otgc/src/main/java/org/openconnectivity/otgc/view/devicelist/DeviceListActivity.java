@@ -34,7 +34,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -46,7 +45,6 @@ import org.openconnectivity.otgc.utils.viewmodel.CommonError;
 import org.openconnectivity.otgc.utils.viewmodel.Response;
 import org.openconnectivity.otgc.utils.viewmodel.Status;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
-import org.openconnectivity.otgc.view.link.LinkedRolesActivity;
 import org.openconnectivity.otgc.view.trustanchor.TrustAnchorActivity;
 import org.openconnectivity.otgc.viewmodel.DeviceListViewModel;
 import org.openconnectivity.otgc.viewmodel.SharedViewModel;
@@ -100,16 +98,6 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
                 try {
                     synchronized (lock) {
                         verifyPin = input.getText().toString();
-                        lock.notifyAll();
-                    }
-                } catch (Exception e) {
-                    Timber.e(e);
-                }
-            });
-            alertDialog.setNegativeButton(DeviceListActivity.this.getString(R.string.devices_dialog_insert_randompin_no_option), (dialog, which) -> {
-                dialog.dismiss();
-                try {
-                    synchronized (lock) {
                         lock.notifyAll();
                     }
                 } catch (Exception e) {
