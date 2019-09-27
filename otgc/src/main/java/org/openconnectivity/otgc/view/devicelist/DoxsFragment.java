@@ -127,6 +127,7 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mRecyclerView.setAdapter(getAdapter());
         mRecyclerView.setEmptyView(null);
+        mRecyclerView.setItemAnimator(null);
 
         if (getContext() != null) {
             mSwipeToRefreshView.setColorSchemeColors(ContextCompat.getColor(getContext(), R.color.colorPrimary));
