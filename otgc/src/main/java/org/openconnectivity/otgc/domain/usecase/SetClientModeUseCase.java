@@ -33,7 +33,7 @@ public class SetClientModeUseCase {
     public Completable execute() {
         return iotivityRepository.scanOwnedDevices()
                 .flatMapCompletable(device -> doxsRepository.resetDevice(device.getDeviceId()))
-                .delay(preferencesRepository.getRequestsDelay(), TimeUnit.MILLISECONDS)
+                .delay(preferencesRepository.getRequestsDelay(), TimeUnit.SECONDS)
                 .andThen(provisioningRepository.resetSvrDb())
                 .andThen(Completable.fromAction(() -> preferencesRepository.setMode(OtgcMode.CLIENT)));
     }
