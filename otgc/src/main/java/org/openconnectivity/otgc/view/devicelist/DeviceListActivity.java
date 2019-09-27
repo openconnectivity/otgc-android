@@ -178,16 +178,16 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
         switch (item.getItemId()) {
             case R.id.menu_item_reset:
                 if (!obtMenuItem.isVisible()) {
-                    showConfirmSetMode(OtgcMode.OBT);
+                    showConfirmSetMode(OtgcMode.OBT, true);
                 } else if (!clientMenuItem.isVisible()) {
-                    showConfirmSetMode(OtgcMode.CLIENT);
+                    showConfirmSetMode(OtgcMode.CLIENT, true);
                 }
                 break;
             case R.id.menu_item_obt_mode:
-                showConfirmSetMode(OtgcMode.OBT);
+                showConfirmSetMode(OtgcMode.OBT, false);
                 break;
             case R.id.menu_item_client_mode:
-                showConfirmSetMode(OtgcMode.CLIENT);
+                showConfirmSetMode(OtgcMode.CLIENT, false);
                 break;
             case R.id.menu_item_trust_anchor:
                 onTrustAnchorManagement();
@@ -250,8 +250,8 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
         SharedViewModel sharedViewModel = ViewModelProviders.of(this, mViewModelFactory).get(SharedViewModel.class);
         sharedViewModel.getLoading().observe(this, this::processing);
         sharedViewModel.getDisconnected().observe(this, isDisconnected -> {
-                processing(false);
-                goToWlanConnectSSID();
+            processing(false);
+            goToWlanConnectSSID();
         });
     }
 
@@ -316,8 +316,8 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
 
     private void processLogoutResponse(Response<Void> response) {
         if (response.status.equals(Status.SUCCESS)) {
-                startActivity(new Intent(DeviceListActivity.this, LoginActivity.class));
-                finish();
+            startActivity(new Intent(DeviceListActivity.this, LoginActivity.class));
+            finish();
         }
     }
 
@@ -364,18 +364,27 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
         }
     }
 
-    private void showConfirmSetMode(String mode) {
+    private void showConfirmSetMode(String mode, boolean reset) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(DeviceListActivity.this, R.style.AppTheme));
         alertDialog.setTitle(this.getString(R.string.devices_dialog_confirm_reset_device_title));
 
         alertDialog.setMessage(R.string.devices_dialog_confirm_reset_device_message);
         alertDialog.setPositiveButton(this.getString(R.string.devices_dialog_confirm_reset_device_yes_option), (dialog, which) -> {
             dialog.dismiss();
-            if (mode.equals(OtgcMode.OBT)) {
-                mViewModel.setObtMode();
-            } else if (mode.equals(OtgcMode.CLIENT)) {
-                mViewModel.setClientMode();
+            if (reset) {
+                if (mode.equals(OtgcMode.OBT)) {
+                    mViewModel.resetObtMode();
+                } else if (mode.equals(OtgcMode.CLIENT)) {
+                    mViewModel.resetClientMode();
+                }
+            } else {
+                if (mode.equals(OtgcMode.OBT)) {
+                    mViewModel.setObtMode();
+                } else if (mode.equals(OtgcMode.CLIENT)) {
+                    mViewModel.setClientMode();
+                }
             }
+
         });
         alertDialog.setNegativeButton(this.getString(R.string.devices_dialog_confirm_reset_device_no_option), (dialog, which) -> dialog.dismiss()).show();
     }
