@@ -26,6 +26,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import org.openconnectivity.otgc.domain.usecase.GetDeviceDatabaseUseCase;
+import org.openconnectivity.otgc.domain.usecase.GetDeviceIdUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetModeUseCase;
 import org.openconnectivity.otgc.domain.usecase.accesscontrol.CreateAclUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.CheckConnectionUseCase;
@@ -78,6 +79,7 @@ public class DoxsViewModel extends BaseViewModel {
     private final PairwiseDevicesUseCase mPairwiseDevicesUseCase;
     private final UnlinkDevicesUseCase mUnlinkDevicesUseCase;
     private final GetDeviceDatabaseUseCase mGetDeviceDatabaseUseCase;
+    private final GetDeviceIdUseCase mGetDeviceIdUseCase;
 
     private final SchedulersFacade mSchedulersFacade;
 
@@ -112,6 +114,7 @@ public class DoxsViewModel extends BaseViewModel {
                   PairwiseDevicesUseCase pairwiseDevicesUseCase,
                   UnlinkDevicesUseCase unlinkDevicesUseCase,
                   GetDeviceDatabaseUseCase getDeviceDatabaseUseCase,
+                  GetDeviceIdUseCase getDeviceIdUseCase,
                   SchedulersFacade schedulersFacade) {
         this.mCheckConnectionUseCase = checkConnectionUseCase;
         this.mGetModeUseCase = getModeUseCase;
@@ -129,6 +132,7 @@ public class DoxsViewModel extends BaseViewModel {
         this.mPairwiseDevicesUseCase = pairwiseDevicesUseCase;
         this.mUnlinkDevicesUseCase = unlinkDevicesUseCase;
         this.mGetDeviceDatabaseUseCase = getDeviceDatabaseUseCase;
+        this.mGetDeviceIdUseCase = getDeviceIdUseCase;
 
         this.mSchedulersFacade = schedulersFacade;
 
@@ -258,7 +262,8 @@ public class DoxsViewModel extends BaseViewModel {
                                                                                                     deviceRole -> {
                                                                                                         ownedDevice.setDeviceRole(deviceRole);
                                                                                                         deviceRoleResponse.setValue(Response.success(ownedDevice));
-                                                                                                        mCreateAclUseCase.execute(ownedDevice, true, Arrays.asList("*"), 31)
+                                                                                                        String deviceId = mGetDeviceIdUseCase.execute().blockingGet();
+                                                                                                        mCreateAclUseCase.execute(ownedDevice, deviceId, Arrays.asList("*"), 6)
                                                                                                                 .subscribeOn(mSchedulersFacade.io())
                                                                                                                 .observeOn(mSchedulersFacade.ui())
                                                                                                                 .subscribe(
