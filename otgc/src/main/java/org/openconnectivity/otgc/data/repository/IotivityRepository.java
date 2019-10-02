@@ -24,6 +24,7 @@ package org.openconnectivity.otgc.data.repository;
 import android.content.Context;
 
 import org.iotivity.CborEncoder;
+import org.iotivity.OCBufferSettings;
 import org.iotivity.OCClientResponse;
 import org.iotivity.OCCoreRes;
 import org.iotivity.OCEndpoint;
@@ -138,13 +139,15 @@ public class IotivityRepository {
                 emitter.onError(e);
             }
             OCIntrospection.setIntrospectionData(0 /* First device */, introspectionData);
+            OCBufferSettings.setMaxAppDataSize(16384); // 16 KB
 
             int ret = OCMain.mainInit(new OCMainInitHandler() {
                 @Override
                 public int initialize() {
                     Timber.d("In OCMainInitHandler.initilize()");
                     int ret = OCMain.initPlatform("OCF");
-                    ret |= OCMain.addDevice("/oic/d", "oic.wk.d", "OTGC", "ocf.2.4.0", "ocf.res.1.3.0");
+                    ret |= OCMain.addDevice("/oic/d", "oic.wk.d", "OTGC", "ocf.2.0.5", "ocf.res.1.3.0");
+
                     return ret;
                 }
 
