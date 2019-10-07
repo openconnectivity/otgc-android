@@ -37,7 +37,7 @@ To import the IoTivity-lite Android API Binary into the OTGC Android App project
 
 2. Copy **iotivity-lite.jar** into &lt;otgc-android>/otgc/src/main/jniLibs.
 
-3. Copy **libiotivity-lite-jni.so** into &lt;otgc-android>/otgc/src/main/&lt;target_arch>
+3. Copy **libiotivity-lite-jni.so** into &lt;otgc-android>/otgc/src/main/jniLibs/&lt;target_arch>
 
 where &lt;target_arch> is one of the following values: x86, x86_64, armeabi, armeabi-v7a, armeabi-v7a-hard or arm64-v8a.
     

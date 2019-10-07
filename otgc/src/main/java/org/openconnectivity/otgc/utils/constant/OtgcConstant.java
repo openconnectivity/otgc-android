@@ -38,8 +38,9 @@ public class OtgcConstant {
     // File databases for IoTivity
     public static final String INTROSPECTION_CBOR_FILE = "introspection.dat";
 
-    // Root certificate and keypair
-    public static String ROOT_CERTIFICATE = "root.crt";
-    public static String ROOT_PRIVATE_KEY = "root.prv";
-    public static String ROOT_PUBLIC_KEY = "root.pub";
+    /* Kyrio certificate chain */
+    public static String KYRIO_ROOT_CERTIFICATE = "kyrio-root-cert.pem";
+    public static String KYRIO_SUBCA_CERTIFICATE = "kyrio-subca-cert.pem";
+    public static String KYRIO_EE_CERTIFICATE = "kyrio-ee-cert.pem";
+    public static String KYRIO_EE_KEY = "kyrio-ee-key.pem";
 }
