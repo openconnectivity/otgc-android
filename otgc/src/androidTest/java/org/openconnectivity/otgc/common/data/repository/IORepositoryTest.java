@@ -56,20 +56,6 @@ public class IORepositoryTest {
     }
 
     @Test
-    public void getBytesFromFile_rootCrtFile() {
-        repo.getBytesFromFile("root.crt")
-                .test()
-                .assertComplete();
-    }
-
-    @Test
-    public void getBytesFromFile_rootPrvFile() {
-        repo.getBytesFromFile("root.prv")
-                .test()
-                .assertComplete();
-    }
-
-    @Test
     public void getBytesFromFile_missingFileReturnsFileNotFoundException() {
         repo.getBytesFromFile("dummy.file")
                 .test()
