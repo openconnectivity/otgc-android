@@ -76,28 +76,36 @@ public class InitializeIotivityUseCase {
         }
     });
     private void factoryResetHandler(long device) throws Exception {
-        /* my cert */
-        byte[] eeCertificate = ioRepository.getBytesFromFile(OtgcConstant.KYRIO_EE_CERTIFICATE).blockingGet();
-
-        /* private key of my cert */
-        byte[] eeKey = ioRepository.getBytesFromFile(OtgcConstant.KYRIO_EE_KEY).blockingGet();
-
-        /* intermediate cert */
-        byte[] subcaCertificate = ioRepository.getBytesFromFile(OtgcConstant.KYRIO_SUBCA_CERTIFICATE).blockingGet();
-
-        /* root cert */
-        byte[] rootcaCertificate = ioRepository.getBytesFromFile(OtgcConstant.KYRIO_ROOT_CERTIFICATE).blockingGet();
-
-        int credid = OCPki.addMfgCert(device, eeCertificate, eeKey);
+        /* Kyrio end-entity cert */
+        byte[] kyrioEeCertificate = ioRepository.getBytesFromFile(OtgcConstant.KYRIO_EE_CERTIFICATE).blockingGet();
+        /* private key of Kyrio end-entity cert */
+        byte[] kyrioEeKey = ioRepository.getBytesFromFile(OtgcConstant.KYRIO_EE_KEY).blockingGet();
+        int credid = OCPki.addMfgCert(device, kyrioEeCertificate, kyrioEeKey);
         if (credid == -1) {
             throw new Exception("Add identity certificate error");
         }
 
-        if (OCPki.addMfgIntermediateCert(device, credid, subcaCertificate) == -1) {
+        /* Kyrio intermediate cert */
+        byte[] kyrioSubcaCertificate = ioRepository.getBytesFromFile(OtgcConstant.KYRIO_SUBCA_CERTIFICATE).blockingGet();
+        if (OCPki.addMfgIntermediateCert(device, credid, kyrioSubcaCertificate) == -1) {
             throw new Exception("Add intermediate certificate error");
         }
 
-        if (OCPki.addMfgTrustAnchor(device, rootcaCertificate) == -1) {
+        /* Kyrio root cert */
+        byte[] kyrioRootcaCertificate = ioRepository.getBytesFromFile(OtgcConstant.KYRIO_ROOT_CERTIFICATE).blockingGet();
+        if (OCPki.addMfgTrustAnchor(device, kyrioRootcaCertificate) == -1) {
+            throw new Exception("Add root certificate error");
+        }
+        if (OCPki.addTrustAnchor(device, kyrioRootcaCertificate) == -1) {
+            throw new Exception("Add root certificate error");
+        }
+
+        /* EonTi root cert */
+        byte[] eontiRootcaCertificate = ioRepository.getBytesFromFile(OtgcConstant.EONTI_ROOT_CERTIFICATE).blockingGet();
+        if (OCPki.addMfgTrustAnchor(device, eontiRootcaCertificate) == -1) {
+            throw new Exception("Add root certificate error");
+        }
+        if (OCPki.addTrustAnchor(device, eontiRootcaCertificate) == -1) {
             throw new Exception("Add root certificate error");
         }
 
