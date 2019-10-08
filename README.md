@@ -53,9 +53,10 @@ The steps required to build the binary of the IoTivity-lite Android API is shown
 ```
 git checkout swig
 ```
-2. Apply the patch of the OTGC in IoTivity-lite
+2. Apply all patchs of the OTGC in IoTivity-lite
 ```
-git apply <otgc-android>/extlibs/patchs/remove_cred_by_credid.patch
+git apply <otgc-linux>/extlibs/patchs/remove_cred_by_credid.patch
+git apply <otgc-linux>/extlibs/patchs/fix_oc_api.patch
 ```
 3. Go to the **android** directory.
 ```
