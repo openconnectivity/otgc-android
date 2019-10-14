@@ -49,8 +49,8 @@ public class DeleteAclUseCase {
     public Completable execute(Device device, long aceId) {
         return iotivityRepository.getSecureEndpoint(device)
                 .flatMapCompletable(endpoint ->
-                        pstatRepository.changeDeviceStatus(device.getIpv6SecureHost(), device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(amsRepository.deleteAcl(device.getIpv6SecureHost(), device.getDeviceId(), aceId))
-                                .andThen(pstatRepository.changeDeviceStatus(device.getIpv6SecureHost(), device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
+                        pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
+                                .andThen(amsRepository.deleteAcl(endpoint, device.getDeviceId(), aceId))
+                                .andThen(pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
     }
 }
