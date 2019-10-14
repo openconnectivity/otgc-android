@@ -287,9 +287,7 @@ public class CmsRepository {
         return Completable.create(emitter -> {
             OCUuid di = OCUuidUtil.stringToUuid(deviceId);
 
-            OCRole role = new OCRole();
-            role.setRole(roleId);
-            role.setAuthority(roleAuthority);
+            OCRole roles = OCObt.addRoleId(null, roleId, roleAuthority);
 
             OCObtStatusHandler handler = (int status) -> {
                 if (status >= 0) {
@@ -300,9 +298,10 @@ public class CmsRepository {
                 }
             };
 
-            int ret = OCObt.provisionRoleCertificate(role, di, handler);
+            int ret = OCObt.provisionRoleCertificate(roles, di, handler);
             if (ret < 0) {
                 emitter.onError(new IOException("Provision role certificate error"));
+                OCObt.freeRoleId(roles);
             }
         });
     }
