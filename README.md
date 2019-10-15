@@ -56,7 +56,6 @@ git checkout swig
 2. Apply all patchs of the OTGC in IoTivity-lite
 ```
 git apply <otgc-linux>/extlibs/patchs/remove_cred_by_credid.patch
-git apply <otgc-linux>/extlibs/patchs/fix_oc_api.patch
 ```
 3. Go to the **android** directory.
 ```
