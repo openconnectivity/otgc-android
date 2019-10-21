@@ -96,16 +96,10 @@ public class InitializeIotivityUseCase {
         if (OCPki.addMfgTrustAnchor(device, kyrioRootcaCertificate) == -1) {
             throw new Exception("Add root certificate error");
         }
-        if (OCPki.addTrustAnchor(device, kyrioRootcaCertificate) == -1) {
-            throw new Exception("Add root certificate error");
-        }
 
         /* EonTi root cert */
         byte[] eontiRootcaCertificate = ioRepository.getBytesFromFile(OtgcConstant.EONTI_ROOT_CERTIFICATE).blockingGet();
         if (OCPki.addMfgTrustAnchor(device, eontiRootcaCertificate) == -1) {
-            throw new Exception("Add root certificate error");
-        }
-        if (OCPki.addTrustAnchor(device, eontiRootcaCertificate) == -1) {
             throw new Exception("Add root certificate error");
         }
 
