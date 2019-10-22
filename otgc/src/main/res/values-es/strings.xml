@@ -91,7 +91,6 @@
     <string name="client_title_no_name">Sin nombre</string>
     <string name="client_menu_item_info">Información</string>
     <string name="devices_error_offboard_failed">La desvinculación del dispositivo falló</string>
-    <string name="devices_oxm_man_cert">Certificado de fabricante</string>
     <string name="devices_oxm_random_pin">PIN aleatorio</string>
     <string name="client_cannot_retrieve_device_info">No se pueden obtener las propiedades del recurso /oic/d</string>
     <string name="client_cannot_retrieve_platform_info">No se pueden obtener las propiedades del recurso /oic/p</string>
