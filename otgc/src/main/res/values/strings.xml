@@ -104,7 +104,7 @@
     <string name="devices_oxm_just_works" translatable="false">Just Works</string>
     <string name="devices_oxm_random_pin">Random PIN</string>
     <string name="devices_oxm_man_cert">Manufacturer Certificate</string>
-    <string name="devices_no_oxm_supported">The device does not support any OXM.</string>
+    <string name="devices_no_oxm_supported">The device does not support any OTM.</string>
 
     <string name="devices_dialog_insert_randompin_title">Insert PIN displayed by device</string>
     <string name="devices_dialog_insert_randompin_yes_option">Confirm</string>
