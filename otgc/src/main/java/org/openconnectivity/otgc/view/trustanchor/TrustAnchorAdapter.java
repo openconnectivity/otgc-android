@@ -44,6 +44,7 @@ public class TrustAnchorAdapter extends RecyclerView.Adapter<TrustAnchorAdapter.
             implements View.OnClickListener {
         @BindView(R.id.text_cred_id) TextView mCredId;
         @BindView(R.id.text_cred_subject) TextView mCredSubject;
+        @BindView(R.id.text_cred_credusage) TextView mCredUsage;
         @BindView(R.id.img_btn_info_cred) ImageButton mInfoButton;
         @BindView(R.id.img_btn_delete_cred) ImageButton mDeleteButton;
 
@@ -127,8 +128,9 @@ public class TrustAnchorAdapter extends RecyclerView.Adapter<TrustAnchorAdapter.
         OcCredential cred = mDataset.get(position);
 
         if (cred != null) {
-            holder.mCredId.setText(String.format("Credential ID: %d", cred.getCredid()));
+            holder.mCredId.setText(mContext.getString(R.string.credentials_cardview_credid, cred.getCredid().toString()));
             holder.mCredSubject.setText(mContext.getString(R.string.credentials_cardview_subject_uuid, cred.getSubjectuuid()));
+            holder.mCredUsage.setText(mContext.getString(R.string.credentials_cardview_credusage, cred.getCredusage().getValue()));
         }
     }
 

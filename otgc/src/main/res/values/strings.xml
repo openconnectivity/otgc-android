@@ -213,6 +213,8 @@
     <string name="credentials_cred_error_provision_identity">Error installing identity certificate</string>
     <string name="credentials_cred_error_provision_role">Error installing role certificate</string>
     <string name="credentials_cardview_subject_uuid" translatable="false">UUID: %1$s</string>
+    <string name="credentials_cardview_credid">Credential ID: %1$s</string>
+    <string name="credentials_cardview_credusage">Usage: %1$s</string>
     <string name="credentials_cardview_role">Role ID: %1$s, Role Authority: %2$s</string>
 
     <string name="client_title_no_name">Unnamed</string>

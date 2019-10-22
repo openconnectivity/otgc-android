@@ -164,6 +164,8 @@
     <string name="credentials_cred_error_provision_identity">Error al instalar un certificado de identidad</string>
     <string name="credentials_cred_error_provision_role">Error al instalar un certificado de rol</string>
     <string name="credentials_cardview_role">ID de rol: %1$s, Autoridad de rol: %2$s</string>
+    <string name="credentials_cardview_credid">ID Credencial: %1$s</string>
+    <string name="credentials_cardview_credusage">Uso: %1$s</string>
     <string name="devices_dialog_wifi_scan_error">Error escaneando las redes Wi-Fi</string>
     <string name="devices_dialog_wifi_easy_setup_connecting">Configurando y conectado el dispositivo mediante Wi-Fi Easy Setup</string>
     <string name="devices_dialog_wifi_easy_setup_error">Wi-Fi Easy Setup ha fallado</string>
