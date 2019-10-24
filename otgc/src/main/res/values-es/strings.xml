@@ -53,7 +53,7 @@
     <string name="wlan_scan_dialog_password_negative_button_text">Cancelar</string>
     <string name="wlan_scan_dialog_connect_to_wifi_message">Conectando a la red Wi-Fi…</string>
     <string name="devices_select_oxm_title">Seleccionar OTM</string>
-    <string name="devices_no_oxm_supported">El dispositivo no soporta ningún OXM.</string>
+    <string name="devices_no_oxm_supported">El dispositivo no soporta ningún OTM.</string>
     <string name="devices_dialog_insert_randompin_title">Introduzca el PIN mostrado por el dispositivo</string>
     <string name="devices_dialog_insert_randompin_yes_option">Confirmar</string>
     <string name="devices_dialog_insert_randompin_no_option">Cancelar</string>
@@ -91,7 +91,6 @@
     <string name="client_title_no_name">Sin nombre</string>
     <string name="client_menu_item_info">Información</string>
     <string name="devices_error_offboard_failed">La desvinculación del dispositivo falló</string>
-    <string name="devices_oxm_man_cert">Certificado de fabricante</string>
     <string name="devices_oxm_random_pin">PIN aleatorio</string>
     <string name="client_cannot_retrieve_device_info">No se pueden obtener las propiedades del recurso /oic/d</string>
     <string name="client_cannot_retrieve_platform_info">No se pueden obtener las propiedades del recurso /oic/p</string>
@@ -165,6 +164,8 @@
     <string name="credentials_cred_error_provision_identity">Error al instalar un certificado de identidad</string>
     <string name="credentials_cred_error_provision_role">Error al instalar un certificado de rol</string>
     <string name="credentials_cardview_role">ID de rol: %1$s, Autoridad de rol: %2$s</string>
+    <string name="credentials_cardview_credid">ID Credencial: %1$s</string>
+    <string name="credentials_cardview_credusage">Uso: %1$s</string>
     <string name="devices_dialog_wifi_scan_error">Error escaneando las redes Wi-Fi</string>
     <string name="devices_dialog_wifi_easy_setup_connecting">Configurando y conectado el dispositivo mediante Wi-Fi Easy Setup</string>
     <string name="devices_dialog_wifi_easy_setup_error">Wi-Fi Easy Setup ha fallado</string>

@@ -1,5 +1,5 @@
 diff --git a/include/oc_pki.h b/include/oc_pki.h
-index acbab8c..c16b512 100644
+index acbab8c7..c16b512b 100644
 --- a/include/oc_pki.h
 +++ b/include/oc_pki.h
 @@ -45,6 +45,9 @@ int oc_pki_add_trust_anchor(size_t device, const unsigned char *cert,
@@ -13,10 +13,10 @@ index acbab8c..c16b512 100644
  }
  #endif
 diff --git a/security/oc_pki.c b/security/oc_pki.c
-index a9306c2..c9b3b15 100644
+index a9306c23..52755576 100644
 --- a/security/oc_pki.c
 +++ b/security/oc_pki.c
-@@ -354,6 +354,16 @@ oc_pki_add_trust_anchor(size_t device, const unsigned char *cert,
+@@ -354,6 +354,17 @@ oc_pki_add_trust_anchor(size_t device, const unsigned char *cert,
    return pki_add_trust_anchor(device, cert, cert_size, OC_CREDUSAGE_TRUSTCA);
  }
  
@@ -27,6 +27,7 @@ index a9306c2..c9b3b15 100644
 +  if (cred)
 +  {
 +    oc_sec_remove_cred(cred, device);
++    oc_sec_dump_cred(device);
 +  }
 +}
 +
@@ -34,7 +35,7 @@ index a9306c2..c9b3b15 100644
  typedef int dummy_declaration;
  #endif /* !OC_PKI */
 diff --git a/swig/swig_interfaces/oc_pki.i b/swig/swig_interfaces/oc_pki.i
-index 2765e56..9910770 100644
+index 2765e562..9910770c 100644
 --- a/swig/swig_interfaces/oc_pki.i
 +++ b/swig/swig_interfaces/oc_pki.i
 @@ -105,4 +105,6 @@ void jni_pki_set_security_profile(size_t device,

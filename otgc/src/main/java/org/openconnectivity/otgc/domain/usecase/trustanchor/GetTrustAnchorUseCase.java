@@ -45,7 +45,8 @@ public class GetTrustAnchorUseCase {
                     List<OcCredential> trustAnchorList = new ArrayList<>();
                     for (OcCredential cred : credentials.getCredList()) {
                         if (cred.getCredusage() != null
-                                && cred.getCredusage() == OcfCredUsage.OC_CREDUSAGE_TRUSTCA) {
+                                && (cred.getCredusage() == OcfCredUsage.OC_CREDUSAGE_MFGTRUSTCA
+                                || cred.getCredusage() == OcfCredUsage.OC_CREDUSAGE_TRUSTCA)) {
                             trustAnchorList.add(cred);
                         }
                     }
