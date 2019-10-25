@@ -154,6 +154,15 @@ public class IORepository {
         });
     }
 
+    public Single<X509Certificate> getFileAsX509Certificate(InputStream is) {
+        return Single.create(emitter -> {
+            Security.addProvider(new BouncyCastleProvider());
+            CertificateFactory factory = CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME);
+            X509Certificate caCert = (X509Certificate) factory.generateCertificate(is);
+            emitter.onSuccess(caCert);
+        });
+    }
+
     public Single<byte[]> getBytesFromFile(String path) {
         return Single.fromCallable(() -> {
             byte[] fileBytes;

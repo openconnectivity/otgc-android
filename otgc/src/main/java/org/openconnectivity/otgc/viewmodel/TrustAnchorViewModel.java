@@ -14,7 +14,7 @@ import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelErrorType;
 
-import java.io.File;
+import java.io.InputStream;
 
 import javax.inject.Inject;
 
@@ -85,8 +85,8 @@ public class TrustAnchorViewModel extends ViewModel {
             ));
     }
 
-    public void addTrustAnchor(String path) {
-        disposable.add(storeTrustAnchorUseCase.execute(path)
+    public void addTrustAnchor(InputStream is) {
+        disposable.add(storeTrustAnchorUseCase.execute(is)
             .subscribeOn(schedulersFacade.io())
             .observeOn(schedulersFacade.ui())
             .subscribe(

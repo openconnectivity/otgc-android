@@ -42,7 +42,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredential;
-import org.openconnectivity.otgc.utils.FilePath;
 import org.openconnectivity.otgc.utils.di.Injectable;
 import org.openconnectivity.otgc.utils.view.EmptyRecyclerView;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
@@ -50,12 +49,16 @@ import org.openconnectivity.otgc.viewmodel.TrustAnchorViewModel;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.util.encoders.Base64;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -98,8 +101,13 @@ public class TrustAnchorActivity extends AppCompatActivity implements Injectable
             Uri uri = null;
             if (resultData != null) {
                 uri = resultData.getData();
-                String path = FilePath.getPath(this, uri);
-                mViewModel.addTrustAnchor(path);
+                try {
+                    mViewModel.addTrustAnchor(getContentResolver().openInputStream(uri));
+                } catch (Exception e) {
+                    int errorId = R.string.trust_anchor_create_error;
+                    Toast.makeText(this, errorId, Toast.LENGTH_SHORT).show();
+                }
+
             }
         }
     }
