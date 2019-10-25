@@ -12,6 +12,7 @@ import org.openconnectivity.otgc.domain.usecase.trustanchor.RemoveTrustAnchorByC
 import org.openconnectivity.otgc.domain.usecase.trustanchor.StoreTrustAnchorUseCase;
 import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
+import org.openconnectivity.otgc.utils.viewmodel.ViewModelErrorType;
 
 import java.io.File;
 
@@ -90,7 +91,7 @@ public class TrustAnchorViewModel extends ViewModel {
             .observeOn(schedulersFacade.ui())
             .subscribe(
                     () -> retrieveTrustAnchors(),
-                    throwable -> {}
+                    throwable -> mError.setValue(new ViewModelError(Error.ADD_ROOT_CERT, throwable.getMessage()))
             ));
     }
 
@@ -102,5 +103,9 @@ public class TrustAnchorViewModel extends ViewModel {
                     () -> deleteCredid.setValue(credid),
                     throwable -> {}
             ));
+    }
+
+    public enum Error implements ViewModelErrorType {
+        ADD_ROOT_CERT
     }
 }

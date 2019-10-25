@@ -147,6 +147,9 @@ public class IORepository {
             } catch (IOException e) {
                 Timber.e("%s file storage failed", path);
                 emitter.onError(e);
+            } catch (Exception e) {
+                Timber.e(e.getMessage());
+                emitter.onError(e);
             }
         });
     }

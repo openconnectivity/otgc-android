@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -238,7 +239,16 @@ public class TrustAnchorActivity extends AppCompatActivity implements Injectable
     }
 
     private void handleError(@NonNull ViewModelError error) {
-        // TODO:
+        int errorId = -1;
+        switch ((TrustAnchorViewModel.Error)error.getType()) {
+            case ADD_ROOT_CERT:
+                errorId = R.string.trust_anchor_create_error;
+                break;
+        }
+
+        if (errorId != 0) {
+            Toast.makeText(this, errorId, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void processCredential(@NonNull OcCredential credential) {

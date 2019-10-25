@@ -216,6 +216,7 @@
     <string name="credentials_cardview_credid">Credential ID: %1$s</string>
     <string name="credentials_cardview_credusage">Usage: %1$s</string>
     <string name="credentials_cardview_role">Role ID: %1$s, Role Authority: %2$s</string>
+    <string name="trust_anchor_create_error">Cannot store the root certificate from the selected location</string>
 
     <string name="client_title_no_name">Unnamed</string>
     <string name="client_menu_item_info">Info</string>
