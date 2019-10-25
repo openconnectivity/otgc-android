@@ -19,10 +19,11 @@
 package org.openconnectivity.otgc.domain.usecase.trustanchor;
 
 import io.reactivex.Completable;
-import org.iotivity.OCPki;
 import org.openconnectivity.otgc.data.repository.CertRepository;
 import org.openconnectivity.otgc.data.repository.CmsRepository;
 import org.openconnectivity.otgc.data.repository.IORepository;
+
+import java.io.InputStream;
 
 import javax.inject.Inject;
 
@@ -41,8 +42,8 @@ public class StoreTrustAnchorUseCase {
         this.cmsRepository = cmsRepository;
     }
 
-    public Completable execute(String path) {
-        return ioRepository.getFileAsX509Certificate(path)
+    public Completable execute(InputStream is) {
+        return ioRepository.getFileAsX509Certificate(is)
                 .flatMap(certRepository::x509CertificateToPemString)
                 .flatMapCompletable(cmsRepository::addTrustAnchor);
     }
