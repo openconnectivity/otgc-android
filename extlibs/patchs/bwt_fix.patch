@@ -1,0 +1,126 @@
+diff --git a/api/oc_server_api.c b/api/oc_server_api.c
+index 198fef46..e94cbcb3 100644
+--- a/api/oc_server_api.c
++++ b/api/oc_server_api.c
+@@ -395,7 +395,13 @@ oc_send_separate_response(oc_separate_response_t *handle,
+             oc_string(cur->uri), oc_string_len(cur->uri), &cur->endpoint,
+             cur->method, NULL, 0, OC_BLOCKWISE_SERVER);
+           if (response_state) {
+-            goto next_separate_request;
++            if (response_state->payload_size ==
++                response_state->next_block_offset) {
++              oc_blockwise_free_response_buffer(response_state);
++              response_state = NULL;
++            } else {
++              continue;
++            }
+           }
+           response_state = oc_blockwise_alloc_response_buffer(
+             oc_string(cur->uri), oc_string_len(cur->uri), &cur->endpoint,
+diff --git a/messaging/coap/engine.c b/messaging/coap/engine.c
+index f7bcfce3..b7c1b91a 100644
+--- a/messaging/coap/engine.c
++++ b/messaging/coap/engine.c
+@@ -274,6 +274,15 @@ coap_receive(oc_message_t *msg)
+             href, href_len, &msg->endpoint, message->code, message->uri_query,
+             message->uri_query_len, OC_BLOCKWISE_SERVER);
+ 
++          if (request_buffer && request_buffer->payload_size ==
++                                  request_buffer->next_block_offset) {
++            if ((request_buffer->next_block_offset - incoming_block_len) !=
++                block1_offset) {
++              oc_blockwise_free_request_buffer(request_buffer);
++              request_buffer = NULL;
++            }
++          }
++
+           if (!request_buffer && block1_num == 0) {
+             OC_DBG("creating new block-wise request buffer");
+             request_buffer = oc_blockwise_alloc_request_buffer(
+@@ -307,7 +316,6 @@ coap_receive(oc_message_t *msg)
+                                        block1_size);
+                 request_buffer->payload_size =
+                   request_buffer->next_block_offset;
+-                request_buffer->ref_count = 0;
+                 goto request_handler;
+               }
+             }
+@@ -325,6 +333,13 @@ coap_receive(oc_message_t *msg)
+           response_buffer = oc_blockwise_find_response_buffer(
+             href, href_len, &msg->endpoint, message->code, message->uri_query,
+             message->uri_query_len, OC_BLOCKWISE_SERVER);
++
++          if (response_buffer && (response_buffer->next_block_offset -
++                                  block2_offset) > block2_size) {
++            oc_blockwise_free_response_buffer(response_buffer);
++            response_buffer = NULL;
++          }
++
+           if (response_buffer) {
+             OC_DBG("continuing ongoing block-wise transfer");
+             uint32_t payload_size = 0;
+@@ -342,7 +357,6 @@ coap_receive(oc_message_t *msg)
+                 (oc_blockwise_response_state_t *)response_buffer;
+               coap_set_header_etag(response, response_state->etag,
+                                    COAP_ETAG_LEN);
+-              response_buffer->ref_count = more;
+               goto send_message;
+             } else {
+               OC_ERR("could not dispatch block");
+@@ -410,6 +424,13 @@ coap_receive(oc_message_t *msg)
+               request_buffer->payload_size = incoming_block_len;
+               request_buffer->ref_count = 0;
+             }
++            response_buffer = oc_blockwise_find_response_buffer(
++              href, href_len, &msg->endpoint, message->code, message->uri_query,
++              message->uri_query_len, OC_BLOCKWISE_SERVER);
++            if (response_buffer) {
++              oc_blockwise_free_response_buffer(response_buffer);
++              response_buffer = NULL;
++            }
+             goto request_handler;
+           } else {
+             OC_ERR("incoming payload size exceeds block size");
+diff --git a/messaging/coap/observe.c b/messaging/coap/observe.c
+index 62192fa5..2847d526 100644
+--- a/messaging/coap/observe.c
++++ b/messaging/coap/observe.c
+@@ -313,7 +313,12 @@ coap_notify_collection_observers(oc_resource_t *resource,
+         oc_string_len(obs->resource->uri) - 1, &obs->endpoint, OC_GET, NULL, 0,
+         OC_BLOCKWISE_SERVER);
+       if (response_state) {
+-        continue;
++        if (response_state->payload_size == response_state->next_block_offset) {
++          oc_blockwise_free_response_buffer(response_state);
++          response_state = NULL;
++        } else {
++          continue;
++        }
+       }
+       response_state = oc_blockwise_alloc_response_buffer(
+         oc_string(obs->resource->uri) + 1,
+@@ -480,8 +485,7 @@ coap_remove_observers_on_dos_change(size_t device, bool reset)
+   coap_observer_t *obs = (coap_observer_t *)oc_list_head(observers_list);
+   while (obs != NULL) {
+     if (obs->endpoint.device == device &&
+-        (reset ||
+-         !oc_sec_check_acl(OC_GET, obs->resource, &obs->endpoint))) {
++        (reset || !oc_sec_check_acl(OC_GET, obs->resource, &obs->endpoint))) {
+       coap_observer_t *o = obs;
+       coap_packet_t notification[1];
+ #ifdef OC_TCP
+@@ -638,7 +642,13 @@ coap_notify_observers(oc_resource_t *resource,
+               oc_string_len(obs->resource->uri) - 1, &obs->endpoint, OC_GET,
+               NULL, 0, OC_BLOCKWISE_SERVER);
+             if (response_state) {
+-              continue;
++              if (response_state->payload_size ==
++                  response_state->next_block_offset) {
++                oc_blockwise_free_response_buffer(response_state);
++                response_state = NULL;
++              } else {
++                continue;
++              }
+             }
+             response_state = oc_blockwise_alloc_response_buffer(
+               oc_string(obs->resource->uri) + 1,
