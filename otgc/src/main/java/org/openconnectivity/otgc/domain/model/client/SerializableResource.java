@@ -39,6 +39,7 @@ public class SerializableResource implements Serializable {
     private List<String> types;
     private List<String> interfaces;
     Map<String, Object> properties = new HashMap<>();
+    Map<String, Boolean> propertiesAccess = new HashMap<>();
 
     private boolean observing = false;
     private boolean observable = true;
@@ -99,6 +100,9 @@ public class SerializableResource implements Serializable {
                 case OC_REP_BOOL:
                     properties.put(ocRepresentation.getName(), ocRepresentation.getValue().getBool());
                     break;
+                case OC_REP_BOOL_ARRAY:
+                    properties.put(ocRepresentation.getName(), OCRep.ocArrayToBooleanArray(ocRepresentation.getValue().getArray()));
+                    break;
                 case OC_REP_STRING:
                     properties.put(ocRepresentation.getName(), ocRepresentation.getValue().getString());
                     break;
@@ -122,6 +126,16 @@ public class SerializableResource implements Serializable {
             }
 
             ocRepresentation = ocRepresentation.getNext();
+        }
+    }
+
+    public Map<String, Boolean> getPropertiesAccess() {
+        return this.propertiesAccess;
+    }
+
+    public void setPropertiesAccess(List<DynamicUiProperty> properties) {
+        for (DynamicUiProperty property : properties) {
+            propertiesAccess.put(property.getName(), property.isReadOnly());
         }
     }
 

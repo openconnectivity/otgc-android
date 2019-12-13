@@ -37,6 +37,7 @@ import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.selection.SelectionTracker;
@@ -67,63 +68,106 @@ public class ActionModeController implements ActionMode.Callback {
     public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
         MenuItem linkMenuItem = menu.findItem(R.id.action_pairwise);
         MenuItem unlinkMenuItem = menu.findItem(R.id.action_unlink);
-        if (mSelectionTracker.hasSelection() && mSelectionTracker.getSelection().size() == 2) {
-            Device server = null;
-            Device client = null;
-            Iterator<Device> deviceIterable = mSelectionTracker.getSelection().iterator();
-            while (deviceIterable.hasNext()) {
-                Device device = deviceIterable.next();
-                if (device.getDeviceRole().equals(DeviceRole.SERVER)
-                        && device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
-                    server = device;
-                } else if (device.getDeviceRole().equals(DeviceRole.CLIENT)
-                                && device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
-                    client = device;
+        MenuItem onboardMenuItem = menu.findItem(R.id.action_onboard);
+
+        if (mSelectionTracker.hasSelection()) {
+            boolean areUnowned = true;
+
+            Iterator<Device> itDevice = mSelectionTracker.getSelection().iterator();
+            while (itDevice.hasNext()) {
+                Device d = itDevice.next();
+                if (d.getDeviceType() != DeviceType.UNOWNED) {
+                    areUnowned = false;
+                    break;
                 }
             }
 
-            if (server != null && client != null) {
-                String serverId = server.getDeviceId();
-                final Device c = client;
-                final Device s = server;
+            if (!areUnowned && mSelectionTracker.getSelection().size() == 2) {
+                Device server = null;
+                Device client = null;
+                Iterator<Device> deviceIterable = mSelectionTracker.getSelection().iterator();
+                while (deviceIterable.hasNext()) {
+                    Device device = deviceIterable.next();
+                    if (device.getDeviceRole().equals(DeviceRole.SERVER)
+                            && device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
+                        server = device;
+                    } else if (device.getDeviceRole().equals(DeviceRole.CLIENT)
+                            && device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
+                        client = device;
+                    }
+                }
 
-                // Create dialog
-                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                builder.setTitle(R.string.dialog_wait_title);
-                builder.setMessage(R.string.dialog_wait_message);
-                AlertDialog waitDialog = builder.create();
+                if (server != null && client != null) {
+                    String serverId = server.getDeviceId();
+                    final Device c = client;
+                    final Device s = server;
 
-                new CompositeDisposable().add(retrieveLinkedDevicesUseCase.execute(c)
-                        .onErrorReturnItem(new ArrayList<>())
-                        .subscribeOn(new SchedulersFacade().io())
-                        .observeOn(new SchedulersFacade().ui())
-                        .doOnSubscribe(__ -> waitDialog.show())
-                        .doFinally(() -> waitDialog.dismiss())
-                        .subscribe(
-                                linkClientDevices -> {
-                                    if (serverId != null) {
-                                        if (linkClientDevices.contains(serverId)) {
-                                            unlinkMenuItem.setOnMenuItemClickListener(menuItem -> {
-                                                actionMode.finish();
-                                                return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
-                                            });
-                                            unlinkMenuItem.setVisible(true);
-                                        } else {
-                                            linkMenuItem.setOnMenuItemClickListener(menuItem -> {
-                                                actionMode.finish();
-                                                return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
-                                            });
-                                            linkMenuItem.setVisible(true);
+                    // Create dialog
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle(R.string.dialog_wait_title);
+                    builder.setMessage(R.string.dialog_wait_message);
+                    AlertDialog waitDialog = builder.create();
+
+                    new CompositeDisposable().add(retrieveLinkedDevicesUseCase.execute(c)
+                            .onErrorReturnItem(new ArrayList<>())
+                            .subscribeOn(new SchedulersFacade().io())
+                            .observeOn(new SchedulersFacade().ui())
+                            .doOnSubscribe(__ -> waitDialog.show())
+                            .doFinally(() -> waitDialog.dismiss())
+                            .subscribe(
+                                    linkClientDevices -> {
+                                        if (serverId != null) {
+                                            if (linkClientDevices.contains(serverId)) {
+                                                unlinkMenuItem.setOnMenuItemClickListener(menuItem -> {
+                                                    actionMode.finish();
+                                                    return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
+                                                });
+                                                unlinkMenuItem.setVisible(true);
+                                                linkMenuItem.setVisible(false);
+                                                onboardMenuItem.setVisible(false);
+                                            } else {
+                                                linkMenuItem.setOnMenuItemClickListener(menuItem -> {
+                                                    actionMode.finish();
+                                                    return sMyMenuItemClickListener.onMenuItemClick(menuItem, c, s);
+                                                });
+                                                linkMenuItem.setVisible(true);
+                                                unlinkMenuItem.setVisible(false);
+                                                onboardMenuItem.setVisible(false);
+                                            }
                                         }
-                                    }
-                                },
-                                throwable -> Toast.makeText(mContext, R.string.devices_link_error, Toast.LENGTH_SHORT)
-                        ));
+                                    },
+                                    throwable -> Toast.makeText(mContext, R.string.devices_link_error, Toast.LENGTH_SHORT)
+                            ));
 
+                } else {
+                    linkMenuItem.setVisible(false);
+                    unlinkMenuItem.setVisible(false);
+                    onboardMenuItem.setVisible(false);
+                }
+            } else if (areUnowned) {
+                onboardMenuItem.setOnMenuItemClickListener(menuItem -> {
+                    List<Device> devices = new ArrayList<>();
+                    Iterator<Device> deviceIterator = mSelectionTracker.getSelection().iterator();
+                    while (deviceIterator.hasNext()) {
+                        devices.add(deviceIterator.next());
+                    }
+
+                    actionMode.finish();
+
+                    return sMyMenuItemClickListener.onMenuItemClick(menuItem, devices);
+                });
+                onboardMenuItem.setVisible(true);
+                linkMenuItem.setVisible(false);
+                unlinkMenuItem.setVisible(false);
+            } else {
+                linkMenuItem.setVisible(false);
+                unlinkMenuItem.setVisible(false);
+                onboardMenuItem.setVisible(false);
             }
         } else {
             linkMenuItem.setVisible(false);
             unlinkMenuItem.setVisible(false);
+            onboardMenuItem.setVisible(false);
         }
         return true;
     }
@@ -144,5 +188,6 @@ public class ActionModeController implements ActionMode.Callback {
 
     public interface MyMenuItemClickListener {
         boolean onMenuItemClick(MenuItem menuItem, Device client, Device server);
+        boolean onMenuItemClick(MenuItem menuItem, List<Device> devices);
     }
 }

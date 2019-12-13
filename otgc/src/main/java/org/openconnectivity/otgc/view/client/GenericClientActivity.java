@@ -217,6 +217,7 @@ public class GenericClientActivity extends AppCompatActivity implements HasSuppo
             for (DynamicUiElement uiElement : uiElements) {
                 SerializableResource resource = new SerializableResource();
                 resource.setUri(uiElement.getPath());
+                resource.setPropertiesAccess(uiElement.getProperties());
                 resource.setResourceTypes(uiElement.getResourceTypes());
                 resource.setResourceInterfaces(uiElement.getInterfaces());
 

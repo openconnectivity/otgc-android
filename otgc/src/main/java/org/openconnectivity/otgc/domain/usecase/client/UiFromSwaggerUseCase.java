@@ -77,7 +77,7 @@ public class UiFromSwaggerUseCase {
             uiElement.setPath(pathEntry.getKey());
             String definitionName = getSchemaTitle(pathEntry.getValue());
             if (definitionName != null && !definitionName.isEmpty()) {
-                uiElement.setResourceTypes(getResourceTypes(jsonSwagger, definitionName));
+                uiElement.setResourceTypes(getResourceTypes(swagger, definitionName));
                 uiElement.setInterfaces(getInterfaces(swagger, definitionName));
                 uiElement.setProperties(getProperties(swagger, definitionName));
                 uiElement.setSupportedOperations(getSupportedOperations(pathEntry.getValue()));
@@ -100,20 +100,11 @@ public class UiFromSwaggerUseCase {
         return schemaTitle;
     }
 
-    private List<String> getResourceTypes(JSONObject jsonSwagger, String definitionName) throws JSONException {
-        List<String> resourceTypes = new ArrayList<>();
+    private List<String> getResourceTypes(Swagger swagger, String definitionName) {
+        ArrayProperty interfaces = (ArrayProperty) swagger.getDefinitions().get(definitionName).getProperties().get("rt");
+        StringProperty rtItems = (StringProperty) interfaces.getItems();
 
-        JSONArray jsonRt = jsonSwagger.getJSONObject("definitions")
-                .getJSONObject(definitionName)
-                .getJSONObject("properties")
-                .getJSONObject("rt")
-                .getJSONArray("default");
-
-        for (int i = 0; i < jsonRt.length(); i++) {
-            resourceTypes.add(jsonRt.getString(i));
-        }
-
-        return resourceTypes;
+        return rtItems.getEnum();
     }
 
     private List<String> getInterfaces(Swagger swagger, String definitionName) {

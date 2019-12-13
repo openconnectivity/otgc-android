@@ -28,6 +28,7 @@ import androidx.lifecycle.MutableLiveData;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceDatabaseUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceIdUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetModeUseCase;
+import org.openconnectivity.otgc.domain.usecase.OnboardDevicesUseCase;
 import org.openconnectivity.otgc.domain.usecase.accesscontrol.CreateAclUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.CheckConnectionUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceInfoUseCase;
@@ -68,6 +69,7 @@ public class DoxsViewModel extends BaseViewModel {
     private final ScanDevicesUseCase mScanDevicesUseCase;
     private final GetOTMethodsUseCase mGetOTMethodsUseCase;
     private final OnboardUseCase mOnboardUseCase;
+    private final OnboardDevicesUseCase mOnboardDevicesUseCase;
     private final CreateAclUseCase mCreateAclUseCase;
     private final OffboardUseCase mOffboardUseCase;
     private final GetDeviceInfoUseCase mGetDeviceInfoUseCase;
@@ -94,6 +96,13 @@ public class DoxsViewModel extends BaseViewModel {
     private final MutableLiveData<Response<List<WifiNetwork>>> scanResponse = new MutableLiveData<>();
     private final MutableLiveData<Response<Void>> connectWifiEasySetupResponse = new MutableLiveData<>();
 
+    // Onboard selected devices
+    private final MutableLiveData<Response<Boolean>> onboardWaiting = new MutableLiveData<>();
+    private final MutableLiveData<Response<Device>> otmMultiResponse = new MutableLiveData<>();
+    private final MutableLiveData<Response<Device>> deviceInfoMultiResponse = new MutableLiveData<>();
+    private final MutableLiveData<Response<Device>> deviceRoleMultiResponse = new MutableLiveData<>();
+    private final MutableLiveData<Response<Device>> provisionAceOtmMultiResponse = new MutableLiveData<>();
+
     private SelectOxMListener mOxmListener;
 
     @Inject
@@ -103,6 +112,7 @@ public class DoxsViewModel extends BaseViewModel {
                   ScanDevicesUseCase scanDevicesUseCase,
                   GetOTMethodsUseCase getOTMethodsUseCase,
                   OnboardUseCase onboardUseCase,
+                  OnboardDevicesUseCase onboardDevicesUseCase,
                   CreateAclUseCase createAclUseCase,
                   OffboardUseCase offboardUseCase,
                   GetDeviceInfoUseCase getDeviceInfoUseCase,
@@ -121,6 +131,7 @@ public class DoxsViewModel extends BaseViewModel {
         this.mScanDevicesUseCase = scanDevicesUseCase;
         this.mGetOTMethodsUseCase = getOTMethodsUseCase;
         this.mOnboardUseCase = onboardUseCase;
+        this.mOnboardDevicesUseCase = onboardDevicesUseCase;
         this.mCreateAclUseCase = createAclUseCase;
         this.mOffboardUseCase = offboardUseCase;
         this.mGetDeviceInfoUseCase = getDeviceInfoUseCase;
@@ -183,6 +194,26 @@ public class DoxsViewModel extends BaseViewModel {
 
     public LiveData<Response<Void>> getConnectWifiEasySetupResponse() {
         return connectWifiEasySetupResponse;
+    }
+
+    public LiveData<Response<Boolean>> getOnboardWaiting() {
+        return onboardWaiting;
+    }
+
+    public LiveData<Response<Device>> getOtmMultiResponse() {
+        return otmMultiResponse;
+    }
+
+    public LiveData<Response<Device>> getDeviceInfoMultiResponse() {
+        return deviceInfoMultiResponse;
+    }
+
+    public LiveData<Response<Device>> getDeviceRoleMultiResponse() {
+        return deviceRoleMultiResponse;
+    }
+
+    public LiveData<Response<Device>> provisionAceOtmMultiResponse() {
+        return provisionAceOtmMultiResponse;
     }
 
     public void onScanRequested() {
@@ -413,6 +444,105 @@ public class DoxsViewModel extends BaseViewModel {
                 .subscribe(
                         mUpdatedDevice::setValue,
                         throwable -> mError.setValue(new ViewModelError(Error.DB_ERROR, null))
+                ));
+    }
+
+    public void onboardAllDevices(List<Device> devices) {
+        mDisposables.add(mGetModeUseCase.execute()
+                .subscribeOn(mSchedulersFacade.io())
+                .observeOn(mSchedulersFacade.ui())
+                .subscribe(
+                        mode -> {
+                            if (mode.equals(OtgcMode.OBT)) {
+                                int countOnboards = devices.size();
+                                if (countOnboards > 0) {
+                                    onboardWaiting.setValue(Response.success(true));
+
+                                    final Device device = devices.get(0);
+                                    mDisposables.add(
+                                            mGetOTMethodsUseCase.execute(device)
+                                                    .filter(oxms -> oxms != null)
+                                                    .subscribeOn(mSchedulersFacade.io())
+                                                    .observeOn(mSchedulersFacade.ui())
+                                                    .subscribe(
+                                                            oxms -> {
+                                                                mOnboardDevicesUseCase.execute(device, oxms)
+                                                                        .subscribeOn(mSchedulersFacade.io())
+                                                                        .observeOn(mSchedulersFacade.ui())
+                                                                        .subscribe(
+                                                                                ownedDevice -> mGetDeviceInfoUseCase.execute(ownedDevice)
+                                                                                        .subscribeOn(mSchedulersFacade.io())
+                                                                                        .observeOn(mSchedulersFacade.ui())
+                                                                                        .subscribe(
+                                                                                                deviceInfo -> {
+                                                                                                    ownedDevice.setDeviceInfo(deviceInfo);
+                                                                                                    mGetDeviceRoleUseCase.execute(ownedDevice)
+                                                                                                            .subscribeOn(mSchedulersFacade.io())
+                                                                                                            .observeOn(mSchedulersFacade.ui())
+                                                                                                            .subscribe(
+                                                                                                                    deviceRole -> {
+                                                                                                                        ownedDevice.setDeviceRole(deviceRole);
+                                                                                                                        String deviceName = ownedDevice.getDeviceRole().toString() + ownedDevice.getDeviceId().substring(0, 5);
+                                                                                                                        ownedDevice.getDeviceInfo().setName(deviceName);
+                                                                                                                        setDeviceName(ownedDevice.getDeviceId(), deviceName);
+                                                                                                                        deviceRoleMultiResponse.setValue(Response.success(ownedDevice));
+                                                                                                                        String deviceId = mGetDeviceIdUseCase.execute().blockingGet();
+                                                                                                                        mCreateAclUseCase.execute(ownedDevice, deviceId, Arrays.asList("*"), 6)
+                                                                                                                                .subscribeOn(mSchedulersFacade.io())
+                                                                                                                                .observeOn(mSchedulersFacade.ui())
+                                                                                                                                .subscribe(
+                                                                                                                                        () -> {
+                                                                                                                                            provisionAceOtmMultiResponse.setValue(Response.success(ownedDevice));
+                                                                                                                                            devices.remove(device);
+                                                                                                                                            onboardAllDevices(devices);
+                                                                                                                                        },
+                                                                                                                                        throwable -> {
+                                                                                                                                            devices.remove(device);
+                                                                                                                                            onboardAllDevices(devices);
+
+                                                                                                                                            provisionAceOtmMultiResponse.setValue(Response.error(throwable));
+                                                                                                                                        }
+                                                                                                                                );
+                                                                                                                    },
+                                                                                                                    throwable -> {
+                                                                                                                        devices.remove(device);
+                                                                                                                        onboardAllDevices(devices);
+
+                                                                                                                        deviceRoleMultiResponse.setValue(Response.error(throwable));
+                                                                                                                    }
+                                                                                                            );
+                                                                                                },
+                                                                                                throwable -> {
+                                                                                                    devices.remove(device);
+                                                                                                    onboardAllDevices(devices);
+
+                                                                                                    deviceInfoMultiResponse.setValue(Response.error(throwable));
+                                                                                                }
+                                                                                        ),
+                                                                                throwable -> {
+                                                                                    devices.remove(device);
+                                                                                    onboardAllDevices(devices);
+
+                                                                                    otmMultiResponse.setValue(Response.error(throwable));
+                                                                                }
+                                                                        );
+                                                            },
+                                                            throwable -> {
+                                                                devices.remove(device);
+                                                                onboardAllDevices(devices);
+
+                                                                otmMultiResponse.setValue(Response.error(throwable));
+                                                            }
+                                                    )
+                                    );
+                                } else {
+                                    onboardWaiting.setValue(Response.success(false));
+                                }
+                            } else {
+                                otmResponse.setValue(Response.error(new Exception()));
+                            }
+                        },
+                        throwable -> otmResponse.setValue(Response.error(throwable))
                 ));
     }
 

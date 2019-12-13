@@ -65,6 +65,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -203,7 +204,10 @@ public class IotivityRepository {
                     deviceDao.insert(new DeviceEntity(deviceId, device.getName(), endpoints, DeviceType.UNOWNED, Device.NOTHING_PERMITS));
                 }
 
-                unownedDevices.add(new Device(DeviceType.UNOWNED, deviceId, new OcDeviceInfo(), endpoints, Device.NOTHING_PERMITS));
+                Device device1 = new Device(DeviceType.UNOWNED, deviceId, new OcDeviceInfo(), endpoints, Device.NOTHING_PERMITS);
+                if (!unownedDevices.contains(device1)) {
+                    unownedDevices.add(device1);
+                }
             };
 
             int ret;
@@ -241,7 +245,10 @@ public class IotivityRepository {
                     deviceDao.insert(new DeviceEntity(deviceId, device.getName(), endpoints, DeviceType.OWNED_BY_SELF, Device.FULL_PERMITS));
                 }
 
-                ownedDevices.add(new Device(DeviceType.OWNED_BY_SELF, deviceId, new OcDeviceInfo(), endpoints, Device.FULL_PERMITS));
+                Device device1 = new Device(DeviceType.OWNED_BY_SELF, deviceId, new OcDeviceInfo(), endpoints, Device.FULL_PERMITS);
+                if (!ownedDevices.contains(device1)) {
+                    ownedDevices.add(device1);
+                }
             };
 
             int ret;
@@ -595,6 +602,38 @@ public class IotivityRepository {
         });
     }
 
+    public Completable post(String host, String uri, String deviceId, Map<String, Object> values) {
+        return Completable.create(emitter -> {
+            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(host, new String[1]);
+            OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
+            OCEndpointUtil.setDi(ep, uuid);
+
+            OCResponseHandler handler = (OCClientResponse response) -> {
+                OCStatus code = response.getCode();
+                if (code == OCStatus.OC_STATUS_OK
+                        || code == OCStatus.OC_STATUS_CHANGED) {
+                    emitter.onComplete();
+                } else {
+                    emitter.onError(new Exception("POST " + uri + " error - code: " + code));
+                }
+            };
+
+            if (OCMain.initPost(uri, ep, null, handler, OCQos.HIGH_QOS)) {
+                CborEncoder root = OCRep.beginRootObject();
+                parseOCRepresentionToCbor(root, values);
+                OCRep.endRootObject();
+
+                if (!OCMain.doPost()) {
+                    emitter.onError(new Exception("Do POST " + uri + " error"));
+                }
+            } else {
+                emitter.onError(new Exception("Init POST " + uri + " error"));
+            }
+
+            OCEndpointUtil.freeEndpoint(ep);
+        });
+    }
+
     private void parseOCRepresentionToCbor(CborEncoder parent, OCRepresentation rep, Object valueArray) {
         while (rep != null) {
             switch (rep.getType()) {
@@ -619,11 +658,54 @@ public class IotivityRepository {
                 case OC_REP_STRING_ARRAY:
                     OCRep.setStringArray(parent, rep.getName(), (String[])valueArray);
                     break;
+                case OC_REP_BOOL_ARRAY:
+                    OCRep.setBooleanArray(parent, rep.getName(), (boolean[])valueArray);
+                    break;
                 default:
                     break;
             }
 
             rep = rep.getNext();
+        }
+    }
+
+    private void parseOCRepresentionToCbor(CborEncoder parent, Map<String, Object> values) {
+        for (String key : values.keySet()) {
+            if (values.get(key) instanceof Boolean) {
+                OCRep.setBoolean(parent, key, (boolean)values.get(key));
+            } else if (values.get(key) instanceof Integer) {
+                OCRep.setLong(parent, key, (Integer)values.get(key));
+            } else if (values.get(key) instanceof Double) {
+                OCRep.setDouble(parent, key, (Double)values.get(key));
+            } else if (values.get(key) instanceof String) {
+                OCRep.setTextString(parent, key, (String)values.get(key));
+            } else if (values.get(key) instanceof List) {
+                if (((List) values.get(key)).get(0) instanceof String) {
+                    String[] ret = new String[((List<String>)values.get(key)).size()];
+                    for (int i=0; i< ((List<String>)values.get(key)).size(); i++) {
+                        ret[i] = ((List<String>)values.get(key)).get(i);
+                    }
+                    OCRep.setStringArray(parent, key, ret);
+                } else if (((List) values.get(key)).get(0) instanceof Integer) {
+                    long[] ret = new long[((List<Integer>)values.get(key)).size()];
+                    for (int i=0; i< ((List<Integer>)values.get(key)).size(); i++) {
+                        ret[i] = ((List<Integer>)values.get(key)).get(i);
+                    }
+                    OCRep.setLongArray(parent, key, ret);
+                } else if (((List) values.get(key)).get(0) instanceof Double) {
+                    double[] ret = new double[((List<Double>)values.get(key)).size()];
+                    for (int i=0; i< ((List<Double>)values.get(key)).size(); i++) {
+                        ret[i] = ((List<Double>)values.get(key)).get(i);
+                    }
+                    OCRep.setDoubleArray(parent, key, ret);
+                } else if (((List) values.get(key)).get(0) instanceof Boolean) {
+                    boolean[] ret = new boolean[((List<Boolean>)values.get(key)).size()];
+                    for (int i=0; i< ((List<Boolean>)values.get(key)).size(); i++) {
+                        ret[i] = ((List<Boolean>)values.get(key)).get(i);
+                    }
+                    OCRep.setBooleanArray(parent, key, ret);
+                }
+            }
         }
     }
 

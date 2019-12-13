@@ -39,6 +39,8 @@ import org.openconnectivity.otgc.utils.viewmodel.ViewModelErrorType;
 import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -159,7 +161,23 @@ public class ResourceViewModel extends ViewModel {
                 .observeOn(mSchedulersFacade.ui())
                 .subscribe(
                         () -> {},//mResponse::setValue,
-                        throwable -> mError.setValue(new ViewModelError(Error.POST, null))
+                        throwable -> {
+                            mError.setValue(new ViewModelError(Error.POST, null));
+                            mResponse.setValue(resource);
+                        }
+                ));
+    }
+
+    public void postRequest(Device device, SerializableResource resource, Map<String, Object> values) {
+        disposables.add(mPostRequestUseCase.execute(device, resource, values)
+                .subscribeOn(mSchedulersFacade.io())
+                .observeOn(mSchedulersFacade.ui())
+                .subscribe(
+                        () -> {},//mResponse::setValue,
+                        throwable -> {
+                            mError.setValue(new ViewModelError(Error.POST, null));
+                            mResponse.setValue(resource);
+                        }
                 ));
     }
 

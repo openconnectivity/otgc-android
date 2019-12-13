@@ -34,4 +34,8 @@
         android:id="@+id/action_unlink"
         android:title="Unlink"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_onboard"
+        android:title="@string/devices_selection_menu_item_onboard"
+        app:showAsAction="always" />
 </menu>
