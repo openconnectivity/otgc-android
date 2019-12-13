@@ -76,8 +76,9 @@ public class DoxsRepository {
             } else if (oxm == OcfOxmType.OC_OXMTYPE_RDP) {
                 ret = OCObt.requestRandomPin(uuid, (OCUuid ocUuid, int status) -> {
                     if (status >= 0) {
-                        Timber.d("Successfully request Random PIN " + OCUuidUtil.uuidToString(ocUuid));
-                        String pin = randomPinHandler.handler();
+                        String id = OCUuidUtil.uuidToString(ocUuid);
+                        Timber.d("Successfully request Random PIN " + id);
+                        String pin = randomPinHandler.handler(id);
                         if (OCObt.performRandomPinOtm(uuid, pin, handler) != -1){
                             emitter.onComplete();
                         } else {

@@ -41,6 +41,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -162,15 +163,30 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
                     if (mActionMode == null) {
                         ActionModeController actionController =
                                 new ActionModeController(getActivity(), mSelectionTracker, retrieveLinkedDevicesUseCase);
-                        ActionModeController.setOnMenuItemClickListener((menuItem, client, server) -> {
-                            if (menuItem.getItemId() == R.id.action_pairwise) {
-                                mViewModel.pairwiseDevices(client, server);
-                            } else if (menuItem.getItemId() == R.id.action_unlink) {
-                                mViewModel.unlinkDevices(client, server);
+
+                        ActionModeController.MyMenuItemClickListener menuListener = new ActionModeController.MyMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem, Device client, Device server) {
+                                if (menuItem.getItemId() == R.id.action_pairwise) {
+                                    mViewModel.pairwiseDevices(client, server);
+                                } else if (menuItem.getItemId() == R.id.action_unlink) {
+                                    mViewModel.unlinkDevices(client, server);
+                                }
+
+                                return true;
                             }
 
-                            return true;
-                        });
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem, List<Device> devices) {
+                                if (menuItem.getItemId() == R.id.action_onboard) {
+                                    mViewModel.onboardAllDevices(devices);
+                                }
+
+                                return true;
+                            }
+                        };
+
+                        ActionModeController.setOnMenuItemClickListener(menuListener);
                         mActionMode = ((AppCompatActivity) getActivity()).startSupportActionMode(actionController);
                     } else {
                         mActionMode.invalidate();
@@ -273,6 +289,12 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
         mViewModel.provisionAceOtmResponse().observe(this, this::processProvisionAceOtmResponse);
         mViewModel.getOffboardResponse().observe(this, this::processOffboardResponse);
         mViewModel.getUpdatedDevice().observe(this, this::processUpdateDevice);
+
+        mViewModel.getOnboardWaiting().observe(this, this::processOnboardWaiting);
+        mViewModel.getOtmMultiResponse().observe(this, this::processOtmMultiResponse);
+        mViewModel.getDeviceInfoMultiResponse().observe(this, this::processDeviceInfoMultiResponse);
+        mViewModel.getDeviceRoleMultiResponse().observe(this, this::processDeviceRoleMultiResponse);
+        mViewModel.provisionAceOtmMultiResponse().observe(this, this::processProvisionAceOtmMultiResponse);
 
         mViewModel.getConnectWifiEasySetupResponse().observe(this, this::processConnectWifiEasySetupResponse);
 
@@ -505,6 +527,86 @@ public class DoxsFragment extends Fragment implements DoxsViewModel.SelectOxMLis
                 }
                 Toast.makeText(getActivity(), getString(R.string.devices_dialog_wifi_scan_error), Toast.LENGTH_SHORT)
                         .show();
+                break;
+        }
+    }
+
+    private void processOnboardWaiting(Response<Boolean> response) {
+        switch (response.status) {
+            case SUCCESS:
+                if (response.data) {
+                    if (adPersonal == null) {
+                        adPersonal = UiUtils.createProgressDialog(getActivity(), getString(R.string.devices_dialog_onboarding_otm_message));
+                    } else if (!adPersonal.isShowing()) {
+                        adPersonal.show();
+                    }
+                } else {
+                    if (adPersonal != null && adPersonal.isShowing()) {
+                        adPersonal.dismiss();
+                        adPersonal = null;
+                        onSwipeRefresh();
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void processOtmMultiResponse(Response<Device> response) {
+        switch (response.status) {
+            case LOADING:
+                break;
+            case SUCCESS:
+                break;
+            case ERROR:
+                Toast.makeText(getActivity(), R.string.devices_error_transferring_ownership, Toast.LENGTH_SHORT).show();
+                break;
+        }
+    }
+
+    private void processDeviceInfoMultiResponse(Response<Device> response) {
+        switch (response.status) {
+            case LOADING:
+                break;
+            case SUCCESS:
+                break;
+            case ERROR:
+                Toast.makeText(getActivity(), R.string.devices_error_device_info, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void processDeviceRoleMultiResponse(Response<Device> response) {
+        switch (response.status) {
+            case LOADING:
+                break;
+            case SUCCESS:
+                /*if (response.data != null) {
+                    positionBeingUpdated = mAdapter.updateItem(positionBeingUpdated, response.data);
+                    positionBeingUpdated = 0;
+                }*/
+                break;
+            case ERROR:
+                Toast.makeText(getActivity(), R.string.devices_error_device_role, Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void processProvisionAceOtmMultiResponse(Response<Device> response) {
+        switch (response.status) {
+            case LOADING:
+                break;
+            case SUCCESS:
+                break;
+            case ERROR:
+                Toast.makeText(getActivity(), R.string.devices_error_provision_ace_otm, Toast.LENGTH_SHORT).show();
+                break;
+            default:
                 break;
         }
     }

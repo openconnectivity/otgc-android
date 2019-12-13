@@ -84,12 +84,13 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
 
     String verifyPin = "";
 
-    OCSetRandomPinHandler randomPinCallbackListener = () -> {
+    OCSetRandomPinHandler randomPinCallbackListener = (String uuid) -> {
         Timber.d("Inside randomPinListener");
         final Object lock = new Object();
         runOnUiThread(() -> {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(DeviceListActivity.this, R.style.AppTheme));
             alertDialog.setTitle(DeviceListActivity.this.getString(R.string.devices_dialog_insert_randompin_title));
+            alertDialog.setMessage(uuid + ": ");
             final EditText input = new EditText(DeviceListActivity.this);
             alertDialog.setView(input);
             alertDialog.setCancelable(false);
