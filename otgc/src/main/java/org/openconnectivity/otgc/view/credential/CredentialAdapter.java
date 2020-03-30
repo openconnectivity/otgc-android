@@ -129,7 +129,7 @@ public class CredentialAdapter extends RecyclerView.Adapter<CredentialAdapter.Cr
         if (cred != null) {
             holder.mCredId.setText(String.format("%d", cred.getCredid()));
             holder.mCredSubject.setText(mContext.getString(R.string.credentials_cardview_subject_uuid, cred.getSubjectuuid()));
-            holder.mCredType.setText(cred.getCredtype().toString());
+            holder.mCredType.setText(cred.getCredtype());
             if (cred.getRoleid() != null) {
                 holder.mCredRole.setVisibility(View.VISIBLE);
                 holder.mCredRole.setText(mContext.getString(R.string.credentials_cardview_role,
@@ -139,7 +139,7 @@ public class CredentialAdapter extends RecyclerView.Adapter<CredentialAdapter.Cr
             }
             if (cred.getCredusage() != null) {
                 holder.mCredUsage.setVisibility(View.VISIBLE);
-                holder.mCredUsage.setText(cred.getCredusage().toString());
+                holder.mCredUsage.setText(cred.getCredusage());
             } else {
                 holder.mCredUsage.setVisibility(View.GONE);
             }

@@ -22,17 +22,14 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
-import org.iotivity.CborEncoder;
-import org.iotivity.OCRep;
-import org.iotivity.OCRepresentation;
-import org.openconnectivity.otgc.utils.constant.OcfEncoding;
-import org.openconnectivity.otgc.utils.constant.OcfResourceAttributeKey;
+import org.iotivity.OCCredData;
+import org.iotivity.OCCredUtil;
 
 public class OcCredPrivateData {
 
     private byte[] dataDer;
     private String dataPem;
-    private OcfEncoding encoding;
+    private String encoding;
 
     public OcCredPrivateData() {
 
@@ -54,37 +51,20 @@ public class OcCredPrivateData {
         this.dataPem = dataPem;
     }
 
-    public OcfEncoding getEncoding() {
+    public String getEncoding() {
         return encoding;
     }
 
-    public void setEncoding(OcfEncoding encoding) {
+    public void setEncoding(String encoding) {
         this.encoding = encoding;
     }
 
-    public void parseOCRepresentation(OCRepresentation rep) {
-        /* data DER format */
-        byte[] dataDer = OCRep.getByteString(rep, OcfResourceAttributeKey.DATA_KEY);
-        this.setDataDer(dataDer);
+    public void parseOCRepresentation(OCCredData data) {
         /* data PEM format */
-        String dataPem = OCRep.getString(rep, OcfResourceAttributeKey.DATA_KEY);
+        String dataPem = data.getData();
         this.setDataPem(dataPem);
         /* encoding */
-        String encoding = OCRep.getString(rep, OcfResourceAttributeKey.ENCODING_KEY);
-        this.setEncoding(OcfEncoding.valueToEnum(encoding));
-    }
-
-    public void parseToCbor(CborEncoder parent) {
-        if (this.getEncoding() != null) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.ENCODING_KEY, this.getEncoding().getValue());
-        }
-
-        if (this.getDataPem() != null) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.DATA_KEY, this.getDataPem());
-        }
-
-        if (this.getDataDer() != null) {
-            OCRep.setByteString(parent, OcfResourceAttributeKey.DATA_KEY, this.getDataDer());
-        }
+        String encoding = OCCredUtil.readEncoding(data.getEncoding());
+        this.setEncoding(encoding);
     }
 }

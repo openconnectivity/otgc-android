@@ -45,8 +45,7 @@ public class GetResourcesUseCase {
     }
 
     public Single<List<SerializableResource>> execute(Device device) {
-        return iotivityRepository.getNonSecureEndpoint(device)
-                .flatMap(iotivityRepository::findVerticalResources)
+        return iotivityRepository.discoverVerticalResources(device.getDeviceId())
                 .map(ocResources -> {
                     List<SerializableResource> serializableResources = new ArrayList<>();
                     for (OcResource resource : ocResources) {

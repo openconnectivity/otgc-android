@@ -19,34 +19,33 @@
 package org.openconnectivity.otgc.domain.usecase.trustanchor;
 
 import io.reactivex.Single;
-import org.openconnectivity.otgc.data.repository.IORepository;
+
+import org.iotivity.OCCredUsage;
+import org.iotivity.OCCredUtil;
+import org.openconnectivity.otgc.data.repository.CmsRepository;
 import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredential;
-import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredentials;
-import org.openconnectivity.otgc.utils.constant.OcfCredUsage;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GetTrustAnchorUseCase {
-    private final IORepository ioRepository;
+    private final CmsRepository cmsRepository;
 
     @Inject
-    public GetTrustAnchorUseCase(IORepository ioRepository) {
-        this.ioRepository = ioRepository;
+    public GetTrustAnchorUseCase(CmsRepository cmsRepository) {
+        this.cmsRepository = cmsRepository;
     }
 
     public Single<List<OcCredential>> execute() {
-        return ioRepository.getAssetSvrAsCbor("cred", 0 /* First device */)
-                .flatMap(cbor ->  Single.create(emitter -> {
-                    OcCredentials credentials = new OcCredentials();
-                    credentials.parseCbor(cbor);
+        return cmsRepository.retrieveOwnCredentials()
+                .flatMap(creds ->  Single.create(emitter -> {
 
                     List<OcCredential> trustAnchorList = new ArrayList<>();
-                    for (OcCredential cred : credentials.getCredList()) {
-                        if (cred.getCredusage() != null
-                                && (cred.getCredusage() == OcfCredUsage.OC_CREDUSAGE_MFGTRUSTCA
-                                || cred.getCredusage() == OcfCredUsage.OC_CREDUSAGE_TRUSTCA)) {
+                    for (OcCredential cred : creds.getCredList()) {
+                        if (cred.getCredusage() != null && !cred.getCredusage().isEmpty()
+                                && (OCCredUtil.parseCredUsage(cred.getCredusage()) == OCCredUsage.OC_CREDUSAGE_MFG_TRUSTCA
+                                || OCCredUtil.parseCredUsage(cred.getCredusage()) == OCCredUsage.OC_CREDUSAGE_TRUSTCA)) {
                             trustAnchorList.add(cred);
                         }
                     }

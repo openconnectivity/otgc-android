@@ -22,13 +22,9 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.acl;
 
-import org.iotivity.CborEncoder;
-import org.iotivity.OCRep;
-import org.iotivity.OCRepresentation;
-import org.openconnectivity.otgc.utils.constant.OcfResourceAttributeKey;
+import org.iotivity.OCAceResource;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class OcAceResource {
@@ -75,49 +71,26 @@ public class OcAceResource {
         this.interfaces = interfaces;
     }
 
-    public void parseOCRepresentation(OCRepresentation rep) {
-        /* href */
-        String href = OCRep.getString(rep, OcfResourceAttributeKey.HREF_KEY);
-        this.setHref(href);
-        /* wc */
-        String wc = OCRep.getString(rep, OcfResourceAttributeKey.WILDCARD_KEY);
-        this.setWildCard(wc);
-        /* rt */
-        String[] resourceTypes = OCRep.getStringArray(rep, OcfResourceAttributeKey.RESOURCE_TYPES_KEY);
-        this.setResourceTypes(resourceTypes != null ? Arrays.asList(resourceTypes) : null);
-        /* if */
-        String[] interfaces = OCRep.getStringArray(rep, OcfResourceAttributeKey.INTERFACES_KEY);
-        this.setInterfaces(interfaces != null ? Arrays.asList(interfaces) : null);
-    }
-
-    public void parseToCbor(CborEncoder resArray) {
-        CborEncoder resObj = OCRep.beginObject(resArray);
-
-        /* href */
-        if (this.getHref() != null && !this.getHref().isEmpty()) {
-            OCRep.setTextString(resObj, OcfResourceAttributeKey.HREF_KEY, this.getHref());
-        }
-        /* wc */
-        if (this.getWildcard() != null && !this.getWildcard().isEmpty()) {
-            OCRep.setTextString(resObj, OcfResourceAttributeKey.WILDCARD_KEY, this.getWildcard());
-        }
-        /* rt */
-        if (this.getResourceTypes() != null && !this.getResourceTypes().isEmpty()) {
-            CborEncoder resourceType = OCRep.openArray(resObj, OcfResourceAttributeKey.RESOURCE_TYPES_KEY);
-            for (String rtStr : this.getResourceTypes()) {
-                OCRep.addTextString(resourceType, rtStr);
+    public void parseOCRepresentation(OCAceResource res) {
+        if (res.getHref() != null && !res.getHref().isEmpty()) {
+            /* href */
+            String href = res.getHref();
+            this.setHref(href);
+        } else if (res.getWildcard() != null) {
+            /* wc */
+            switch (res.getWildcard()) {
+                case OC_ACE_WC_ALL:
+                    this.setWildCard("*");
+                    break;
+                case OC_ACE_WC_ALL_SECURED:
+                    this.setWildCard("+");
+                    break;
+                case OC_ACE_WC_ALL_PUBLIC:
+                    this.setWildCard("-");
+                    break;
+                default:
+                    break;
             }
-            OCRep.closeArray(resObj, resourceType);
         }
-        /* if */
-        if (this.getInterfaces() != null && !this.getInterfaces().isEmpty()) {
-            CborEncoder interfaces = OCRep.openArray(resObj, OcfResourceAttributeKey.INTERFACES_KEY);
-            for (String ifStr : this.getInterfaces()) {
-                OCRep.addTextString(interfaces, ifStr);
-            }
-            OCRep.closeArray(resObj, interfaces);
-        }
-
-        OCRep.closeObject(resArray, resObj);
     }
 }

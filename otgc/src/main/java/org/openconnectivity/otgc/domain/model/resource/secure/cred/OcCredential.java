@@ -22,22 +22,17 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
-import com.upokecenter.cbor.CBORObject;
-
-import org.iotivity.CborEncoder;
-import org.iotivity.OCRep;
-import org.iotivity.OCRepresentation;
-import org.openconnectivity.otgc.utils.constant.OcfCredType;
-import org.openconnectivity.otgc.utils.constant.OcfCredUsage;
-import org.openconnectivity.otgc.utils.constant.OcfResourceAttributeKey;
+import org.iotivity.OCCred;
+import org.iotivity.OCCredUtil;
+import org.iotivity.OCUuidUtil;
 
 public class OcCredential {
 
-    private Long credid;
+    private Integer credid;
     private String subjectuuid;
     private OcCredRole roleid;
-    private OcfCredType credtype;
-    private OcfCredUsage credusage;
+    private String credtype;
+    private String credusage;
     private OcCredPublicData publicData;
     private OcCredPrivateData privateData;
     private OcCredOptionalData optionalData;
@@ -45,11 +40,11 @@ public class OcCredential {
 
     public OcCredential() {}
 
-    public Long getCredid() {
+    public Integer getCredid() {
         return credid;
     }
 
-    public void setCredid(Long credid) {
+    public void setCredid(Integer credid) {
         this.credid = credid;
     }
 
@@ -69,19 +64,19 @@ public class OcCredential {
         this.roleid = roleid;
     }
 
-    public OcfCredType getCredtype() {
+    public String getCredtype() {
         return credtype;
     }
 
-    public void setCredtype(OcfCredType credtype) {
+    public void setCredtype(String credtype) {
         this.credtype = credtype;
     }
 
-    public OcfCredUsage getCredusage() {
+    public String getCredusage() {
         return credusage;
     }
 
-    public void setCredusage(OcfCredUsage credusage) {
+    public void setCredusage(String credusage) {
         this.credusage = credusage;
     }
 
@@ -117,136 +112,42 @@ public class OcCredential {
         this.period = period;
     }
 
-    public void parseCbor(CBORObject cbor) {
+    public void parseOCRepresentation(OCCred cred) {
         /* credid */
-        CBORObject credidObj = cbor.get(OcfResourceAttributeKey.CRED_ID_KEY);
-        if (credidObj != null) {
-            Long credid = credidObj.AsInt64();
-            this.setCredid(credid);
-        }
-        /* credtype */
-        CBORObject credtypeObj = cbor.get(OcfResourceAttributeKey.CRED_TYPE_KEY);
-        if (credtypeObj != null) {
-            Long credtype = credtypeObj.AsInt64();
-            this.setCredtype(OcfCredType.valueToEnum(credtype.intValue()));
-        }
-        /* credusage */
-        CBORObject credUsageObj = cbor.get(OcfResourceAttributeKey.CRED_USAGE_KEY);
-        if (credUsageObj != null) {
-            String credusage = credUsageObj.AsString();
-            this.setCredusage(credusage != null ? OcfCredUsage.valueToEnum(credusage) : null);
-        }
-        /* subjectuuid */
-        CBORObject subjectuuidObj = cbor.get(OcfResourceAttributeKey.SUBJECTUUID_KEY);
-        if (subjectuuidObj != null) {
-            String subjectuuid = subjectuuidObj.AsString();
-            this.setSubjectuuid(subjectuuid);
-        }
-        /* period */
-        CBORObject periodObj = cbor.get(OcfResourceAttributeKey.PERIOD_KEY);
-        if (periodObj != null) {
-            String period = periodObj.AsString();
-            this.setPeriod(period);
-        }
-        /* publicdata */
-        CBORObject publicdataObj = cbor.get(OcfResourceAttributeKey.PUBLIC_DATA_KEY);
-        if (publicdataObj != null) {
-            OcCredPublicData publicData = new OcCredPublicData();
-            publicData.parseCbor(publicdataObj);
-            this.setPublicData(publicData);
-        }
-        /* optionaldata */
-        // TODO:
-
-        /* roleid */
-        CBORObject roleidObj = cbor.get(OcfResourceAttributeKey.ROLE_ID_KEY);
-        if (roleidObj != null) {
-            OcCredRole roleid = new OcCredRole();
-            roleid.parseCbor(roleidObj);
-            this.setRoleid(roleid);
-        }
-    }
-
-    public void parseOCRepresentation(OCRepresentation rep) {
-        /* credid */
-        Long credid = OCRep.getLong(rep, OcfResourceAttributeKey.CRED_ID_KEY);
+        Integer credid = cred.getCredId();
         this.setCredid(credid);
         /* credtype */
-        Long credtype = OCRep.getLong(rep, OcfResourceAttributeKey.CRED_TYPE_KEY);
-        this.setCredtype(OcfCredType.valueToEnum(credtype.intValue()));
+        String credtype = OCCredUtil.credTypeString(cred.getCredType());
+        this.setCredtype(credtype);
         /* credusage */
-        String credusage = OCRep.getString(rep, OcfResourceAttributeKey.CRED_USAGE_KEY);
-        this.setCredusage(credusage != null ? OcfCredUsage.valueToEnum(credusage) : null);
+        String credusage = OCCredUtil.readCredUsage(cred.getCredUsage());
+        this.setCredusage(credusage);
         /* subjectuuid */
-        String subjectuuid = OCRep.getString(rep, OcfResourceAttributeKey.SUBJECTUUID_KEY);
+        String subjectuuid = OCUuidUtil.uuidToString(cred.getSubjectUuid());
         this.setSubjectuuid(subjectuuid);
-        /* period */
-        String period = OCRep.getString(rep, OcfResourceAttributeKey.PERIOD_KEY);
-        this.setPeriod(period);
         /* publicdata */
-        OCRepresentation publicdataObj = OCRep.getObject(rep, OcfResourceAttributeKey.PUBLIC_DATA_KEY);
-        if (publicData != null) {
+        if (cred.getPublicData() != null &&
+                cred.getPublicData().getData() != null &&
+                !cred.getPublicData().getData().isEmpty()) {
             OcCredPublicData publicData = new OcCredPublicData();
-            publicData.parseOCRepresentation(publicdataObj);
+            publicData.parseOCRepresentation(cred.getPublicData());
             this.setPublicData(publicData);
         }
-        /* optionaldata */
-        OCRepresentation optionaldataObj = OCRep.getObject(rep, OcfResourceAttributeKey.OPTIONAL_DATA_KEY);
-        if (optionalData != null) {
-            OcCredOptionalData optionalData = new OcCredOptionalData();
-            optionalData.parseOCRepresentation(optionaldataObj);
-            this.setOptionalData(optionalData);
-        }
+        /* privatedata */
+        OcCredPrivateData privateData = new OcCredPrivateData();
+        privateData.parseOCRepresentation(cred.getPrivateData());
+        this.setPrivateData(privateData);
         /* roleid */
-        OCRepresentation roleidObj = OCRep.getObject(rep, OcfResourceAttributeKey.ROLE_ID_KEY);
-        if (roleidObj != null) {
+        if (cred.getRole() != null) {
             OcCredRole roleid = new OcCredRole();
-            roleid.parseOCRepresentation(roleidObj);
+            if (!cred.getRole().isEmpty()) {
+                roleid.setRole(cred.getRole());
+            }
+
+            if (cred.getAuthority() != null && !cred.getAuthority().isEmpty()) {
+                roleid.setAuthority(cred.getAuthority());
+            }
             this.setRoleid(roleid);
-        }
-    }
-
-    public void parseToCbor(CborEncoder parent) {
-        if (this.getCredid() != null) {
-            OCRep.setLong(parent, OcfResourceAttributeKey.CRED_ID_KEY, this.getCredid());
-        }
-
-        if (this.getSubjectuuid() != null && !this.getSubjectuuid().isEmpty()) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.SUBJECTUUID_KEY, this.getSubjectuuid());
-        }
-
-        if (this.getRoleid() != null) {
-            CborEncoder roleId = OCRep.openObject(parent, OcfResourceAttributeKey.ROLE_ID_KEY);
-            this.getRoleid().parseToCbor(roleId);
-            OCRep.closeObject(parent, roleId);
-        }
-
-        if (this.getCredtype() != null) {
-            OCRep.setLong(parent, OcfResourceAttributeKey.CRED_TYPE_KEY, this.getCredtype().getValue());
-        }
-
-        if (this.getCredusage() != null) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.CRED_USAGE_KEY, this.getCredusage().getValue());
-        }
-
-        if (this.getPublicData() != null) {
-            CborEncoder publicObj = OCRep.openObject(parent, OcfResourceAttributeKey.PUBLIC_DATA_KEY);
-            this.getPublicData().parseToCbor(publicObj);
-            OCRep.closeObject(parent, publicObj);
-        }
-
-        if (this.getPrivateData() != null) {
-            CborEncoder privateObj = OCRep.openObject(parent, OcfResourceAttributeKey.PRIVATE_DATA_KEY);
-            this.getPrivateData().parseToCbor(privateObj);
-            OCRep.closeObject(parent, privateObj);
-        }
-
-        if (this.getOptionalData() != null) {
-            // TODO
-        }
-
-        if (this.getPeriod() != null && !this.getPeriod().isEmpty()) {
-            // TODO
         }
     }
 }

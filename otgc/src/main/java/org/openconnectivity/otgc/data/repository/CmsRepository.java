@@ -23,26 +23,16 @@
 package org.openconnectivity.otgc.data.repository;
 
 import org.iotivity.*;
-import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredPrivateData;
-import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredPublicData;
-import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredRole;
-import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredential;
 import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredentials;
 import org.openconnectivity.otgc.domain.model.resource.secure.csr.OcCsr;
-import org.openconnectivity.otgc.utils.constant.OcfCredType;
-import org.openconnectivity.otgc.utils.constant.OcfCredUsage;
-import org.openconnectivity.otgc.utils.constant.OcfEncoding;
 import org.openconnectivity.otgc.utils.constant.OcfResourceUri;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableSource;
 import io.reactivex.Single;
 import timber.log.Timber;
 
@@ -54,30 +44,33 @@ public class CmsRepository {
 
     }
 
-    public Single<OcCredentials> getCredentials(String endpoint, String deviceId) {
+    public Single<OcCredentials> getCredentials(String deviceId) {
         return Single.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
             OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
-            OCEndpointUtil.setDi(ep, uuid);
 
-            OCResponseHandler handler = (OCClientResponse response) -> {
-                OCStatus code = response.getCode();
-                if (code.equals(OCStatus.OC_STATUS_OK)) {
+            OCObtCredsHandler handler = (OCCreds credentials) -> {
+                if (credentials != null) {
                     OcCredentials creds = new OcCredentials();
-                    creds.parseOCRepresentation(response.getPayload());
+                    creds.parseOCRepresentation(credentials);
                     emitter.onSuccess(creds);
+                    /* Freeing the credential structure */
+                    OCObt.freeCreds(credentials);
                 } else {
                     String error = "GET credentials error";
+                    Timber.e(error);
                     emitter.onError(new Exception(error));
                 }
             };
 
-            if (!OCMain.doGet(OcfResourceUri.CRED_URI, ep, null, handler, OCQos.HIGH_QOS)) {
+            int ret = OCObt.retrieveCreds(uuid, handler);
+            if (ret >= 0) {
+                System.out.println("\nSuccessfully issued request to RETRIEVE /oic/sec/cred");
+                Timber.d("Successfully issued request to retrieve the credentials");
+            } else {
                 String error = "GET credentials error";
+                Timber.e(error);
                 emitter.onError(new Exception(error));
             }
-
-            OCEndpointUtil.freeEndpoint(ep);
         });
     }
 
@@ -106,108 +99,6 @@ public class CmsRepository {
         });
     }
 
-    public Completable provisionTrustAnchor(String endpoint, String deviceId, String rootCert) {
-        return Completable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
-            OCUuid di = OCUuidUtil.stringToUuid(deviceId);
-            OCEndpointUtil.setDi(ep, di);
-
-            OCResponseHandler handler = (OCClientResponse response) -> {
-                OCStatus code = response.getCode();
-                if (code.equals(OCStatus.OC_STATUS_OK) || code.equals(OCStatus.OC_STATUS_CHANGED)) {
-                    Timber.d("Provision root certificate succeeded");
-                    emitter.onComplete();
-                } else {
-                    emitter.onError(new IOException("Provision root certificate error"));
-                }
-            };
-
-            if (OCMain.initPost(OcfResourceUri.CRED_URI, ep, null, handler, OCQos.HIGH_QOS)) {
-                OcCredPublicData publicData = new OcCredPublicData();
-                publicData.setPemData(rootCert);
-                publicData.setEncoding(OcfEncoding.OC_ENCODING_PEM);
-
-                OcCredential cred = new OcCredential();
-                cred.setSubjectuuid("*");
-                cred.setCredtype(OcfCredType.OC_CREDTYPE_CERT);
-                cred.setCredusage(OcfCredUsage.OC_CREDUSAGE_TRUSTCA);
-                cred.setPublicData(publicData);
-                List<OcCredential> credList = new ArrayList<>();
-                credList.add(cred);
-
-                OcCredentials creds = new OcCredentials();
-                creds.setCredList(credList);
-
-                CborEncoder root = creds.parseToCbor();
-                if (OCMain.doPost()) {
-                    Timber.d("Sent POST request to /oic/sec/cred");
-                } else {
-                    String error = "Could not send POST request to /oic/sec/cred";
-                    Timber.e(error);
-                    emitter.onError(new Exception(error));
-                }
-            } else {
-                String error = "Could not init POST request to /oic/sec/cred";
-                Timber.e(error);
-                emitter.onError(new Exception(error));
-            }
-
-            OCEndpointUtil.freeEndpoint(ep);
-        });
-    }
-
-    public Completable provisionIdentityCertificate(String endpoint, String deviceId, String rootCert, String identityCert) {
-        return provisionTrustAnchor(endpoint, deviceId, rootCert)
-                .andThen(
-                    Completable.create(emitter -> {
-                        OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
-                        OCUuid di = OCUuidUtil.stringToUuid(deviceId);
-                        OCEndpointUtil.setDi(ep, di);
-
-                        OCResponseHandler handler = (OCClientResponse response) -> {
-                            OCStatus code = response.getCode();
-                            if (code.equals(OCStatus.OC_STATUS_OK) || code.equals(OCStatus.OC_STATUS_CHANGED)) {
-                                Timber.d("Provision identity certificate succeeded");
-                                emitter.onComplete();
-                            } else {
-                                emitter.onError(new IOException("Provision identity certificate error"));
-                            }
-                        };
-
-                        if (OCMain.initPost(OcfResourceUri.CRED_URI, ep, null, handler, OCQos.HIGH_QOS)) {
-                            OcCredPublicData publicData = new OcCredPublicData();
-                            publicData.setPemData(identityCert);
-                            publicData.setEncoding(OcfEncoding.OC_ENCODING_PEM);
-
-                            OcCredential cred = new OcCredential();
-                            cred.setSubjectuuid(deviceId);
-                            cred.setCredtype(OcfCredType.OC_CREDTYPE_CERT);
-                            cred.setCredusage(OcfCredUsage.OC_CREDUSAGE_CERT);
-                            cred.setPublicData(publicData);
-                            List<OcCredential> credList = new ArrayList<>();
-                            credList.add(cred);
-
-                            OcCredentials creds = new OcCredentials();
-                            creds.setCredList(credList);
-
-                            CborEncoder root = creds.parseToCbor();
-                            if (OCMain.doPost()) {
-                                Timber.d("Sent POST request to /oic/sec/cred");
-                            } else {
-                                String error = "Could not send POST request to /oic/sec/cred";
-                                Timber.e(error);
-                                emitter.onError(new Exception(error));
-                            }
-                        } else {
-                            String error = "Could not init POST request to /oic/sec/cred";
-                            Timber.e(error);
-                            emitter.onError(new Exception(error));
-                        }
-
-                        OCEndpointUtil.freeEndpoint(ep);
-                    }));
-    }
-
     public Completable provisionIdentityCertificate(String deviceId) {
         return Completable.create(emitter -> {
             OCUuid di = OCUuidUtil.stringToUuid(deviceId);
@@ -225,61 +116,6 @@ public class CmsRepository {
             if (ret < 0) {
                 emitter.onError(new IOException("Provision identity certificate error"));
             }
-        });
-    }
-
-    public Completable provisionRoleCertificate(String endpoint, String deviceId, String roleCert, String roleId, String roleAuthority) {
-        return Completable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
-            OCUuid di = OCUuidUtil.stringToUuid(deviceId);
-            OCEndpointUtil.setDi(ep, di);
-
-            OCResponseHandler handler = (OCClientResponse response) -> {
-                OCStatus code = response.getCode();
-                if (code.equals(OCStatus.OC_STATUS_OK) || code.equals(OCStatus.OC_STATUS_CHANGED)) {
-                    Timber.d("Provision role certificate succeeded");
-                    emitter.onComplete();
-                } else {
-                    emitter.onError(new IOException("Provision role certificate error"));
-                }
-            };
-
-            if (OCMain.initPost(OcfResourceUri.CRED_URI, ep, null, handler, OCQos.HIGH_QOS)) {
-                OcCredPublicData publicData = new OcCredPublicData();
-                publicData.setPemData(roleCert);
-                publicData.setEncoding(OcfEncoding.OC_ENCODING_PEM);
-
-                OcCredRole role = new OcCredRole();
-                role.setRole(roleId);
-                role.setAuthority(roleAuthority);
-
-                OcCredential cred = new OcCredential();
-                cred.setSubjectuuid(deviceId);
-                cred.setCredtype(OcfCredType.OC_CREDTYPE_CERT);
-                cred.setCredusage(OcfCredUsage.OC_CREDUSAGE_ROLECERT);
-                cred.setPublicData(publicData);
-                cred.setRoleid(role);
-                List<OcCredential> credList = new ArrayList<>();
-                credList.add(cred);
-
-                OcCredentials creds = new OcCredentials();
-                creds.setCredList(credList);
-
-                CborEncoder root = creds.parseToCbor();
-                if (OCMain.doPost()) {
-                    Timber.d("Sent POST request to /oic/sec/cred");
-                } else {
-                    String error = "Could not send POST request to /oic/sec/cred";
-                    Timber.e(error);
-                    emitter.onError(new Exception(error));
-                }
-            } else {
-                String error = "Could not init POST request to /oic/sec/cred";
-                Timber.e(error);
-                emitter.onError(new Exception(error));
-            }
-
-            OCEndpointUtil.freeEndpoint(ep);
         });
     }
 
@@ -303,55 +139,6 @@ public class CmsRepository {
                 emitter.onError(new IOException("Provision role certificate error"));
                 OCObt.freeRoleId(roles);
             }
-        });
-    }
-
-    public Completable createPskCredential(String endpoint, String deviceId, String targetUuid, byte[] symmetricKey) {
-        return Completable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
-            OCUuid di = OCUuidUtil.stringToUuid(deviceId);
-            OCEndpointUtil.setDi(ep, di);
-
-            OCResponseHandler handler = (OCClientResponse response) -> {
-                OCStatus code = response.getCode();
-                if (code.equals(OCStatus.OC_STATUS_OK) || code.equals(OCStatus.OC_STATUS_CHANGED)) {
-                    Timber.d("Provision identity certificate succeeded");
-                    emitter.onComplete();
-                } else {
-                    emitter.onError(new IOException("Provision identity certificate error"));
-                }
-            };
-
-            if (OCMain.initPost(OcfResourceUri.CRED_URI, ep, null, handler, OCQos.HIGH_QOS)) {
-                OcCredPrivateData privateData = new OcCredPrivateData();
-                privateData.setDataDer(symmetricKey);
-                privateData.setEncoding(OcfEncoding.OC_ENCODING_RAW);
-
-                OcCredential cred = new OcCredential();
-                cred.setSubjectuuid(targetUuid);
-                cred.setCredtype(OcfCredType.OC_CREDTYPE_PSK);
-                cred.setPrivateData(privateData);
-                List<OcCredential> credList = new ArrayList<>();
-                credList.add(cred);
-
-                OcCredentials creds = new OcCredentials();
-                creds.setCredList(credList);
-
-                CborEncoder root = creds.parseToCbor();
-                if (OCMain.doPost()) {
-                    Timber.d("Sent POST request to /oic/sec/cred");
-                } else {
-                    String error = "Could not send POST request to /oic/sec/cred";
-                    Timber.e(error);
-                    emitter.onError(new Exception(error));
-                }
-            } else {
-                String error = "Could not init POST request to /oic/sec/cred";
-                Timber.e(error);
-                emitter.onError(new Exception(error));
-            }
-
-            OCEndpointUtil.freeEndpoint(ep);
         });
     }
 
@@ -382,16 +169,12 @@ public class CmsRepository {
         });
     }
 
-    public Completable deleteCredential(String endpoint, String deviceId, long credId) {
+    public Completable deleteCredential(String deviceId, long credId) {
         return Completable.create(emitter -> {
-            OCEndpoint ep = OCEndpointUtil.stringToEndpoint(endpoint, new String[1]);
-            OCUuid di = OCUuidUtil.stringToUuid(deviceId);
-            OCEndpointUtil.setDi(ep, di);
+            OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
 
-            OCResponseHandler handler = (OCClientResponse response) -> {
-                OCStatus code = response.getCode();
-                if (code == OCStatus.OC_STATUS_OK
-                        || code == OCStatus.OC_STATUS_DELETED) {
+            OCObtStatusHandler handler = (int status) -> {
+                if (status >= 0) {
                     Timber.d("Delete credential success");
                     emitter.onComplete();
                 } else {
@@ -401,13 +184,22 @@ public class CmsRepository {
                 }
             };
 
-            if (!OCMain.doDelete(OcfResourceUri.CRED_URI, ep, OcfResourceUri.DELETE_CRED_QUERY + credId, handler, OCQos.HIGH_QOS)) {
+            int ret = OCObt.deleteCredByCredId(uuid, (int)credId, handler);
+            if (ret >= 0) {
+                Timber.d("Successfully issued request to DELETE /oic/sec/cred");
+            } else {
                 String error = "DELETE request to /oic/sec/cred error";
                 Timber.d(error);
                 emitter.onError(new Exception(error));
             }
+        });
+    }
 
-            OCEndpointUtil.freeEndpoint(ep);
+    public Single<OcCredentials> retrieveOwnCredentials() {
+        return Single.create(emitter -> {
+            OcCredentials creds = new OcCredentials();
+            creds.parseOCRepresentation(OCObt.retrieveOwnCreds());
+            emitter.onSuccess(creds);
         });
     }
 
@@ -425,10 +217,17 @@ public class CmsRepository {
         });
     }
 
-    public Completable removeTrustAnchor(long device, long credid) {
+    public Completable removeTrustAnchor(long credid) {
         return Completable.create(emitter -> {
-            OCPki.removeCredentialByCredid(device, (int)credid);
-            emitter.onComplete();
+            int ret = OCObt.deleteOwnCredByCredId((int)credid);
+            if (ret >= 0) {
+                Timber.d("Successfully DELETED cred");
+                emitter.onComplete();
+            } else {
+                String error = "ERROR DELETING cred";
+                Timber.e(error);
+                emitter.onError(new Exception(error));
+            }
         });
     }
 }

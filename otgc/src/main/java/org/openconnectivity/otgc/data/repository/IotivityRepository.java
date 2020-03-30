@@ -27,6 +27,8 @@ import org.iotivity.CborEncoder;
 import org.iotivity.OCBufferSettings;
 import org.iotivity.OCClientResponse;
 import org.iotivity.OCCoreRes;
+import org.iotivity.OCDiscoveryAllHandler;
+import org.iotivity.OCDiscoveryFlags;
 import org.iotivity.OCEndpoint;
 import org.iotivity.OCEndpointUtil;
 import org.iotivity.OCFactoryPresetsHandler;
@@ -64,6 +66,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -517,6 +520,67 @@ public class IotivityRepository {
                 Timber.e(ex.getMessage());
             }
         });
+    }
+
+    public Observable<OcResource> discoverAllResources(String deviceId) {
+        return Observable.create(emitter -> {
+            OCUuid uuid = OCUuidUtil.stringToUuid(deviceId);
+
+            OCDiscoveryAllHandler handler =
+                    (String anchor, String uri, String[] types, int interfaceMask, OCEndpoint endpoints,
+                     int resourcePropertiesMask, boolean more) -> {
+                        OcResource resource = new OcResource();
+                        resource.setAnchor(anchor);
+                        resource.setHref(uri);
+
+                        /*List<OcEndpoint> epList = new ArrayList<>();
+                        OCEndpoint ep = endpoints;
+                        while (ep != null) {
+                            OcEndpoint endpoint = new OcEndpoint();
+                            endpoint.setEndpoint(OCEndpointUtil.toString(ep));
+                            epList.add(endpoint);
+                        }
+                        resource.setEndpoints(epList);*/
+                        resource.setPropertiesMask((long)resourcePropertiesMask);
+                        resource.setResourceTypes(Arrays.asList(types));
+                        emitter.onNext(resource);
+
+                        if(!more) {
+                            emitter.onComplete();
+                            return OCDiscoveryFlags.OC_STOP_DISCOVERY;
+                        }
+                        return OCDiscoveryFlags.OC_CONTINUE_DISCOVERY;
+                    };
+
+            int ret = OCObt.discoverAllResources(uuid, handler);
+            if (ret >= 0)
+            {
+                Timber.d("Successfully issued resource discovery request");
+            } else {
+                String error = "ERROR issuing resource discovery request";
+                Timber.e(error);
+                emitter.onError(new Exception(error));
+            }
+        });
+    }
+
+    public Single<List<OcResource>> discoverVerticalResources(String deviceId) {
+        return discoverAllResources(deviceId)
+                .toList()
+                .map(resources -> {
+                    List<OcResource> resourceList = new ArrayList<>();
+                    for (OcResource resource : resources) {
+                        for (String resourceType : resource.getResourceTypes()) {
+                            if (OcfResourceType.isVerticalResourceType(resourceType)
+                                    && !resourceType.startsWith("oic.d.")) {
+                                resourceList.add(resource);
+                                break;
+                            }
+                        }
+                    }
+
+                    return resourceList;
+                });
     }
 
     public Single<OcRes> findResource(String host, String resourceType) {
