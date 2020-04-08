@@ -50,11 +50,8 @@ public class CmsRepository {
 
             OCObtCredsHandler handler = (OCCreds credentials) -> {
                 if (credentials != null) {
-                    OcCredentials creds = new OcCredentials();
-                    creds.parseOCRepresentation(credentials);
+                    OcCredentials creds = new OcCredentials(credentials, true);
                     emitter.onSuccess(creds);
-                    /* Freeing the credential structure */
-                    OCObt.freeCreds(credentials);
                 } else {
                     String error = "GET credentials error";
                     Timber.e(error);
@@ -197,8 +194,7 @@ public class CmsRepository {
 
     public Single<OcCredentials> retrieveOwnCredentials() {
         return Single.create(emitter -> {
-            OcCredentials creds = new OcCredentials();
-            creds.parseOCRepresentation(OCObt.retrieveOwnCreds());
+            OcCredentials creds = new OcCredentials(OCObt.retrieveOwnCreds(), false);
             emitter.onSuccess(creds);
         });
     }

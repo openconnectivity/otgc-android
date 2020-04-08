@@ -28,63 +28,46 @@ import org.iotivity.OCUuidUtil;
 
 public class OcCredential {
 
-    private Integer credid;
-    private String subjectuuid;
+    private OCCred credential;
     private OcCredRole roleid;
-    private String credtype;
-    private String credusage;
     private OcCredPublicData publicData;
     private OcCredPrivateData privateData;
     private OcCredOptionalData optionalData;
-    private String period;
 
-    public OcCredential() {}
-
-    public Integer getCredid() {
-        return credid;
+    public OcCredential(OCCred credential) {
+        this.credential = credential;
+        parseOCRepresentation();
     }
 
-    public void setCredid(Integer credid) {
-        this.credid = credid;
+    public int getCredid() {
+        return credential.getCredId();
     }
 
     public String getSubjectuuid() {
-        return subjectuuid;
-    }
-
-    public void setSubjectuuid(String subjectuuid) {
-        this.subjectuuid = subjectuuid;
+        return OCUuidUtil.uuidToString(credential.getSubjectUuid());
     }
 
     public OcCredRole getRoleid() {
         return roleid;
     }
 
-    public void setRoleid(OcCredRole roleid) {
+    private void setRoleid(OcCredRole roleid) {
         this.roleid = roleid;
     }
 
     public String getCredtype() {
-        return credtype;
-    }
-
-    public void setCredtype(String credtype) {
-        this.credtype = credtype;
+        return OCCredUtil.credTypeString(credential.getCredType());
     }
 
     public String getCredusage() {
-        return credusage;
-    }
-
-    public void setCredusage(String credusage) {
-        this.credusage = credusage;
+        return OCCredUtil.readCredUsage(credential.getCredUsage());
     }
 
     public OcCredPublicData getPublicData() {
         return publicData;
     }
 
-    public void setPublicData(OcCredPublicData publicData) {
+    private void setPublicData(OcCredPublicData publicData) {
         this.publicData = publicData;
     }
 
@@ -92,7 +75,7 @@ public class OcCredential {
         return privateData;
     }
 
-    public void setPrivateData(OcCredPrivateData privateData) {
+    private void setPrivateData(OcCredPrivateData privateData) {
         this.privateData = privateData;
     }
 
@@ -104,48 +87,27 @@ public class OcCredential {
         this.optionalData = optionalData;
     }
 
-    public String getPeriod() {
-        return period;
-    }
 
-    public void setPeriod(String period) {
-        this.period = period;
-    }
-
-    public void parseOCRepresentation(OCCred cred) {
-        /* credid */
-        Integer credid = cred.getCredId();
-        this.setCredid(credid);
-        /* credtype */
-        String credtype = OCCredUtil.credTypeString(cred.getCredType());
-        this.setCredtype(credtype);
-        /* credusage */
-        String credusage = OCCredUtil.readCredUsage(cred.getCredUsage());
-        this.setCredusage(credusage);
-        /* subjectuuid */
-        String subjectuuid = OCUuidUtil.uuidToString(cred.getSubjectUuid());
-        this.setSubjectuuid(subjectuuid);
+    public void parseOCRepresentation() {
         /* publicdata */
-        if (cred.getPublicData() != null &&
-                cred.getPublicData().getData() != null &&
-                !cred.getPublicData().getData().isEmpty()) {
-            OcCredPublicData publicData = new OcCredPublicData();
-            publicData.parseOCRepresentation(cred.getPublicData());
+        if (credential.getPublicData() != null &&
+                credential.getPublicData().getData() != null &&
+                !credential.getPublicData().getData().isEmpty()) {
+            OcCredPublicData publicData = new OcCredPublicData(credential.getPublicData());
             this.setPublicData(publicData);
         }
         /* privatedata */
-        OcCredPrivateData privateData = new OcCredPrivateData();
-        privateData.parseOCRepresentation(cred.getPrivateData());
+        OcCredPrivateData privateData = new OcCredPrivateData(credential.getPrivateData());
         this.setPrivateData(privateData);
         /* roleid */
-        if (cred.getRole() != null) {
+        if (credential.getRole() != null) {
             OcCredRole roleid = new OcCredRole();
-            if (!cred.getRole().isEmpty()) {
-                roleid.setRole(cred.getRole());
+            if (!credential.getRole().isEmpty()) {
+                roleid.setRole(credential.getRole());
             }
 
-            if (cred.getAuthority() != null && !cred.getAuthority().isEmpty()) {
-                roleid.setAuthority(cred.getAuthority());
+            if (credential.getAuthority() != null && !credential.getAuthority().isEmpty()) {
+                roleid.setAuthority(credential.getAuthority());
             }
             this.setRoleid(roleid);
         }

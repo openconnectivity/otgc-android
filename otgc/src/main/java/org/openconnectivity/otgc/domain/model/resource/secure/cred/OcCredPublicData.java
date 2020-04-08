@@ -24,47 +24,35 @@ package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
 import org.iotivity.OCCredData;
 import org.iotivity.OCCredUtil;
+import org.spongycastle.util.encoders.Base64;
 
 public class OcCredPublicData {
 
-    private String encoding;
-    private String pemData;
-    private byte[] derData;
+    private OCCredData publicData;
 
-    public OcCredPublicData() {
-
+    public OcCredPublicData(OCCredData publicData) {
+        this.publicData = publicData;
     }
 
     public String getEncoding() {
-        return encoding;
-    }
-
-    public void setEncoding(String encoding) {
-        this.encoding = encoding;
+        return OCCredUtil.readEncoding(publicData.getEncoding());
     }
 
     public String getPemData() {
-        return pemData;
-    }
-
-    public void setPemData(String data) {
-        this.pemData = data;
+        return publicData.getData();
     }
 
     public byte[] getDerData() {
-        return derData;
-    }
+        if (publicData.getData() == null) {
+            return null;
+        }
 
-    public void setDerData(byte[] derData) {
-        this.derData = derData;
-    }
+        String pem = publicData.getData();
 
-    public void parseOCRepresentation(OCCredData data) {
-        /* data PEM format */
-        String dataPem = data.getData();
-        this.setPemData(dataPem);
-        /* encoding */
-        String encoding = OCCredUtil.readEncoding(data.getEncoding());
-        this.setEncoding(encoding);
+        String base64 = pem.replaceAll("\\s", "")
+                .replaceAll("\\r\\n", "")
+                .replace("-----BEGINCERTIFICATE-----", "")
+                .replace("-----ENDCERTIFICATE-----", "");
+        return Base64.decode(base64.getBytes());
     }
 }

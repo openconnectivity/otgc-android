@@ -24,47 +24,35 @@ package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
 import org.iotivity.OCCredData;
 import org.iotivity.OCCredUtil;
+import org.spongycastle.util.encoders.Base64;
 
 public class OcCredPrivateData {
 
-    private byte[] dataDer;
-    private String dataPem;
-    private String encoding;
+    OCCredData privateData;
 
-    public OcCredPrivateData() {
-
+    public OcCredPrivateData(OCCredData privateData) {
+        this.privateData = privateData;
     }
 
     public byte[] getDataDer() {
-        return dataDer;
-    }
+        if (privateData.getData() == null) {
+            return null;
+        }
 
-    public void setDataDer(byte[] dataDer) {
-        this.dataDer = dataDer;
+        String pem = privateData.getData();
+
+        String base64 = pem.replaceAll("\\s", "")
+                .replaceAll("\\r\\n", "")
+                .replace("-----BEGINCERTIFICATE-----", "")
+                .replace("-----ENDCERTIFICATE-----", "");
+        return Base64.decode(base64.getBytes());
     }
 
     public String getDataPem() {
-        return dataPem;
-    }
-
-    public void setDataPem(String dataPem) {
-        this.dataPem = dataPem;
+        return privateData.getData();
     }
 
     public String getEncoding() {
-        return encoding;
-    }
-
-    public void setEncoding(String encoding) {
-        this.encoding = encoding;
-    }
-
-    public void parseOCRepresentation(OCCredData data) {
-        /* data PEM format */
-        String dataPem = data.getData();
-        this.setDataPem(dataPem);
-        /* encoding */
-        String encoding = OCCredUtil.readEncoding(data.getEncoding());
-        this.setEncoding(encoding);
+        return OCCredUtil.readEncoding(privateData.getEncoding());
     }
 }

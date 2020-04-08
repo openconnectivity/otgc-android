@@ -24,6 +24,7 @@ package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
 import org.iotivity.OCCred;
 import org.iotivity.OCCreds;
+import org.iotivity.OCObt;
 import org.iotivity.OCUuidUtil;
 import org.openconnectivity.otgc.domain.model.resource.OcResourceBase;
 
@@ -32,43 +33,54 @@ import java.util.List;
 
 public class OcCredentials extends OcResourceBase {
 
+    private OCCreds credentials;
     private List<OcCredential> credList;
     private String rowneruuid;
+    private boolean memoryOwner;
 
-    public OcCredentials() {
+
+    public OcCredentials(OCCreds credentials, boolean memoryOwner) {
         super();
+        this.credentials = credentials;
+        this.memoryOwner = memoryOwner;
+        parseOCRepresentation();
     }
 
     public List<OcCredential> getCredList() {
         return credList;
     }
 
-    public void setCredList(List<OcCredential> credList) {
+    private void setCredList(List<OcCredential> credList) {
         this.credList = credList;
     }
 
     public String getRowneruuid() {
-        return rowneruuid;
+        return OCUuidUtil.uuidToString(credentials.getRowneruuid());
     }
 
-    public void setRowneruuid(String rowneruuid) {
-        this.rowneruuid = rowneruuid;
-    }
-
-    public void parseOCRepresentation(OCCreds creds) {
+    private void parseOCRepresentation() {
         /* creds */
         List<OcCredential> credList = new ArrayList<>();
-        OCCred cr = creds.getCredsListHead();
+        OCCred cr = credentials.getCredsListHead();
         while (cr != null) {
-            OcCredential cred = new OcCredential();
-            cred.parseOCRepresentation(cr);
+            OcCredential cred = new OcCredential(cr);
             credList.add(cred);
 
             cr = cr.getNext();
         }
         this.setCredList(credList);
-        /* rowneruuid */
-        String rowneruuid = OCUuidUtil.uuidToString(creds.getRowneruuid());
-        this.setRowneruuid(rowneruuid);
+    }
+
+    public synchronized void delete() {
+        if (memoryOwner) {
+            OCObt.freeCreds(credentials);
+            credList = null;
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        delete();
+        super.finalize();
     }
 }

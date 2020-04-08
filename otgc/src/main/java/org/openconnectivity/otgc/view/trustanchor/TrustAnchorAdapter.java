@@ -128,7 +128,7 @@ public class TrustAnchorAdapter extends RecyclerView.Adapter<TrustAnchorAdapter.
         OcCredential cred = mDataset.get(position);
 
         if (cred != null) {
-            holder.mCredId.setText(mContext.getString(R.string.credentials_cardview_credid, cred.getCredid().toString()));
+            holder.mCredId.setText(mContext.getString(R.string.credentials_cardview_credid, Integer.toString(cred.getCredid())));
             holder.mCredSubject.setText(mContext.getString(R.string.credentials_cardview_subject_uuid, cred.getSubjectuuid()));
             holder.mCredUsage.setText(mContext.getString(R.string.credentials_cardview_credusage, cred.getCredusage()));
         }
