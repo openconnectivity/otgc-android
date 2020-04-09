@@ -29,71 +29,47 @@ import org.iotivity.OCUuidUtil;
 
 public class OcAceSubject {
 
-    private String type;
-    private String connType;
-    private String uuid;
-    private String roleId;
-    private String authority;
+    OCAceSubjectType subjectType;
+    OCAceSubject subject;
 
-    public OcAceSubject() {
-
+    public OcAceSubject(OCAceSubjectType subjectType, OCAceSubject subject) {
+        this.subjectType = subjectType;
+        this.subject = subject;
     }
 
     public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+        return subjectType.toString();
     }
 
     public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+        if (subjectType == OCAceSubjectType.OC_SUBJECT_UUID) {
+            return OCUuidUtil.uuidToString(subject.getUuid());
+        } else {
+            return null;
+        }
     }
 
     public String getConnType() {
-        return connType;
-    }
-
-    public void setConnType(String connType) {
-        this.connType = connType;
+        if (subjectType == OCAceSubjectType.OC_SUBJECT_CONN) {
+            if (subject.getConn() == OCAceConnectionType.OC_CONN_AUTH_CRYPT) {
+                return "auth-crypt";
+            } else {
+                return "anon-clear";
+            }
+        } else {
+            return null;
+        }
     }
 
     public String getRoleId() {
-        return roleId;
-    }
-
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
+        if (subjectType == OCAceSubjectType.OC_SUBJECT_ROLE) {
+            return subject.getRole();
+        } else {
+            return null;
+        }
     }
 
     public String getAuthority() {
-        return authority;
-    }
-
-    public void setAuthority(String authority) {
-        this.authority = authority;
-    }
-
-    public void parseOCRepresentation(OCAceSubjectType subjectType, OCAceSubject subject) {
-        this.setType(subjectType.toString());
-        if (subjectType == OCAceSubjectType.OC_SUBJECT_UUID) {
-            this.setUuid(OCUuidUtil.uuidToString(subject.getUuid()));
-        } else if (subjectType == OCAceSubjectType.OC_SUBJECT_ROLE) {
-            this.setRoleId(subject.getRole());
-            if (subject.getAuthority() != null && !subject.getAuthority().isEmpty()) {
-                this.setAuthority(subject.getAuthority());
-            }
-        } else if (subjectType == OCAceSubjectType.OC_SUBJECT_CONN) {
-            if (subject.getConn() == OCAceConnectionType.OC_CONN_AUTH_CRYPT) {
-                this.setConnType("auth-crypt");
-            } else {
-                this.setConnType("anon-clear");
-            }
-        }
+        return subject.getAuthority();
     }
 }

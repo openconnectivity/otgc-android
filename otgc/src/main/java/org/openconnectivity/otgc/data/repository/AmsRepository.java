@@ -62,12 +62,8 @@ public class AmsRepository {
 
             OCObtAclHandler handler = (OCSecurityAcl acl) -> {
                 if (acl != null) {
-                    OcAcl aclRet = new OcAcl();
-                    aclRet.parseOCRepresentation(acl);
+                    OcAcl aclRet = new OcAcl(acl, true);
                     emitter.onSuccess(aclRet);
-
-                    /* Freeing the ACL structure */
-                    OCObt.freeAcl(acl);
                 } else {
                     String error = "GET ACL error";
                     Timber.d(error);
@@ -231,27 +227,6 @@ public class AmsRepository {
                 emitter.onError(new Exception(error));
             }
         });
-    }
-
-    private List<OcAceResource> getResources(List<String> verticalResources) {
-        List<OcAceResource> resources = new ArrayList<>();
-        for (String verticalResource : verticalResources) {
-            OcAceResource res = new OcAceResource();
-            if (OcfWildcard.isWildcard(verticalResource)) {
-                res.setWildCard(verticalResource);
-            } else {
-                res.setHref(verticalResource);
-            }
-            /*List<String> types = new ArrayList<>();
-            types.add("*");
-            res.setResourceTypes(types);
-            List<String> interfaces = new ArrayList<>();
-            interfaces.add("*");
-            res.setInterfaces(interfaces);*/
-            resources.add(res);
-        }
-
-        return resources;
     }
 
     private int setAceResources(OCSecurityAce ace, List<String> resources) {

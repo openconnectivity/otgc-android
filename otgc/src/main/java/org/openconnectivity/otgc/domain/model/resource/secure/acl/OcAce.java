@@ -30,68 +30,38 @@ import java.util.List;
 
 public class OcAce {
 
-    private Integer aceid;
-    private Integer permission;
+    OCSecurityAce ace;
     private OcAceSubject subject;
     private List<OcAceResource> resources;
 
-    public OcAce() {
+    public OcAce(OCSecurityAce ace) {
+        this.ace = ace;
+        /* subject */
+        this.subject = new OcAceSubject(ace.getSubjectType(), ace.getSubject());
+        /* resources */
         this.resources = new ArrayList<>();
+        OCAceResource res = ace.getResourcesListHead();
+        while (res != null) {
+            OcAceResource resource = new OcAceResource(res);
+            this.resources.add(resource);
+
+            res = res.getNext();
+        }
     }
 
-    public Integer getAceid() {
-        return aceid;
+    public int getAceid() {
+        return ace.getAceid();
     }
 
-    public void setAceid(Integer aceid) {
-        this.aceid = aceid;
-    }
-
-    public Integer getPermission() {
-        return permission;
-    }
-
-    public void setPermission(Integer permission) {
-        this.permission = permission;
+    public int getPermission() {
+        return ace.getPermission();
     }
 
     public OcAceSubject getSubject() {
         return subject;
     }
 
-    public void setSubject(OcAceSubject subject) {
-        this.subject = subject;
-    }
-
     public List<OcAceResource> getResources() {
         return resources;
-    }
-
-    public void setResources(List<OcAceResource> resources) {
-        this.resources = resources;
-    }
-
-    public void parseOCRepresentation(OCSecurityAce ace) {
-        /* aceid */
-        Integer aceid = ace.getAceid();
-        this.setAceid(aceid);
-        /* permission */
-        Integer permission = ace.getPermission();
-        this.setPermission(permission);
-        /* subject */
-        OcAceSubject subject = new OcAceSubject();
-        subject.parseOCRepresentation(ace.getSubjectType(), ace.getSubject());
-        this.setSubject(subject);
-        /* resources */
-        OCAceResource res = ace.getResourcesListHead();
-        List<OcAceResource> resources = new ArrayList<>();
-        while (res != null) {
-            OcAceResource resource = new OcAceResource();
-            resource.parseOCRepresentation(res);
-            resources.add(resource);
-
-            res = res.getNext();
-        }
-        this.setResources(resources);
     }
 }

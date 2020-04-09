@@ -22,6 +22,7 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.acl;
 
+import org.iotivity.OCObt;
 import org.iotivity.OCSecurityAce;
 import org.iotivity.OCSecurityAcl;
 import org.iotivity.OCUuidUtil;
@@ -32,11 +33,16 @@ import java.util.List;
 
 public class OcAcl extends OcResourceBase {
 
+    private OCSecurityAcl acl;
+    boolean memoryOwner;
     private List<OcAce> aceList;
     private String rownerUuid;
 
-    public OcAcl() {
+    public OcAcl(OCSecurityAcl acl, boolean memoryOwner) {
         super();
+        this.acl = acl;
+        this.memoryOwner = memoryOwner;
+        parseOCRepresentation();
     }
 
     public List<OcAce> getAceList() {
@@ -48,27 +54,33 @@ public class OcAcl extends OcResourceBase {
     }
 
     public String getRownerUuid() {
-        return this.rownerUuid;
+        return OCUuidUtil.uuidToString(acl.getRowneruuid());
     }
 
-    public void setRownerUuid(String rownerUuid) {
-        this.rownerUuid = rownerUuid;
-    }
-
-    public void parseOCRepresentation(OCSecurityAcl acl) {
+    private void parseOCRepresentation() {
         /* aclist2 */
         OCSecurityAce ac = acl.getSubjectsListHead();
         List<OcAce> aceList = new ArrayList<>();
         while (ac != null) {
-            OcAce ace = new OcAce();
-            ace.parseOCRepresentation(ac);
+            OcAce ace = new OcAce(ac);
             aceList.add(ace);
 
             ac = ac.getNext();
         }
         this.setAceList(aceList);
-        /* rowneruuid */
-        String rowneruuid = OCUuidUtil.uuidToString(acl.getRowneruuid());
-        this.setRownerUuid(rowneruuid);
+    }
+
+    public synchronized void delete() {
+        if (memoryOwner) {
+            /* Freeing the ACL structure */
+            OCObt.freeAcl(acl);
+            aceList = null;
+        }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        delete();
+        super.finalize();
     }
 }
