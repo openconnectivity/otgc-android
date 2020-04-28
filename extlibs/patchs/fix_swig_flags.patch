@@ -1,0 +1,20 @@
+diff --git a/swig/Makefile b/swig/Makefile
+index 8c42bd3c..83321526 100644
+--- a/swig/Makefile
++++ b/swig/Makefile
+@@ -77,6 +77,7 @@ endif
+ 
+ ifneq ($(SECURE),0)
+ 	EXTRA_FLAG += -DOC_SECURITY
++	SWIG_CFLAG += -DOC_SECURITY
+ endif
+ 
+ ifeq ($(IDD), 1)
+@@ -85,6 +86,7 @@ endif
+ 
+ ifneq ($(PKI),0)
+ 	EXTRA_FLAG += -DOC_PKI
++	SWIG_CFLAG += -DOC_PKI
+ endif
+ 
+ ifeq ($(TCP),1)

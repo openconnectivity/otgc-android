@@ -1,0 +1,13 @@
+diff --git a/swig/swig_interfaces/oc_cloud.i b/swig/swig_interfaces/oc_cloud.i
+index 96efda20..dfb825ed 100644
+--- a/swig/swig_interfaces/oc_cloud.i
++++ b/swig/swig_interfaces/oc_cloud.i
+@@ -331,4 +331,6 @@ int jni_cloud_provision_conf_resource(oc_cloud_context_t *ctx,
+ }
+ %}
+ 
+-%include "oc_cloud.h"
+\ No newline at end of file
++%ignore oc_cloud_discover_resources;
++
++%include "oc_cloud.h"
