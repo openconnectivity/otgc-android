@@ -168,8 +168,10 @@ public class IORepository {
             byte[] fileBytes;
             try (InputStream inputStream =
                          mContext.getAssets().open(path)) {
-                fileBytes = new byte[inputStream.available()];
+                int numBytes = inputStream.available() + 1;
+                fileBytes = new byte[numBytes];
                 inputStream.read(fileBytes);
+                fileBytes[numBytes - 1] = '\0';
             }
 
             return fileBytes;
