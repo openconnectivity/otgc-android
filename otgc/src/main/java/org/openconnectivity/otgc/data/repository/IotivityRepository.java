@@ -26,6 +26,7 @@ import android.content.Context;
 import org.iotivity.CborEncoder;
 import org.iotivity.OCBufferSettings;
 import org.iotivity.OCClientResponse;
+import org.iotivity.OCCloud;
 import org.iotivity.OCCoreRes;
 import org.iotivity.OCDiscoveryAllHandler;
 import org.iotivity.OCDiscoveryFlags;
@@ -533,14 +534,15 @@ public class IotivityRepository {
                         resource.setAnchor(anchor);
                         resource.setHref(uri);
 
-                        /*List<OcEndpoint> epList = new ArrayList<>();
+                        List<OcEndpoint> epList = new ArrayList<>();
                         OCEndpoint ep = endpoints;
                         while (ep != null) {
                             OcEndpoint endpoint = new OcEndpoint();
                             endpoint.setEndpoint(OCEndpointUtil.toString(ep));
                             epList.add(endpoint);
+                            ep = ep.getNext();
                         }
-                        resource.setEndpoints(epList);*/
+                        resource.setEndpoints(epList);
                         resource.setPropertiesMask((long)resourcePropertiesMask);
                         resource.setResourceTypes(Arrays.asList(types));
                         emitter.onNext(resource);
