@@ -22,14 +22,14 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.acl;
 
-import org.iotivity.CborEncoder;
-import org.iotivity.OCRep;
-import org.iotivity.OCRepresentation;
-import org.openconnectivity.otgc.utils.constant.OcfResourceAttributeKey;
+import org.iotivity.OCAceConnectionType;
+import org.iotivity.OCAceSubject;
+import org.iotivity.OCAceSubjectType;
+import org.iotivity.OCUuidUtil;
 
 public class OcAceSubject {
 
-    private OcAceSubjectType type;
+    private String type;
     private String connType;
     private String uuid;
     private String roleId;
@@ -39,11 +39,11 @@ public class OcAceSubject {
 
     }
 
-    public OcAceSubjectType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(OcAceSubjectType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -79,42 +79,21 @@ public class OcAceSubject {
         this.authority = authority;
     }
 
-    public void parseOCRepresentation(OCRepresentation rep) {
-        while (rep != null) {
-            switch (rep.getType()) {
-                case OC_REP_STRING:
-                    if (rep.getName().equals(OcfResourceAttributeKey.UUID_TYPE_KEY)) {
-                        this.setType(OcAceSubjectType.UUID_TYPE);
-                        this.setUuid(rep.getValue().getString());
-                    } else if (rep.getName().equals(OcfResourceAttributeKey.CONN_TYPE_KEY)) {
-                        this.setType(OcAceSubjectType.CONN_TYPE);
-                        this.setConnType(rep.getValue().getString());
-                    } else if (rep.getName().equals(OcfResourceAttributeKey.ROLE_AUTHORITY_KEY) || rep.getName().equals(OcfResourceAttributeKey.ROLE_KEY)) {
-                        this.setType(OcAceSubjectType.ROLE_TYPE);
-                        if (rep.getName().equals(OcfResourceAttributeKey.ROLE_KEY)) {
-                            this.setRoleId(rep.getValue().getString());
-                        } else {
-                            this.setAuthority(rep.getValue().getString());
-                        }
-                    }
-                    break;
-                default:
-                    break;
+    public void parseOCRepresentation(OCAceSubjectType subjectType, OCAceSubject subject) {
+        this.setType(subjectType.toString());
+        if (subjectType == OCAceSubjectType.OC_SUBJECT_UUID) {
+            this.setUuid(OCUuidUtil.uuidToString(subject.getUuid()));
+        } else if (subjectType == OCAceSubjectType.OC_SUBJECT_ROLE) {
+            this.setRoleId(subject.getRole());
+            if (subject.getAuthority() != null && !subject.getAuthority().isEmpty()) {
+                this.setAuthority(subject.getAuthority());
             }
-
-            rep = rep.getNext();
-        }
-    }
-
-    public void parseToCbor(CborEncoder parent) {
-        /* subject */
-        if (this.getType().equals(OcAceSubjectType.UUID_TYPE)) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.UUID_TYPE_KEY, this.getUuid());
-        } else if (this.getType().equals(OcAceSubjectType.CONN_TYPE)) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.CONN_TYPE_KEY, this.getConnType());
-        } else if (this.getType().equals(OcAceSubjectType.ROLE_TYPE)) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.ROLE_KEY, this.getRoleId());
-            OCRep.setTextString(parent, OcfResourceAttributeKey.ROLE_AUTHORITY_KEY, this.getAuthority());
+        } else if (subjectType == OCAceSubjectType.OC_SUBJECT_CONN) {
+            if (subject.getConn() == OCAceConnectionType.OC_CONN_AUTH_CRYPT) {
+                this.setConnType("auth-crypt");
+            } else {
+                this.setConnType("anon-clear");
+            }
         }
     }
 }

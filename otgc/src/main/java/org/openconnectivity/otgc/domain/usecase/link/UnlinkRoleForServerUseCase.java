@@ -23,11 +23,8 @@
 package org.openconnectivity.otgc.domain.usecase.link;
 
 import org.openconnectivity.otgc.data.repository.AmsRepository;
-import org.openconnectivity.otgc.data.repository.IotivityRepository;
-import org.openconnectivity.otgc.data.repository.PstatRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAce;
-import org.openconnectivity.otgc.utils.constant.OcfDosType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,34 +34,25 @@ import javax.inject.Inject;
 import io.reactivex.Completable;
 
 public class UnlinkRoleForServerUseCase {
-    private final IotivityRepository iotivityRepository;
-    private final PstatRepository pstatRepository;
     private final AmsRepository amsRepository;
 
     @Inject
-    public UnlinkRoleForServerUseCase(IotivityRepository iotivityRepository,
-                                      PstatRepository pstatRepository,
-                                      AmsRepository amsRepository)
+    public UnlinkRoleForServerUseCase(AmsRepository amsRepository)
     {
-        this.iotivityRepository = iotivityRepository;
-        this.pstatRepository = pstatRepository;
         this.amsRepository = amsRepository;
     }
 
     public Completable execute(Device device, String roleId) {
-        return iotivityRepository.getSecureEndpoint(device)
-                .flatMapCompletable(endpoint -> amsRepository.getAcl(endpoint, device.getDeviceId())
-                        .flatMapCompletable(ocAcl -> {
-                            List<Completable> deleteAceList = new ArrayList<>();
-                            for (OcAce ace : ocAcl.getAceList()) {
-                                if (ace.getSubject().getRoleId() != null && ace.getSubject().getRoleId().equals(roleId)) {
-                                    Completable deleteAce = pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
-                                            .andThen(amsRepository.deleteAcl(endpoint, device.getDeviceId(), ace.getAceid()))
-                                            .andThen(pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP));
-                                    deleteAceList.add(deleteAce);
-                                }
-                            }
-                            return Completable.merge(deleteAceList);
-                        }));
+        return amsRepository.getAcl(device.getDeviceId())
+                .flatMapCompletable(ocAcl -> {
+                    List<Completable> deleteAceList = new ArrayList<>();
+                    for (OcAce ace : ocAcl.getAceList()) {
+                        if (ace.getSubject().getRoleId() != null && ace.getSubject().getRoleId().equals(roleId)) {
+                            Completable deleteAce = amsRepository.deleteAcl(device.getDeviceId(), ace.getAceid());
+                            deleteAceList.add(deleteAce);
+                        }
+                    }
+                    return Completable.merge(deleteAceList);
+                });
     }
 }

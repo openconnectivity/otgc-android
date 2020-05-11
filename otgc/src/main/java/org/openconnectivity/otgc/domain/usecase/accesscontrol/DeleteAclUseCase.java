@@ -23,34 +23,21 @@
 package org.openconnectivity.otgc.domain.usecase.accesscontrol;
 
 import org.openconnectivity.otgc.data.repository.AmsRepository;
-import org.openconnectivity.otgc.data.repository.IotivityRepository;
-import org.openconnectivity.otgc.data.repository.PstatRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
-import org.openconnectivity.otgc.utils.constant.OcfDosType;
 
 import javax.inject.Inject;
 
 import io.reactivex.Completable;
 
 public class DeleteAclUseCase {
-    private final IotivityRepository iotivityRepository;
     private final AmsRepository amsRepository;
-    private final PstatRepository pstatRepository;
 
     @Inject
-    DeleteAclUseCase(IotivityRepository iotivityRepository,
-                     AmsRepository amsRepository,
-                     PstatRepository pstatRepository) {
-        this.iotivityRepository = iotivityRepository;
+    DeleteAclUseCase(AmsRepository amsRepository) {
         this.amsRepository = amsRepository;
-        this.pstatRepository = pstatRepository;
     }
 
     public Completable execute(Device device, long aceId) {
-        return iotivityRepository.getSecureEndpoint(device)
-                .flatMapCompletable(endpoint ->
-                        pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(amsRepository.deleteAcl(endpoint, device.getDeviceId(), aceId))
-                                .andThen(pstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
+        return amsRepository.deleteAcl(device.getDeviceId(), aceId);
     }
 }

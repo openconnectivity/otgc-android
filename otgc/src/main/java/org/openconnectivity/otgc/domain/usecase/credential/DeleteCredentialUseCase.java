@@ -22,28 +22,19 @@
 
 package org.openconnectivity.otgc.domain.usecase.credential;
 
-import org.openconnectivity.otgc.data.repository.IotivityRepository;
 import org.openconnectivity.otgc.data.repository.CmsRepository;
-import org.openconnectivity.otgc.data.repository.PstatRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
-import org.openconnectivity.otgc.utils.constant.OcfDosType;
 
 import javax.inject.Inject;
 
 import io.reactivex.Completable;
 
 public class DeleteCredentialUseCase {
-    private final IotivityRepository iotivityRepository;
     private final CmsRepository mCmsRepository;
-    private final PstatRepository mPstatRepository;
 
     @Inject
-    public DeleteCredentialUseCase(IotivityRepository iotivityRepository,
-                                   CmsRepository cmsRepository,
-                                   PstatRepository pstatRepository) {
-        this.iotivityRepository = iotivityRepository;
+    public DeleteCredentialUseCase(CmsRepository cmsRepository) {
         this.mCmsRepository = cmsRepository;
-        this.mPstatRepository = pstatRepository;
     }
 
     /**
@@ -54,10 +45,6 @@ public class DeleteCredentialUseCase {
      */
 
     public Completable execute(Device device, long credId) {
-        return iotivityRepository.getSecureEndpoint(device)
-                .flatMapCompletable(endpoint ->
-                        mPstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFPRO)
-                                .andThen(mCmsRepository.deleteCredential(endpoint, device.getDeviceId(), credId))
-                                .andThen(mPstatRepository.changeDeviceStatus(endpoint, device.getDeviceId(), OcfDosType.OC_DOSTYPE_RFNOP)));
+        return mCmsRepository.deleteCredential(device.getDeviceId(), credId);
     }
 }

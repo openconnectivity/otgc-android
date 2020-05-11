@@ -33,6 +33,6 @@ public class RemoveTrustAnchorByCredidUseCase {
     }
 
     public Completable execute(long credid) {
-        return cmsRepository.removeTrustAnchor(0 /* First device */, credid);
+        return cmsRepository.removeTrustAnchor(credid);
     }
 }

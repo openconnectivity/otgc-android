@@ -23,7 +23,6 @@
 package org.openconnectivity.otgc.domain.usecase.accesscontrol;
 
 import org.openconnectivity.otgc.data.repository.AmsRepository;
-import org.openconnectivity.otgc.data.repository.IotivityRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAcl;
 
@@ -32,18 +31,14 @@ import javax.inject.Inject;
 import io.reactivex.Single;
 
 public class RetrieveAclUseCase {
-    private final IotivityRepository iotivityRepository;
     private final AmsRepository amsRepository;
 
     @Inject
-    public RetrieveAclUseCase(IotivityRepository iotivityRepository,
-                              AmsRepository amsReporitory) {
-        this.iotivityRepository = iotivityRepository;
+    public RetrieveAclUseCase(AmsRepository amsReporitory) {
         this.amsRepository = amsReporitory;
     }
 
     public Single<OcAcl> execute(Device device) {
-        return iotivityRepository.getSecureEndpoint(device)
-                .flatMap(endpoint -> amsRepository.getAcl(endpoint, device.getDeviceId()));
+        return amsRepository.getAcl(device.getDeviceId());
     }
 }

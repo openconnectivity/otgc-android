@@ -22,9 +22,6 @@
 
 package org.openconnectivity.otgc.domain.model.resource.secure.cred;
 
-import com.upokecenter.cbor.CBORObject;
-
-import org.iotivity.CborEncoder;
 import org.iotivity.OCRep;
 import org.iotivity.OCRepresentation;
 import org.openconnectivity.otgc.utils.constant.OcfResourceAttributeKey;
@@ -53,21 +50,6 @@ public class OcCredRole {
         this.role = role;
     }
 
-    public void parseCbor(CBORObject cbor) {
-        /* role */
-        CBORObject roleObj = cbor.get(OcfResourceAttributeKey.ROLE_KEY);
-        if (roleObj != null) {
-            String role = roleObj.AsString();
-            this.setRole(role);
-        }
-        /* authority */
-        CBORObject authorityObj = cbor.get(OcfResourceAttributeKey.ROLE_AUTHORITY_KEY);
-        if (authorityObj != null) {
-            String authority = authorityObj.AsString();
-            this.setAuthority(authority);
-        }
-    }
-
     public void parseOCRepresentation(OCRepresentation rep) {
         /* role */
         String role = OCRep.getString(rep, OcfResourceAttributeKey.ROLE_KEY);
@@ -75,16 +57,5 @@ public class OcCredRole {
         /* authority */
         String authority = OCRep.getString(rep, OcfResourceAttributeKey.ROLE_AUTHORITY_KEY);
         this.setAuthority(authority);
-    }
-
-    public void parseToCbor(CborEncoder parent) {
-        /* role */
-        if (this.getRole() != null) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.ROLE_KEY, this.getRole());
-        }
-        /* authority */
-        if (this.getAuthority() != null) {
-            OCRep.setTextString(parent, OcfResourceAttributeKey.ROLE_AUTHORITY_KEY, this.getAuthority());
-        }
     }
 }

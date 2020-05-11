@@ -22,7 +22,6 @@
 
 package org.openconnectivity.otgc.domain.usecase.link;
 
-import org.openconnectivity.otgc.data.repository.IotivityRepository;
 import org.openconnectivity.otgc.data.repository.CmsRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredential;
@@ -35,21 +34,17 @@ import javax.inject.Inject;
 import io.reactivex.Single;
 
 public class RetrieveLinkedRolesForClientUseCase {
-    private final IotivityRepository iotivityRepository;
     private final CmsRepository cmsRepository;
 
     @Inject
-    public RetrieveLinkedRolesForClientUseCase(IotivityRepository iotivityRepository,
-                                               CmsRepository cmsRepository)
+    public RetrieveLinkedRolesForClientUseCase(CmsRepository cmsRepository)
     {
-        this.iotivityRepository = iotivityRepository;
         this.cmsRepository = cmsRepository;
     }
 
     public Single<List<String>> execute(Device device)
     {
-        return iotivityRepository.getSecureEndpoint(device)
-                .flatMap(endpoint -> cmsRepository.getCredentials(endpoint, device.getDeviceId()))
+        return cmsRepository.getCredentials(device.getDeviceId())
                 .map(credentials -> {
                     List<String> roles = new ArrayList<>();
 

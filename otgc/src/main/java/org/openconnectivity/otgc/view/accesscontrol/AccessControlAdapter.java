@@ -35,6 +35,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.iotivity.OCAceSubjectType;
 import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAce;
 import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAceResource;
@@ -140,9 +141,9 @@ public class AccessControlAdapter extends RecyclerView.Adapter<AccessControlAdap
         if (ace != null) {
             holder.mAceId.setText(String.format("%d", ace.getAceid()));
             String subject = "";
-            if (ace.getSubject().getType() == OcAceSubjectType.UUID_TYPE) {
+            if (OCAceSubjectType.valueOf(ace.getSubject().getType()) == OCAceSubjectType.OC_SUBJECT_UUID) {
                 subject = mContext.getString(R.string.access_control_cardview_subject_uuid, ace.getSubject().getUuid());
-            } else if (ace.getSubject().getType() == OcAceSubjectType.CONN_TYPE) {
+            } else if (OCAceSubjectType.valueOf(ace.getSubject().getType()) == OCAceSubjectType.OC_SUBJECT_UUID) {
                 String connType;
                 switch (ace.getSubject().getConnType()) {
                     case "anon-clear":
@@ -156,7 +157,7 @@ public class AccessControlAdapter extends RecyclerView.Adapter<AccessControlAdap
                         break;
                 }
                 subject = mContext.getString(R.string.access_control_cardview_subject_connection_type, connType);
-            } else if (ace.getSubject().getType() == OcAceSubjectType.ROLE_TYPE) {
+            } else if (OCAceSubjectType.valueOf(ace.getSubject().getType()) == OCAceSubjectType.OC_SUBJECT_ROLE) {
                     subject = mContext.getString(R.string.access_control_cardview_subject_role, ace.getSubject().getRoleId(), ace.getSubject().getAuthority());
             }
             holder.mSubjectId.setText(subject);

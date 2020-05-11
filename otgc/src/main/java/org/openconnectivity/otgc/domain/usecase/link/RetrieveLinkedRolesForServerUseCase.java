@@ -22,11 +22,10 @@
 
 package org.openconnectivity.otgc.domain.usecase.link;
 
+import org.iotivity.OCAceSubjectType;
 import org.openconnectivity.otgc.data.repository.AmsRepository;
-import org.openconnectivity.otgc.data.repository.IotivityRepository;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
 import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAce;
-import org.openconnectivity.otgc.domain.model.resource.secure.acl.OcAceSubjectType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,26 +35,22 @@ import javax.inject.Inject;
 import io.reactivex.Single;
 
 public class RetrieveLinkedRolesForServerUseCase {
-    private final IotivityRepository iotivityRepository;
     private final AmsRepository amsRepository;
 
     @Inject
-    public RetrieveLinkedRolesForServerUseCase(IotivityRepository iotivityRepository,
-                                               AmsRepository amsRepository)
+    public RetrieveLinkedRolesForServerUseCase(AmsRepository amsRepository)
     {
-        this.iotivityRepository = iotivityRepository;
         this.amsRepository = amsRepository;
     }
 
     public Single<List<String>> execute(Device device)
     {
-        return iotivityRepository.getSecureEndpoint(device)
-                .flatMap(endpoint -> amsRepository.getAcl(endpoint, device.getDeviceId()))
+        return amsRepository.getAcl(device.getDeviceId())
                 .map(acl -> {
                     List<String> roles = new ArrayList<>();
 
                     for (OcAce ace : acl.getAceList()) {
-                        if (ace.getSubject().getType() == OcAceSubjectType.ROLE_TYPE
+                        if (OCAceSubjectType.valueOf(ace.getSubject().getType()) == OCAceSubjectType.OC_SUBJECT_ROLE
                                 && ace.getSubject().getRoleId() != null) {
                             roles.add(ace.getSubject().getRoleId());
                         }
