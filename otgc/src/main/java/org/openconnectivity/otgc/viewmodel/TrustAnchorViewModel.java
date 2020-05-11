@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModel;
 import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredential;
 import org.openconnectivity.otgc.domain.usecase.trustanchor.GetTrustAnchorUseCase;
 import org.openconnectivity.otgc.domain.usecase.trustanchor.RemoveTrustAnchorByCredidUseCase;
+import org.openconnectivity.otgc.domain.usecase.trustanchor.SaveEndEntityCertificateUseCase;
+import org.openconnectivity.otgc.domain.usecase.trustanchor.SaveIntermediateCertificateUseCase;
 import org.openconnectivity.otgc.domain.usecase.trustanchor.StoreTrustAnchorUseCase;
 import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
@@ -31,6 +33,8 @@ public class TrustAnchorViewModel extends ViewModel {
 
     // Use cases
     private final StoreTrustAnchorUseCase storeTrustAnchorUseCase;
+    private final SaveIntermediateCertificateUseCase saveIntermediateCertificateUseCase;
+    private final SaveEndEntityCertificateUseCase saveEndEntityCertificateUseCase;
     private final GetTrustAnchorUseCase getTrustAnchorUseCase;
     private final RemoveTrustAnchorByCredidUseCase removeTrustAnchorByCredidUseCase;
 
@@ -41,10 +45,14 @@ public class TrustAnchorViewModel extends ViewModel {
     @Inject
     public TrustAnchorViewModel(SchedulersFacade schedulersFacade,
                                 StoreTrustAnchorUseCase storeTrustAnchorUseCase,
+                                SaveIntermediateCertificateUseCase saveIntermediateCertificateUseCase,
+                                SaveEndEntityCertificateUseCase saveEndEntityCertificateUseCase,
                                 GetTrustAnchorUseCase getTrustAnchorUseCase,
                                 RemoveTrustAnchorByCredidUseCase removeTrustAnchorByCredidUseCase) {
         this.schedulersFacade = schedulersFacade;
         this.storeTrustAnchorUseCase = storeTrustAnchorUseCase;
+        this.saveIntermediateCertificateUseCase = saveIntermediateCertificateUseCase;
+        this.saveEndEntityCertificateUseCase = saveEndEntityCertificateUseCase;
         this.getTrustAnchorUseCase = getTrustAnchorUseCase;
         this.removeTrustAnchorByCredidUseCase = removeTrustAnchorByCredidUseCase;
     }
@@ -70,7 +78,7 @@ public class TrustAnchorViewModel extends ViewModel {
         return deleteCredid;
     }
 
-    public void retrieveTrustAnchors() {
+    public void retrieveCertificates() {
         disposable.add(getTrustAnchorUseCase.execute()
             .subscribeOn(schedulersFacade.io())
             .observeOn(schedulersFacade.ui())
@@ -90,12 +98,32 @@ public class TrustAnchorViewModel extends ViewModel {
             .subscribeOn(schedulersFacade.io())
             .observeOn(schedulersFacade.ui())
             .subscribe(
-                    () -> retrieveTrustAnchors(),
+                    () -> retrieveCertificates(),
                     throwable -> mError.setValue(new ViewModelError(Error.ADD_ROOT_CERT, throwable.getMessage()))
             ));
     }
 
-    public void removeTrustAnchorByCredid(long credid) {
+    public void saveIntermediateCertificate(Integer credid, InputStream is) {
+        disposable.add(saveIntermediateCertificateUseCase.execute(credid, is)
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe(
+                        () -> retrieveCertificates(),
+                        throwable -> mError.setValue(new ViewModelError(Error.ADD_ROOT_CERT, throwable.getMessage()))
+                ));
+    }
+
+    public void saveEndEntityCertificate(InputStream fileIs, InputStream keyIs) {
+        disposable.add(saveEndEntityCertificateUseCase.execute(fileIs, keyIs)
+                .subscribeOn(schedulersFacade.io())
+                .observeOn(schedulersFacade.ui())
+                .subscribe(
+                        () -> retrieveCertificates(),
+                        throwable -> mError.setValue(new ViewModelError(Error.ADD_ROOT_CERT, throwable.getMessage()))
+                ));
+    }
+
+    public void removeCertificateByCredid(long credid) {
         disposable.add(removeTrustAnchorByCredidUseCase.execute(credid)
             .subscribeOn(schedulersFacade.io())
             .observeOn(schedulersFacade.ui())

@@ -18,9 +18,7 @@
 
 package org.openconnectivity.otgc.view.trustanchor;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,16 +47,14 @@ import org.openconnectivity.otgc.viewmodel.TrustAnchorViewModel;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
 import org.spongycastle.util.encoders.Base64;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -75,41 +71,16 @@ public class TrustAnchorActivity extends AppCompatActivity implements Injectable
     @BindView(R.id.recycler_ocf_trustanchors) EmptyRecyclerView mRecyclerView;
     @BindView(R.id.floating_button_trustanchor_add) FloatingActionButton mFloatingActionButton;
 
-    private static final int READ_REQUEST_CODE = 42;
-
     @OnClick(R.id.floating_button_trustanchor_add)
     protected void onAddPressed() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        startActivityForResult(intent, READ_REQUEST_CODE);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode,
-                                 Intent resultData) {
-
-        // The ACTION_OPEN_DOCUMENT intent was sent with the request code
-        // READ_REQUEST_CODE. If the request code seen here doesn't match, it's the
-        // response to some other intent, and the code below shouldn't run at all.
-
-        if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // The document selected by the user won't be returned in the intent.
-            // Instead, a URI to that document will be contained in the return intent
-            // provided to this method as a parameter.
-            // Pull that URI using resultData.getData().
-            Uri uri = null;
-            if (resultData != null) {
-                uri = resultData.getData();
-                try {
-                    mViewModel.addTrustAnchor(getContentResolver().openInputStream(uri));
-                } catch (Exception e) {
-                    int errorId = R.string.trust_anchor_create_error;
-                    Toast.makeText(this, errorId, Toast.LENGTH_SHORT).show();
-                }
-
-            }
+        Intent intent = new Intent(this, CertificateActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        ArrayList<Integer> certList = new ArrayList<>();
+        for (int i=0; i<mAdapter.mDataset.size(); i++){
+            certList.add(mAdapter.mDataset.get(i).getCredid());
         }
+        intent.putIntegerArrayListExtra("certs", certList);
+        startActivity(intent);
     }
 
     private TrustAnchorViewModel mViewModel;
@@ -129,7 +100,7 @@ public class TrustAnchorActivity extends AppCompatActivity implements Injectable
     protected void onResume() {
         super.onResume();
         mAdapter.clearItems();
-        mViewModel.retrieveTrustAnchors();
+        mViewModel.retrieveCertificates();
     }
 
     @Override
@@ -167,7 +138,7 @@ public class TrustAnchorActivity extends AppCompatActivity implements Injectable
         TrustAnchorAdapter.setOnClickListener(new TrustAnchorAdapter.ClickListener() {
             @Override
             public void onDeleteClick(int position, View v) {
-                mViewModel.removeTrustAnchorByCredid(mAdapter.mDataset.get(position).getCredid());
+                mViewModel.removeCertificateByCredid(mAdapter.mDataset.get(position).getCredid());
             }
 
             @Override
@@ -184,11 +155,23 @@ public class TrustAnchorActivity extends AppCompatActivity implements Injectable
 					String pem = mAdapter.mDataset.get(position).getPublicData().getPemData();
 					String base64 = pem.replaceAll("\\s", "")
 										.replaceAll("\\r\\n", "")
-										.replace("-----BEGINCERTIFICATE-----", "")
-										.replace("-----ENDCERTIFICATE-----", "");
-					byte[] der = Base64.decode(base64.getBytes());
-					alertDialogBuilder
-                        .setMessage(showX509CertificateInformation(der));
+										.replace("-----ENDCERTIFICATE-----", "")
+                                        .replace("\\u0000", "");
+                    String[] certList = base64.split("-----BEGINCERTIFICATE-----");
+                    String res = "";
+                    for (String cert : certList) {
+                        if (!cert.isEmpty()) {
+                            byte[] byteArr = cert.getBytes();
+                            byte[] der = Base64.decode(byteArr);
+                            res += showX509CertificateInformation(der);
+                            res += "\n";
+                        }
+                    }
+                    if (res.isEmpty()) {
+                        alertDialogBuilder.setMessage("No information to show");
+                    }
+
+					alertDialogBuilder.setMessage(res);
 				}
                 
                 alertDialogBuilder.setCancelable(false)

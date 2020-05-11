@@ -114,10 +114,25 @@
     <string name="devices_dialog_set_device_name_title">Insert device name</string>
     <string name="devices_dialog_set_device_name_yes_option">Confirm</string>
     <string name="devices_dialog_set_device_name_no_option">Cancel</string>
+    <string name="devices_dialog_show_not_valid_certificate_title">Not Valid Certificate</string>
+    <string name="devices_dialog_show_not_valid_certificate_ok_option" translatable="false">OK</string>
+    <string name="trust_anchor_cert_type_radio_title">Certificate type:</string>
+    <string name="trust_anchor_cert_type_radio_root">Root certificate</string>
+    <string name="trust_anchor_cert_type_radio_intermediate">Intermediate certificate</string>
+    <string name="trust_anchor_cert_type_radio_end_entity">End entity certificate</string>
+    <string name="trust_anchor_button_select_certificate">Select certificate</string>
+    <string name="trust_anchor_button_select_key">Select key</string>
+    <string name="trust_anchor_error_create_root_certificate">Store root certificate has failed</string>
+    <string name="trust_anchor_error_create_intermediate_certificate">Store intermediate certificate has failed</string>
+    <string name="trust_anchor_error_create_end_entity_certificate">Store end entity certificate has failed</string>
+    <string name="trust_anchor_spinner_title">Credential ID:</string>
+    <string name="trust_anchor_no_selected_certificate_text">No selected certificate</string>
+    <string name="trust_anchor_no_selected_key_text">No selected key</string>
+    <string name="certificate_title">New Certificate</string>
     <string name="devices_menu_item_reset" translatable="false">Reset</string>
     <string name="devices_menu_item_client_mode">Client mode</string>
     <string name="devices_menu_item_obt_mode">OBT mode</string>
-    <string name="devices_menu_item_trust_anchor">Trust Anchor Management</string>
+    <string name="devices_menu_item_trust_anchor">Certificate Management</string>
     <string name="devices_menu_item_logs">Show log</string>
     <string name="devices_menu_item_settings">Settings</string>
     <string name="devices_menu_item_logout">Sign out</string>
@@ -217,7 +232,7 @@
     <string name="credentials_cardview_credid">Credential ID: %1$s</string>
     <string name="credentials_cardview_credusage">Usage: %1$s</string>
     <string name="credentials_cardview_role">Role ID: %1$s, Role Authority: %2$s</string>
-    <string name="trust_anchor_create_error">Cannot store the root certificate from the selected location</string>
+    <string name="trust_anchor_create_error">Cannot store the certificate from the selected location</string>
 
     <string name="client_title_no_name">Unnamed</string>
     <string name="client_menu_item_info">Info</string>
@@ -262,7 +277,7 @@
     <string name="linked_roles_dialog_role_id_hint">Role ID</string>
     <string name="linked_roles_dialog_role_authority_hint">Role authority</string>
 
-    <string name="trust_anchor_title">Trust Anchor Management</string>
+    <string name="trust_anchor_title">Certificate Management</string>
 
     <!-- Strings related to Settings -->
     <string name="settings_title">Settings</string>
@@ -278,7 +293,7 @@
 
     <string name="about_app_name" translatable="false">Onboarding Tool and Generic Client</string>
     <string name="about_app_version">Version %1$s</string>
-    <string name="about_copyright" translatable="false">&#169; 2019 Open Connectivity Foundation.</string>
+    <string name="about_copyright" translatable="false">&#169; 2020 Open Connectivity Foundation.</string>
     <string name="about_all_rights_reserved">All rights reserved.</string>
     <string name="about_powered_by">Powered by:</string>
     <string name="about_dekra_tc" translatable="false">DEKRA Testing and Certification, S.A.U.</string>

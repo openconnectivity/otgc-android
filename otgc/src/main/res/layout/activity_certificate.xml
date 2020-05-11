@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~  *****************************************************************
+  ~
+  ~  Copyright 2018 DEKRA Testing and Certification, S.A.U. All Rights Reserved.
+  ~
+  ~  *****************************************************************
+  ~
+  ~  Licensed under the Apache License, Version 2.0 (the "License");
+  ~  you may not use this file except in compliance with the License.
+  ~  You may obtain a copy of the License at
+  ~
+  ~           http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~  Unless required by applicable law or agreed to in writing, software
+  ~  distributed under the License is distributed on an "AS IS" BASIS,
+  ~  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  See the License for the specific language governing permissions and
+  ~  limitations under the License.
+  ~
+  ~  *****************************************************************
+  -->
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white1"
+    android:keepScreenOn="true">
+    <com.google.android.material.appbar.AppBarLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top">
+            <include
+                layout="@layout/progress_bar" />
+            <include
+                layout="@layout/toolbar" />
+        </FrameLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:orientation="vertical"
+        android:layout_margin="16dp">
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/trust_anchor_cert_type_radio_title"
+                android:textSize="@dimen/font_size_default" />
+            <RadioButton
+                android:id="@+id/radio_root_certificate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trust_anchor_cert_type_radio_root"
+                android:checked="true" />
+            <RadioButton
+                android:id="@+id/radio_intermediate_certificate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trust_anchor_cert_type_radio_intermediate"/>
+            <RadioButton
+                android:id="@+id/radio_end_entity_certificate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trust_anchor_cert_type_radio_end_entity"/>
+        </RadioGroup>
+        <LinearLayout
+            android:id="@+id/trust_anchor_select_end_entity_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trust_anchor_spinner_title" />
+            <Spinner
+                android:id="@+id/spinner_select_end_entity_certificate"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <Button
+                android:id="@+id/button_select_certificate"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="@string/trust_anchor_button_select_certificate" />
+            <TextView
+                android:id="@+id/trust_anchor_selected_certificate_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/trust_anchor_select_key_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+            <Button
+                android:id="@+id/button_select_key"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:text="@string/trust_anchor_button_select_key" />
+            <TextView
+                android:id="@+id/trust_anchor_selected_key_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/floating_button_cert_save"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_save_white_24dp"
+        app:fabSize="normal" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

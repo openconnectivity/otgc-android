@@ -60,7 +60,7 @@
     <string name="devices_dialog_show_randompin_yes_option">Cerrar</string>
     <string name="devices_menu_item_client_mode">Modo cliente</string>
     <string name="devices_menu_item_obt_mode">Modo OBT</string>
-    <string name="devices_menu_item_trust_anchor">Certificados de confianza</string>
+    <string name="devices_menu_item_trust_anchor">Gestión de certificados</string>
     <string name="devices_menu_item_logs">Mostrar trazas</string>
     <string name="devices_menu_item_settings">Ajustes</string>
     <string name="devices_cardview_unnamed_device">Sin nombre</string>
@@ -76,6 +76,7 @@
     <string name="devices_dialog_offboarding_reset_message">El dispositivo está siendo eliminado de su red OCF. Por favor, espere…</string>
     <string name="devices_dialog_confirm_reset_device_title">Reiniciar el dispositivo</string>
     <string name="devices_dialog_confirm_reset_device_message">¿Está seguro de que desea eliminar todos los dispositivos vinculados?</string>
+    <string name="devices_dialog_show_not_valid_certificate_title">Certificado Inválido</string>
     <string name="devices_cardview_menu_item_offboard">Desvincular</string>
     <string name="devices_error_scanning_devices">Error buscando dispositivos</string>
     <string name="devices_error_onboard_client_mode">OTM no está disponible para el modo Client</string>
@@ -166,7 +167,7 @@
     <string name="credentials_cardview_role">ID de rol: %1$s, Autoridad de rol: %2$s</string>
     <string name="credentials_cardview_credid">ID Credencial: %1$s</string>
     <string name="credentials_cardview_credusage">Uso: %1$s</string>
-    <string name="trust_anchor_create_error">No se puede almacenar el certificado raíz desde la ubicación seleccionada</string>
+    <string name="trust_anchor_create_error">No se puede almacenar el certificado desde la ubicación seleccionada</string>
     <string name="devices_dialog_wifi_scan_error">Error escaneando las redes Wi-Fi</string>
     <string name="devices_dialog_wifi_easy_setup_connecting">Configurando y conectado el dispositivo mediante Wi-Fi Easy Setup</string>
     <string name="devices_dialog_wifi_easy_setup_error">Wi-Fi Easy Setup ha fallado</string>
@@ -186,7 +187,7 @@
     <string name="linked_roles_dialog_add_role_no_option">Cancelar</string>
     <string name="linked_roles_dialog_role_id_hint">ID de rol</string>
     <string name="linked_roles_dialog_role_authority_hint">Autoridad de rol</string>
-    <string name="trust_anchor_title">Certificados de confianza</string>
+    <string name="trust_anchor_title">Certificados</string>
     <string name="pref_iotivity_header">Descubrimiento</string>
     <string name="pref_iotivity_title_discovery_scope">Ámbito multicast IPv6</string>
     <string name="pref_iotivity_title_requests_delay">Retardo en las peticiones (en segundos)</string>

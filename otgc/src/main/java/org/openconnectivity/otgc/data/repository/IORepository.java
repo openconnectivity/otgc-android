@@ -178,6 +178,17 @@ public class IORepository {
         });
     }
 
+    public Single<byte[]> getBytesFromFile(InputStream is) {
+        return Single.fromCallable(() -> {
+            int numBytes = is.available() + 1;
+            byte[] fileBytes = new byte[numBytes];
+            is.read(fileBytes);
+            fileBytes[numBytes - 1] = '\0';
+
+            return fileBytes;
+        });
+    }
+
     public Single<CBORObject> getAssetSvrAsCbor(String resource, long device) {
         return Single.create(emitter -> {
             try (FileInputStream stream = new FileInputStream(mContext.getFilesDir() +

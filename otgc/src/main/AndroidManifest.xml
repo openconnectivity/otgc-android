@@ -102,6 +102,11 @@
             android:label="@string/trust_anchor_title"
             android:parentActivityName=".view.devicelist.DeviceListActivity" />
         <activity
+            android:name=".view.trustanchor.CertificateActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/certificate_title"
+            android:parentActivityName=".view.trustanchor.TrustAnchorActivity" />
+        <activity
             android:name=".view.logviewer.LogViewerActivity"
             android:configChanges="orientation|screenSize"
             android:parentActivityName=".view.devicelist.DeviceListActivity" />

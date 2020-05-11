@@ -21,6 +21,8 @@
  */
 package org.openconnectivity.otgc.viewmodel;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -36,6 +38,7 @@ import org.openconnectivity.otgc.domain.usecase.SetObtModeUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.CheckConnectionUseCase;
 import org.openconnectivity.otgc.domain.usecase.InitializeIotivityUseCase;
 import org.openconnectivity.otgc.domain.usecase.login.LogoutUseCase;
+import org.openconnectivity.otgc.utils.handler.DisplayNotValidCertificateHandler;
 import org.openconnectivity.otgc.utils.handler.OCSetRandomPinHandler;
 import org.openconnectivity.otgc.utils.viewmodel.CommonError;
 import org.openconnectivity.otgc.utils.viewmodel.Response;
@@ -147,8 +150,8 @@ public class DeviceListViewModel extends ViewModel {
         return mDeviceId;
     }
 
-    public void initializeIotivityStack() {
-        disposables.add(mInitializeIotivityUseCase.execute()
+    public void initializeIotivityStack(Context context, DisplayNotValidCertificateHandler displayNotValidCertificateHandler) {
+        disposables.add(mInitializeIotivityUseCase.execute(context, displayNotValidCertificateHandler)
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .subscribe(
