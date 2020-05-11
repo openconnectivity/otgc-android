@@ -217,6 +217,26 @@ public class CmsRepository {
         });
     }
 
+    public Completable addIntermediateCertificate(Integer credid, byte[] cert) {
+        return Completable.create(emitter -> {
+            if (OCPki.addMfgIntermediateCert(0 /* First device */, credid, cert) == -1) {
+                emitter.onError(new Exception("Add intermediate certificate error"));
+            }
+
+            emitter.onComplete();
+        });
+    }
+
+    public Completable addEndEntityCertificate(byte[] cert, byte[] key) {
+        return Completable.create(emitter -> {
+            if (OCPki.addMfgCert(0 /* First device */, cert, key) == -1) {
+                emitter.onError(new Exception("Add end entity certificate error"));
+            }
+
+            emitter.onComplete();
+        });
+    }
+
     public Completable removeTrustAnchor(long credid) {
         return Completable.create(emitter -> {
             int ret = OCObt.deleteOwnCredByCredId((int)credid);

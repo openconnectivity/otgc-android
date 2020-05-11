@@ -39,6 +39,7 @@ import android.widget.Toast;
 
 import org.iotivity.OCRandomPinHandler;
 import org.openconnectivity.otgc.utils.constant.OtgcMode;
+import org.openconnectivity.otgc.utils.handler.DisplayNotValidCertificateHandler;
 import org.openconnectivity.otgc.utils.handler.OCSetRandomPinHandler;
 import org.openconnectivity.otgc.utils.view.RecyclerWithSwipeFragment;
 import org.openconnectivity.otgc.utils.viewmodel.CommonError;
@@ -131,6 +132,18 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
         });
     };
 
+    DisplayNotValidCertificateHandler displayNotValidCertificateHandler = content -> {
+        runOnUiThread(() -> {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(new ContextThemeWrapper(DeviceListActivity.this, R.style.AppTheme));
+            alertDialog.setTitle(DeviceListActivity.this.getString(R.string.devices_dialog_show_not_valid_certificate_title));
+            alertDialog.setMessage(content);
+            alertDialog.setCancelable(false);
+            alertDialog.setPositiveButton(
+                    DeviceListActivity.this.getString(R.string.devices_dialog_show_not_valid_certificate_ok_option),
+                    (dialog, which) -> dialog.dismiss()).show();
+        });
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -169,7 +182,7 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
             }
         }
 
-        mViewModel.initializeIotivityStack();
+        mViewModel.initializeIotivityStack(getApplicationContext(), displayNotValidCertificateHandler);
 
         return true;
     }

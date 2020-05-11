@@ -45,7 +45,9 @@ public class GetTrustAnchorUseCase {
                     for (OcCredential cred : creds.getCredList()) {
                         if (cred.getCredusage() != null && !cred.getCredusage().isEmpty()
                                 && (OCCredUtil.parseCredUsage(cred.getCredusage()) == OCCredUsage.OC_CREDUSAGE_MFG_TRUSTCA
-                                || OCCredUtil.parseCredUsage(cred.getCredusage()) == OCCredUsage.OC_CREDUSAGE_TRUSTCA)) {
+                                || OCCredUtil.parseCredUsage(cred.getCredusage()) == OCCredUsage.OC_CREDUSAGE_TRUSTCA
+                                || OCCredUtil.parseCredUsage(cred.getCredusage()) == OCCredUsage.OC_CREDUSAGE_IDENTITY_CERT
+                                || OCCredUtil.parseCredUsage(cred.getCredusage()) == OCCredUsage.OC_CREDUSAGE_MFG_CERT)) {
                             trustAnchorList.add(cred);
                         }
                     }
