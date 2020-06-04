@@ -53,16 +53,11 @@ The steps required to build the binary of the IoTivity-lite Android API is shown
 ```
 git checkout swig
 ```
-2. Apply all patchs of the OTGC in IoTivity-lite
-```
-git apply <otgc-linux>/extlibs/patchs/fix_swig_flags.patch
-git apply <otgc-linux>/extlibs/patchs/ignore_cloud_discover_resources.patch
-```
-3. Go to the **android** directory.
+2. Go to the **android** directory.
 ```
 cd <iotivity-lite>/port/android
 ```
-4. Execute the command to build the library.
+3. Execute the command to build the library.
 ```
 make NDK_HOME=<ndk-directory> ANDROID_API=21 DEBUG=1 SECURE=1 IPV4=1 TCP=0 PKI=1 DYNAMIC=1 CLOUD=0 JAVA=1 IDD=1
 ```
