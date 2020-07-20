@@ -22,7 +22,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
 import org.openconnectivity.otgc.R;
-import org.openconnectivity.otgc.domain.model.resource.secure.cred.OcCredential;
 import org.openconnectivity.otgc.utils.di.Injectable;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.viewmodel.CertificateViewModel;

@@ -133,6 +133,8 @@
     <string name="devices_menu_item_client_mode">Client mode</string>
     <string name="devices_menu_item_obt_mode">OBT mode</string>
     <string name="devices_menu_item_trust_anchor">Certificate Management</string>
+    <string name="devices_menu_item_cloud" translatable="false">Cloud</string>
+    <string name="devices_menu_item_cloud_configuration">Configuration</string>
     <string name="devices_menu_item_logs">Show log</string>
     <string name="devices_menu_item_settings">Settings</string>
     <string name="devices_menu_item_logout">Sign out</string>
@@ -278,6 +280,17 @@
     <string name="linked_roles_dialog_role_authority_hint">Role authority</string>
 
     <string name="trust_anchor_title">Certificate Management</string>
+
+    <string name="cloud_title">Cloud Configuration</string>
+    <string name="cloud_title_status">Status:</string>
+    <string name="cloud_auth_provider_hint">Authentication provider</string>
+    <string name="cloud_url_hint">Cloud URL</string>
+    <string name="cloud_access_token_hint">Access token</string>
+    <string name="cloud_uuid_hint">Cloud UUID</string>
+    <string name="cloud_store_config_success">Cloud configuration has been updated</string>
+    <string name="cloud_retrieve_status_error">Retrieve status has failed</string>
+    <string name="cloud_retrieve_configuration_error">Retrieve cloud configuration has failed</string>
+    <string name="cloud_provision_configuration_error">Provision cloud configuration has failed</string>
 
     <!-- Strings related to Settings -->
     <string name="settings_title">Settings</string>
