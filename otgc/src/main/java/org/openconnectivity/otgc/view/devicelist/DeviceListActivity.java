@@ -46,6 +46,7 @@ import org.openconnectivity.otgc.utils.viewmodel.CommonError;
 import org.openconnectivity.otgc.utils.viewmodel.Response;
 import org.openconnectivity.otgc.utils.viewmodel.Status;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
+import org.openconnectivity.otgc.view.cloud.CloudActivity;
 import org.openconnectivity.otgc.view.trustanchor.TrustAnchorActivity;
 import org.openconnectivity.otgc.viewmodel.DeviceListViewModel;
 import org.openconnectivity.otgc.viewmodel.SharedViewModel;
@@ -206,6 +207,9 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
             case R.id.menu_item_trust_anchor:
                 onTrustAnchorManagement();
                 break;
+            case R.id.menu_item_cloud_configuration:
+                onCloudConfiguration();
+                break;
             case R.id.menu_item_log:
                 onLogPressed();
                 break;
@@ -355,6 +359,11 @@ public class DeviceListActivity extends AppCompatActivity implements HasSupportF
     private void onTrustAnchorManagement() {
         Intent trustAnchorIntent = new Intent().setClass(DeviceListActivity.this, TrustAnchorActivity.class);
         startActivity(trustAnchorIntent);
+    }
+
+    private void onCloudConfiguration() {
+        Intent cloudIntent = new Intent().setClass(DeviceListActivity.this, CloudActivity.class);
+        startActivity(cloudIntent);
     }
 
     private void onLogPressed() {

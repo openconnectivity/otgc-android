@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModelProvider;
 import org.openconnectivity.otgc.viewmodel.AccessControlViewModel;
 import org.openconnectivity.otgc.viewmodel.AceViewModel;
 import org.openconnectivity.otgc.viewmodel.CertificateViewModel;
+import org.openconnectivity.otgc.viewmodel.CloudViewModel;
 import org.openconnectivity.otgc.viewmodel.ResourceViewModel;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelFactory;
 import org.openconnectivity.otgc.viewmodel.GenericClientViewModel;
@@ -125,4 +126,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(CertificateViewModel.class)
     abstract ViewModel bindCertificateViewModel(CertificateViewModel certificateViewModel);
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(CloudViewModel.class)
+    abstract ViewModel bindCloudViewModel(CloudViewModel cloudViewModel);
 }

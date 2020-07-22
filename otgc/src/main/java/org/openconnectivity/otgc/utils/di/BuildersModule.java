@@ -25,6 +25,7 @@ import org.openconnectivity.otgc.view.accesscontrol.AccessControlActivity;
 import org.openconnectivity.otgc.view.accesscontrol.AceActivity;
 import org.openconnectivity.otgc.view.client.ClientBuildersModule;
 import org.openconnectivity.otgc.view.client.GenericClientActivity;
+import org.openconnectivity.otgc.view.cloud.CloudActivity;
 import org.openconnectivity.otgc.view.credential.CredActivity;
 import org.openconnectivity.otgc.view.credential.CredentialsActivity;
 import org.openconnectivity.otgc.view.devicelist.DeviceListBuildersModule;
@@ -77,4 +78,7 @@ public interface BuildersModule {
 
     @ContributesAndroidInjector
     abstract CertificateActivity bindCertificateActivity();
+
+    @ContributesAndroidInjector
+    abstract CloudActivity bindCloudActivity();
 }

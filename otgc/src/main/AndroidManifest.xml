@@ -102,6 +102,11 @@
             android:label="@string/trust_anchor_title"
             android:parentActivityName=".view.devicelist.DeviceListActivity" />
         <activity
+            android:name=".view.cloud.CloudActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/cloud_title"
+            android:parentActivityName=".view.devicelist.DeviceListActivity" />
+        <activity
             android:name=".view.trustanchor.CertificateActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/certificate_title"
