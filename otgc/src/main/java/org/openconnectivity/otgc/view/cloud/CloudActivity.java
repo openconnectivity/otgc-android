@@ -135,36 +135,37 @@ public class CloudActivity extends AppCompatActivity implements Injectable {
     }
 
     private void processStatus(@NonNull Integer status) {
-        // Set value of status
-        switch(status) {
-            case OCCloudStatusMask.OC_CLOUD_INITIALIZED:
-                mLabelStatus.setText("Initialized");
-                break;
-            case OCCloudStatusMask.OC_CLOUD_REGISTERED:
-                mLabelStatus.setText("Registered");
-                break;
-            case OCCloudStatusMask.OC_CLOUD_LOGGED_IN:
-                mLabelStatus.setText("Logged in");
-                break;
-            case OCCloudStatusMask.OC_CLOUD_TOKEN_EXPIRY:
-                mLabelStatus.setText("Token expiry");
-                break;
-            case OCCloudStatusMask.OC_CLOUD_REFRESHED_TOKEN:
-                mLabelStatus.setText("Refresh token");
-                break;
-            case OCCloudStatusMask.OC_CLOUD_LOGGED_OUT:
-                mLabelStatus.setText("Logged out");
-                break;
-            case OCCloudStatusMask.OC_CLOUD_FAILURE:
-                mLabelStatus.setText("Failure");
-                break;
-            case OCCloudStatusMask.OC_CLOUD_DEREGISTERED:
-                mLabelStatus.setText("Deregistered");
-                break;
-            default:
-                mLabelStatus.setText("Unknown");
-                break;
+        String value = "";
+        if (status == OCCloudStatusMask.OC_CLOUD_INITIALIZED) {
+            value += "Initialized";
         }
+        if ((status & OCCloudStatusMask.OC_CLOUD_REGISTERED) == OCCloudStatusMask.OC_CLOUD_REGISTERED) {
+            value += "Registered";
+        }
+        if ((status & OCCloudStatusMask.OC_CLOUD_LOGGED_IN) == OCCloudStatusMask.OC_CLOUD_LOGGED_IN) {
+            value += ", logged in";
+        }
+        if ((status & OCCloudStatusMask.OC_CLOUD_TOKEN_EXPIRY) == OCCloudStatusMask.OC_CLOUD_TOKEN_EXPIRY) {
+            value += ", token expiry";
+        }
+        if ((status & OCCloudStatusMask.OC_CLOUD_REFRESHED_TOKEN) == OCCloudStatusMask.OC_CLOUD_REFRESHED_TOKEN) {
+            value += ", refresh token";
+        }
+        if ((status & OCCloudStatusMask.OC_CLOUD_LOGGED_OUT) == OCCloudStatusMask.OC_CLOUD_LOGGED_OUT) {
+            value += ", logged out";
+        }
+        if ((status & OCCloudStatusMask.OC_CLOUD_FAILURE) == OCCloudStatusMask.OC_CLOUD_FAILURE) {
+            value += ", failure";
+        }
+        if ((status & OCCloudStatusMask.OC_CLOUD_DEREGISTERED) == OCCloudStatusMask.OC_CLOUD_DEREGISTERED) {
+            value += "Deregistered";
+        }
+
+        if (value.isEmpty()) {
+            value = "Unknown";
+        }
+
+        mLabelStatus.setText(value);
     }
 
     private void processCloudConfiguration(@NonNull OcCloudConfiguration cloudConf) {

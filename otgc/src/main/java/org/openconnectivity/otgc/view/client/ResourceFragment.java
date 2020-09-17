@@ -50,6 +50,7 @@ import org.iotivity.OCValue;
 import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.client.SerializableResource;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
+import org.openconnectivity.otgc.domain.model.devicelist.DeviceType;
 import org.openconnectivity.otgc.utils.constant.OcfResourceAttributeKey;
 import org.openconnectivity.otgc.viewmodel.ResourceViewModel;
 import org.openconnectivity.otgc.utils.constant.OcfInterface;
@@ -119,7 +120,9 @@ public class ResourceFragment extends Fragment implements Injectable {
         super.onDestroy();
 
         if (mResource.isObservable()) {
-            mViewModel.cancelObserveRequest(mResource);
+            if (mDevice.getDeviceType() != DeviceType.CLOUD) {
+                mViewModel.cancelObserveRequest(mResource);
+            }
         }
     }
 
@@ -149,7 +152,9 @@ public class ResourceFragment extends Fragment implements Injectable {
                 if (isChecked) {
                     mViewModel.observeRequest(mDevice, mResource);
                 } else {
-                    mViewModel.cancelObserveRequest(mResource);
+                    if (mDevice.getDeviceType() != DeviceType.CLOUD) {
+                        mViewModel.cancelObserveRequest(mResource);
+                    }
                 }
             });
         } else {

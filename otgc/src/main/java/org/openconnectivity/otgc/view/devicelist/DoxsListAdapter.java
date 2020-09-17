@@ -132,7 +132,16 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
                 int res;
 
                 if (device1.getDeviceType() ==  device2.getDeviceType()) {     // Same types
-                    int nameComparision = device1.getDeviceInfo().getName().compareTo(device2.getDeviceInfo().getName());
+                    String deviceName1 = "";
+                    String deviceName2 = "";
+                    if (device1.getDeviceInfo() != null && device1.getDeviceInfo().getName() != null) {
+                        deviceName1 = device1.getDeviceInfo().getName();
+                    }
+                    if (device2.getDeviceInfo() != null && device2.getDeviceInfo().getName() != null) {
+                        deviceName2 = device2.getDeviceInfo().getName();
+                    }
+
+                    int nameComparision = deviceName1.compareTo(deviceName2);
                     int uuidComparision = device1.getDeviceId().compareTo(device2.getDeviceId());
 
                     // order by name or order by UUID if the names are equals
@@ -167,7 +176,8 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
 
             @Override
             public boolean areItemsTheSame(Device item1, Device item2) {
-                return item1.getDeviceId().equals(item2.getDeviceId());
+                return item1.getDeviceId().equals(item2.getDeviceId())
+                        && item1.getDeviceType().equals(item2.getDeviceType());
             }
 
             @Override
@@ -219,7 +229,7 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
             // - replace the contents of the view with that element
             if (device.getDeviceInfo() != null) {
                 holder.mDeviceName.setText(
-                        device.getDeviceInfo().getName().isEmpty() ?
+                        device.getDeviceInfo().getName() == null || device.getDeviceInfo().getName().isEmpty() ?
                                 mContext.getString(R.string.devices_cardview_unnamed_device) :
                                 device.getDeviceInfo().getName()
                 );
@@ -284,6 +294,12 @@ public class DoxsListAdapter extends RecyclerView.Adapter<DoxsListAdapter.DoxsLi
                     holder.mAddDeviceButton.setVisibility(View.GONE);
                     holder.mClientButton.setVisibility(View.VISIBLE);
                     holder.mPopupButton.setVisibility(View.VISIBLE);
+                    break;
+                case CLOUD:
+                    color = ContextCompat.getColor(mContext, R.color.OCF_PURPLE);
+                    holder.mAddDeviceButton.setVisibility(View.GONE);
+                    holder.mClientButton.setVisibility(View.VISIBLE);
+                    holder.mPopupButton.setVisibility(View.GONE);
                     break;
                 default:
                     break;

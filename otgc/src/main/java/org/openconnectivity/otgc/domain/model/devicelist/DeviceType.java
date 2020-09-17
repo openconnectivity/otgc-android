@@ -25,5 +25,6 @@ public enum DeviceType {
     UNOWNED,
     OWNED_BY_SELF,
     OWNED_BY_OTHER,
-    OWNED_BY_OTHER_WITH_PERMITS
+    OWNED_BY_OTHER_WITH_PERMITS,
+    CLOUD
 }

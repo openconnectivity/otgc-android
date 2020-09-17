@@ -27,6 +27,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
+import org.openconnectivity.otgc.domain.model.devicelist.DeviceType;
 import org.openconnectivity.otgc.domain.usecase.accesscontrol.CreateAclUseCase;
 import org.openconnectivity.otgc.domain.usecase.RetrieveVerticalResourcesUseCase;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
@@ -87,17 +88,19 @@ public class AceViewModel extends ViewModel {
     }
 
     public void retrieveResources(Device device) {
-        mDisposables.add(mRetrieveVerticalResourcesUseCase.execute(device)
-                .subscribeOn(mSchedulersFacade.io())
-                .observeOn(mSchedulersFacade.ui())
-                .doOnSubscribe(__ -> mProcessing.setValue(true))
-                .doFinally(() -> mProcessing.setValue(false))
-                .subscribe(
-                        mResources::setValue,
-                        throwable -> {
-                            mError.setValue(new ViewModelError(Error.RETRIEVE_RESOURCES, null));
-                        }
-                ));
+        if (device.getDeviceType() != DeviceType.CLOUD) {
+            mDisposables.add(mRetrieveVerticalResourcesUseCase.execute(device)
+                    .subscribeOn(mSchedulersFacade.io())
+                    .observeOn(mSchedulersFacade.ui())
+                    .doOnSubscribe(__ -> mProcessing.setValue(true))
+                    .doFinally(() -> mProcessing.setValue(false))
+                    .subscribe(
+                            mResources::setValue,
+                            throwable -> {
+                                mError.setValue(new ViewModelError(Error.RETRIEVE_RESOURCES, null));
+                            }
+                    ));
+        }
     }
 
     public void createAce(Device device, String subjectId, int permission, List<String> resources) {

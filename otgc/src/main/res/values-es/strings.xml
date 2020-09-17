@@ -62,6 +62,12 @@
     <string name="devices_menu_item_obt_mode">Modo OBT</string>
     <string name="devices_menu_item_trust_anchor">Gestión de certificados</string>
     <string name="devices_menu_item_cloud_configuration">Configuración</string>
+    <string name="devices_menu_item_cloud_register">Registrar</string>
+    <string name="devices_menu_item_cloud_deregister">Desregistrar</string>
+    <string name="devices_menu_item_cloud_login">Iniciar sesión</string>
+    <string name="devices_menu_item_cloud_logout">Cerrar sesión</string>
+    <string name="devices_menu_item_cloud_refresh_token">Refrescar Token</string>
+    <string name="devices_error_cloud_status_failed">Error al recuperar el estado del cloud</string>
     <string name="devices_menu_item_logs">Mostrar trazas</string>
     <string name="devices_menu_item_settings">Ajustes</string>
     <string name="devices_cardview_unnamed_device">Sin nombre</string>

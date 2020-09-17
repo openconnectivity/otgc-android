@@ -27,6 +27,7 @@ import org.iotivity.CborEncoder;
 import org.iotivity.OCBufferSettings;
 import org.iotivity.OCClientResponse;
 import org.iotivity.OCCloud;
+import org.iotivity.OCCloudContext;
 import org.iotivity.OCCoreRes;
 import org.iotivity.OCDiscoveryAllHandler;
 import org.iotivity.OCDiscoveryFlags;
@@ -354,9 +355,9 @@ public class IotivityRepository {
 
     public Single<String> getNonSecureEndpoint(Device device) {
         return Single.create(emitter -> {
-            String endpoint = device.getIpv6Host();
+            String endpoint = device.getIpv6Host() != null ? device.getIpv6Host() : device.getIpv6TcpHost();
             if (endpoint == null) {
-                endpoint = device.getIpv4Host();
+                endpoint = device.getIpv4Host() != null ? device.getIpv4Host() : device.getIpv4TcpHost();
             }
             emitter.onSuccess(endpoint);
         });
@@ -364,9 +365,9 @@ public class IotivityRepository {
 
     public Single<String> getSecureEndpoint(Device device) {
         return Single.create(emitter -> {
-            String endpoint = device.getIpv6SecureHost();
+            String endpoint = device.getIpv6SecureHost() != null ? device.getIpv6SecureHost() : device.getIpv6TcpSecureHost();
             if (endpoint == null) {
-                endpoint = device.getIpv4SecureHost();
+                endpoint = device.getIpv4SecureHost() != null ? device.getIpv4SecureHost() : device.getIpv4TcpSecureHost();
             }
             emitter.onSuccess(endpoint);
         });
@@ -777,6 +778,12 @@ public class IotivityRepository {
 
     public void close() {
         Timber.d("Calling OCMain.mainShutdown()");
+
+        OCCloudContext ctx = OCCloud.getContext(0);
+        if (ctx != null) {
+            OCCloud.managerStop(ctx);
+        }
+
         OCMain.mainShutdown();
         OCObt.shutdown();
     }

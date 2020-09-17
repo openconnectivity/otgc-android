@@ -44,6 +44,7 @@ import org.openconnectivity.otgc.R;
 import org.openconnectivity.otgc.domain.model.client.DynamicUiElement;
 import org.openconnectivity.otgc.domain.model.client.SerializableResource;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
+import org.openconnectivity.otgc.domain.model.devicelist.DeviceType;
 import org.openconnectivity.otgc.domain.model.resource.virtual.d.OcDeviceInfo;
 import org.openconnectivity.otgc.domain.model.resource.virtual.p.OcPlatformInfo;
 import org.openconnectivity.otgc.viewmodel.GenericClientViewModel;
@@ -92,7 +93,11 @@ public class GenericClientActivity extends AppCompatActivity implements HasSuppo
         mViewModel.loadDeviceName(mDevice.getDeviceId());
         mViewModel.loadDeviceInfo(mDevice);
         mViewModel.loadPlatformInfo(mDevice);
-        mViewModel.introspect(mDevice);
+        if (mDevice.getDeviceType() != DeviceType.CLOUD) {
+            mViewModel.introspect(mDevice);
+        } else {
+            mViewModel.findResources(mDevice);
+        }
     }
 
     @Override

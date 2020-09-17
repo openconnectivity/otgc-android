@@ -34,6 +34,8 @@ import org.openconnectivity.otgc.domain.usecase.client.CancelObserveResourceUseC
 import org.openconnectivity.otgc.domain.usecase.client.GetRequestUseCase;
 import org.openconnectivity.otgc.domain.usecase.client.ObserveResourceUseCase;
 import org.openconnectivity.otgc.domain.usecase.client.PostRequestUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudGetResourceUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudPostResourceUseCase;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelErrorType;
 import org.openconnectivity.otgc.utils.rx.SchedulersFacade;
@@ -43,6 +45,8 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 
 public class ResourceViewModel extends ViewModel {
@@ -52,6 +56,8 @@ public class ResourceViewModel extends ViewModel {
     private final ObserveResourceUseCase mObserveResource;
     private final CancelObserveResourceUseCase mCancelObserveResourceUseCase;
     private final UpdateDeviceTypeUseCase mUpdateDeviceTypeUseCase;
+    private final CloudGetResourceUseCase cloudGetResourceUseCase;
+    private final CloudPostResourceUseCase cloudPostResourceUseCase;
 
     private final SchedulersFacade mSchedulersFacade;
 
@@ -69,12 +75,16 @@ public class ResourceViewModel extends ViewModel {
             ObserveResourceUseCase observeResource,
             CancelObserveResourceUseCase cancelObserveResourceUseCase,
             UpdateDeviceTypeUseCase updateDeviceTypeUseCase,
-            SchedulersFacade schedulersFacade) {
+            SchedulersFacade schedulersFacade,
+            CloudGetResourceUseCase cloudGetResourceUseCase,
+            CloudPostResourceUseCase cloudPostResourceUseCase) {
         this.mGetRequestUseCase = getRequestUseCase;
         this.mPostRequestUseCase = postRequestUseCase;
         this.mObserveResource = observeResource;
         this.mCancelObserveResourceUseCase = cancelObserveResourceUseCase;
         this.mUpdateDeviceTypeUseCase = updateDeviceTypeUseCase;
+        this.cloudGetResourceUseCase = cloudGetResourceUseCase;
+        this.cloudPostResourceUseCase = cloudPostResourceUseCase;
 
         this.mSchedulersFacade = schedulersFacade;
     }
@@ -97,7 +107,11 @@ public class ResourceViewModel extends ViewModel {
     }
 
     public void getRequest(Device device, SerializableResource resource) {
-        disposables.add(mGetRequestUseCase.execute(device, resource)
+        Single<SerializableResource> getResourceSingle = device.getDeviceType() != DeviceType.CLOUD
+                ? mGetRequestUseCase.execute(device, resource)
+                : cloudGetResourceUseCase.execute(device, resource);
+
+        disposables.add(getResourceSingle
                 .subscribeOn(mSchedulersFacade.io())
                 .observeOn(mSchedulersFacade.ui())
                 .subscribe(
@@ -136,13 +150,15 @@ public class ResourceViewModel extends ViewModel {
     }
 
     public void observeRequest(Device device, SerializableResource resource) {
-        disposables.add(mObserveResource.execute(device, resource)
-                .subscribeOn(mSchedulersFacade.io())
-                .observeOn(mSchedulersFacade.ui())
-                .subscribe(
-                        mResponse::setValue,
-                        throwable -> mError.setValue(new ViewModelError(Error.OBSERVE, null))
-                ));
+        if (device.getDeviceType() != DeviceType.CLOUD) {
+            disposables.add(mObserveResource.execute(device, resource)
+                    .subscribeOn(mSchedulersFacade.io())
+                    .observeOn(mSchedulersFacade.ui())
+                    .subscribe(
+                            mResponse::setValue,
+                            throwable -> mError.setValue(new ViewModelError(Error.OBSERVE, null))
+                    ));
+        }
     }
 
     public void cancelObserveRequest(SerializableResource resource) {
@@ -156,7 +172,11 @@ public class ResourceViewModel extends ViewModel {
     }
 
     public void postRequest(Device device, SerializableResource resource, OCRepresentation rep, Object valueArray) {
-        disposables.add(mPostRequestUseCase.execute(device, resource, rep, valueArray)
+        Completable postResourceCompletable = device.getDeviceType() != DeviceType.CLOUD
+                ? mPostRequestUseCase.execute(device, resource, rep, valueArray)
+                : cloudPostResourceUseCase.execute(device, resource, rep, valueArray);
+
+        disposables.add(postResourceCompletable
                 .subscribeOn(mSchedulersFacade.io())
                 .observeOn(mSchedulersFacade.ui())
                 .subscribe(
@@ -169,7 +189,11 @@ public class ResourceViewModel extends ViewModel {
     }
 
     public void postRequest(Device device, SerializableResource resource, Map<String, Object> values) {
-        disposables.add(mPostRequestUseCase.execute(device, resource, values)
+        Completable postResourceCompletable = device.getDeviceType() != DeviceType.CLOUD
+                ? mPostRequestUseCase.execute(device, resource, values)
+                : cloudPostResourceUseCase.execute(device, resource, values);
+
+        disposables.add(postResourceCompletable
                 .subscribeOn(mSchedulersFacade.io())
                 .observeOn(mSchedulersFacade.ui())
                 .subscribe(

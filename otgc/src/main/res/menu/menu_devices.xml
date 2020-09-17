@@ -42,6 +42,21 @@
             <item
                 android:id="@+id/menu_item_cloud_configuration"
                 android:title="@string/devices_menu_item_cloud_configuration" />
+            <item
+                android:id="@+id/menu_item_cloud_register"
+                android:title="@string/devices_menu_item_cloud_register" />
+            <item
+                android:id="@+id/menu_item_cloud_deregister"
+                android:title="@string/devices_menu_item_cloud_deregister" />
+            <item
+                android:id="@+id/menu_item_cloud_login"
+                android:title="@string/devices_menu_item_cloud_login" />
+            <item
+                android:id="@+id/menu_item_cloud_logout"
+                android:title="@string/devices_menu_item_cloud_logout" />
+            <item
+                android:id="@+id/menu_item_cloud_refresh_token"
+                android:title="@string/devices_menu_item_cloud_refresh_token" />
         </menu>
     </item>
     <item

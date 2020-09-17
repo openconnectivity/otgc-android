@@ -76,46 +76,50 @@ public class CredentialsViewModel extends BaseViewModel {
     }
 
     public void retrieveCredentials(Device device) {
-        mDisposables.add(mRetrieveCredentialsUseCase.execute(device)
-                .subscribeOn(mSchedulersFacade.io())
-                .observeOn(mSchedulersFacade.ui())
-                .doOnSubscribe(__ -> mProcessing.setValue(true))
-                .doFinally(() -> mProcessing.setValue(false))
-                .subscribe(
-                        credentials -> {
-                            for (OcCredential cred : credentials.getCredList()) {
-                                mCredential.setValue(cred);
-                            }
+        if (device.getDeviceType() != DeviceType.CLOUD) {
+            mDisposables.add(mRetrieveCredentialsUseCase.execute(device)
+                    .subscribeOn(mSchedulersFacade.io())
+                    .observeOn(mSchedulersFacade.ui())
+                    .doOnSubscribe(__ -> mProcessing.setValue(true))
+                    .doFinally(() -> mProcessing.setValue(false))
+                    .subscribe(
+                            credentials -> {
+                                for (OcCredential cred : credentials.getCredList()) {
+                                    mCredential.setValue(cred);
+                                }
 
-                            if (!device.hasCREDpermit()
-                                    && (device.getDeviceType() == DeviceType.OWNED_BY_OTHER
-                                    || device.getDeviceType() == DeviceType.OWNED_BY_OTHER_WITH_PERMITS)) {
-                                mDisposables.add(mUpdateDeviceTypeUseCase.execute(device.getDeviceId(),
-                                                                                    DeviceType.OWNED_BY_OTHER_WITH_PERMITS,
-                                                                                    device.getPermits() | Device.CRED_PERMITS)
-                                        .subscribeOn(mSchedulersFacade.io())
-                                        .observeOn(mSchedulersFacade.ui())
-                                        .subscribe(
-                                                () -> {},
-                                                throwable -> mError.setValue(new ViewModelError(Error.DB_ERROR, null))
-                                        ));
+                                if (!device.hasCREDpermit()
+                                        && (device.getDeviceType() == DeviceType.OWNED_BY_OTHER
+                                        || device.getDeviceType() == DeviceType.OWNED_BY_OTHER_WITH_PERMITS)) {
+                                    mDisposables.add(mUpdateDeviceTypeUseCase.execute(device.getDeviceId(),
+                                            DeviceType.OWNED_BY_OTHER_WITH_PERMITS,
+                                            device.getPermits() | Device.CRED_PERMITS)
+                                            .subscribeOn(mSchedulersFacade.io())
+                                            .observeOn(mSchedulersFacade.ui())
+                                            .subscribe(
+                                                    () -> {
+                                                    },
+                                                    throwable -> mError.setValue(new ViewModelError(Error.DB_ERROR, null))
+                                            ));
+                                }
+                            },
+                            throwable -> {
+                                mError.setValue(new ViewModelError(Error.RETRIEVE_CREDS, null));
+                                if (device.hasCREDpermit()) {
+                                    mDisposables.add(mUpdateDeviceTypeUseCase.execute(device.getDeviceId(),
+                                            DeviceType.OWNED_BY_OTHER,
+                                            device.getPermits() & ~Device.CRED_PERMITS)
+                                            .subscribeOn(mSchedulersFacade.io())
+                                            .observeOn(mSchedulersFacade.ui())
+                                            .subscribe(
+                                                    () -> {
+                                                    },
+                                                    throwable2 -> mError.setValue(new ViewModelError(Error.DB_ERROR, null))
+                                            ));
+                                }
                             }
-                        },
-                        throwable -> {
-                            mError.setValue(new ViewModelError(Error.RETRIEVE_CREDS, null));
-                            if (device.hasCREDpermit()) {
-                                mDisposables.add(mUpdateDeviceTypeUseCase.execute(device.getDeviceId(),
-                                                                                    DeviceType.OWNED_BY_OTHER,
-                                                                                    device.getPermits() & ~Device.CRED_PERMITS)
-                                        .subscribeOn(mSchedulersFacade.io())
-                                        .observeOn(mSchedulersFacade.ui())
-                                        .subscribe(
-                                                () -> {},
-                                                throwable2 -> mError.setValue(new ViewModelError(Error.DB_ERROR, null))
-                                        ));
-                            }
-                        }
-                ));
+                    ));
+        }
     }
 
     public void deleteCredential(Device device, long credId) {

@@ -97,47 +97,51 @@ public class AccessControlViewModel extends ViewModel {
     }
 
     public void retrieveAcl(Device device) {
-        mDisposables.add(mRetrieveAclUseCase.execute(device)
-                .subscribeOn(mSchedulersFacade.io())
-                .observeOn(mSchedulersFacade.ui())
-                .doOnSubscribe(__ -> mProcessing.setValue(true))
-                .doFinally(() -> mProcessing.setValue(false))
-                .subscribe(
-                        acl -> {
-                            for (OcAce ace : acl.getAceList()) {
-                                mAce.setValue(ace);
-                            }
-                            // if i can see ACL, i have some permits, so i have to update the DeviceType to OWNED_BY_OTHER_WITH_PERMITS
-                            if (!device.hasACLpermit()
-                                    && (device.getDeviceType() == DeviceType.OWNED_BY_OTHER
-                                    || device.getDeviceType() == DeviceType.OWNED_BY_OTHER_WITH_PERMITS)) {
-                                mDisposables.add(mUpdateDeviceTypeUseCase.execute(device.getDeviceId(),
-                                                                                    DeviceType.OWNED_BY_OTHER_WITH_PERMITS,
-                                                                                    device.getPermits() | Device.ACL_PERMITS)
-                                                .subscribeOn(mSchedulersFacade.io())
-                                                .observeOn(mSchedulersFacade.ui())
-                                                .subscribe(
-                                                        () -> {},
-                                                        throwable2 ->  mError.setValue(new ViewModelError(Error.DB_ACCESS, null))
-                                                ));
-                            }
-                        },
-                        throwable -> {
-                            mError.setValue(new ViewModelError(Error.RETRIEVE, null));
+        if (device.getDeviceType() != DeviceType.CLOUD) {
+            mDisposables.add(mRetrieveAclUseCase.execute(device)
+                    .subscribeOn(mSchedulersFacade.io())
+                    .observeOn(mSchedulersFacade.ui())
+                    .doOnSubscribe(__ -> mProcessing.setValue(true))
+                    .doFinally(() -> mProcessing.setValue(false))
+                    .subscribe(
+                            acl -> {
+                                for (OcAce ace : acl.getAceList()) {
+                                    mAce.setValue(ace);
+                                }
+                                // if i can see ACL, i have some permits, so i have to update the DeviceType to OWNED_BY_OTHER_WITH_PERMITS
+                                if (!device.hasACLpermit()
+                                        && (device.getDeviceType() == DeviceType.OWNED_BY_OTHER
+                                        || device.getDeviceType() == DeviceType.OWNED_BY_OTHER_WITH_PERMITS)) {
+                                    mDisposables.add(mUpdateDeviceTypeUseCase.execute(device.getDeviceId(),
+                                            DeviceType.OWNED_BY_OTHER_WITH_PERMITS,
+                                            device.getPermits() | Device.ACL_PERMITS)
+                                            .subscribeOn(mSchedulersFacade.io())
+                                            .observeOn(mSchedulersFacade.ui())
+                                            .subscribe(
+                                                    () -> {
+                                                    },
+                                                    throwable2 -> mError.setValue(new ViewModelError(Error.DB_ACCESS, null))
+                                            ));
+                                }
+                            },
+                            throwable -> {
+                                mError.setValue(new ViewModelError(Error.RETRIEVE, null));
 
-                            if (device.hasACLpermit()) {
-                                mDisposables.add(mUpdateDeviceTypeUseCase.execute(device.getDeviceId(),
-                                        DeviceType.OWNED_BY_OTHER,
-                                        device.getPermits() & ~Device.ACL_PERMITS)
-                                        .subscribeOn(mSchedulersFacade.io())
-                                        .observeOn(mSchedulersFacade.ui())
-                                        .subscribe(
-                                                () -> {},
-                                                throwable2 ->  mError.setValue(new ViewModelError(Error.DB_ACCESS, null))
-                                        ));
+                                if (device.hasACLpermit()) {
+                                    mDisposables.add(mUpdateDeviceTypeUseCase.execute(device.getDeviceId(),
+                                            DeviceType.OWNED_BY_OTHER,
+                                            device.getPermits() & ~Device.ACL_PERMITS)
+                                            .subscribeOn(mSchedulersFacade.io())
+                                            .observeOn(mSchedulersFacade.ui())
+                                            .subscribe(
+                                                    () -> {
+                                                    },
+                                                    throwable2 -> mError.setValue(new ViewModelError(Error.DB_ACCESS, null))
+                                            ));
+                                }
                             }
-                        }
-                ));
+                    ));
+        }
     }
 
     public void deleteAce(Device device, long aceId) {

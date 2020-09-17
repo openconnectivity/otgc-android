@@ -30,6 +30,9 @@ import org.openconnectivity.otgc.domain.usecase.GetDeviceIdUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetModeUseCase;
 import org.openconnectivity.otgc.domain.usecase.OnboardDevicesUseCase;
 import org.openconnectivity.otgc.domain.usecase.accesscontrol.CreateAclUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudDiscoverDevicesUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudRetrieveDeviceInfoUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudRetrieveDeviceRoleUseCase;
 import org.openconnectivity.otgc.domain.usecase.wifi.CheckConnectionUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceInfoUseCase;
 import org.openconnectivity.otgc.domain.model.exception.NetworkDisconnectedException;
@@ -59,8 +62,11 @@ import org.openconnectivity.otgc.domain.usecase.wifi.ScanWiFiNetworksUseCase;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
+
+import io.reactivex.Observable;
 
 public class DoxsViewModel extends BaseViewModel {
 
@@ -82,6 +88,9 @@ public class DoxsViewModel extends BaseViewModel {
     private final UnlinkDevicesUseCase mUnlinkDevicesUseCase;
     private final GetDeviceDatabaseUseCase mGetDeviceDatabaseUseCase;
     private final GetDeviceIdUseCase mGetDeviceIdUseCase;
+    private final CloudDiscoverDevicesUseCase cloudDiscoverDevicesUseCase;
+    private final CloudRetrieveDeviceInfoUseCase cloudRetrieveDeviceInfoUseCase;
+    private final CloudRetrieveDeviceRoleUseCase cloudRetrieveDeviceRoleUseCase;
 
     private final SchedulersFacade mSchedulersFacade;
 
@@ -125,7 +134,10 @@ public class DoxsViewModel extends BaseViewModel {
                   UnlinkDevicesUseCase unlinkDevicesUseCase,
                   GetDeviceDatabaseUseCase getDeviceDatabaseUseCase,
                   GetDeviceIdUseCase getDeviceIdUseCase,
-                  SchedulersFacade schedulersFacade) {
+                  SchedulersFacade schedulersFacade,
+                  CloudDiscoverDevicesUseCase cloudDiscoverDevicesUseCase,
+                  CloudRetrieveDeviceInfoUseCase cloudRetrieveDeviceInfoUseCase,
+                  CloudRetrieveDeviceRoleUseCase cloudRetrieveDeviceRoleUseCase) {
         this.mCheckConnectionUseCase = checkConnectionUseCase;
         this.mGetModeUseCase = getModeUseCase;
         this.mScanDevicesUseCase = scanDevicesUseCase;
@@ -144,6 +156,9 @@ public class DoxsViewModel extends BaseViewModel {
         this.mUnlinkDevicesUseCase = unlinkDevicesUseCase;
         this.mGetDeviceDatabaseUseCase = getDeviceDatabaseUseCase;
         this.mGetDeviceIdUseCase = getDeviceIdUseCase;
+        this.cloudDiscoverDevicesUseCase = cloudDiscoverDevicesUseCase;
+        this.cloudRetrieveDeviceInfoUseCase = cloudRetrieveDeviceInfoUseCase;
+        this.cloudRetrieveDeviceRoleUseCase = cloudRetrieveDeviceRoleUseCase;
 
         this.mSchedulersFacade = schedulersFacade;
 
@@ -217,28 +232,40 @@ public class DoxsViewModel extends BaseViewModel {
     }
 
     public void onScanRequested() {
-        mDisposables.add(mCheckConnectionUseCase.executeCompletable()
-                .andThen(mScanDevicesUseCase.execute()
-                        .map(device -> {
-                            device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device).blockingGet());
-                            return device;
-                        })
-                        .map(device -> {
-                            device.setDeviceRole(
-                                    mGetDeviceRoleUseCase.execute(device).blockingGet());
-                            return device;
-                        })
-                        .map(device -> {
-                            if (device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
-                                String storedDeviceName = mGetDeviceNameUseCase.execute(device.getDeviceId()).blockingGet();
-                                if (storedDeviceName != null && !storedDeviceName.isEmpty()) {
-                                    device.getDeviceInfo().setName(storedDeviceName);
-                                }
-                            }
+        Observable<Device> localScan = mScanDevicesUseCase.execute()
+                .map(device -> {
+                    device.setDeviceInfo(mGetDeviceInfoUseCase.execute(device).blockingGet());
+                    return device;
+                })
+                .map(device -> {
+                    device.setDeviceRole(
+                            mGetDeviceRoleUseCase.execute(device).blockingGet());
+                    return device;
+                })
+                .map(device -> {
+                    if (device.getDeviceType().equals(DeviceType.OWNED_BY_SELF)) {
+                        String storedDeviceName = mGetDeviceNameUseCase.execute(device.getDeviceId()).blockingGet();
+                        if (storedDeviceName != null && !storedDeviceName.isEmpty()) {
+                            device.getDeviceInfo().setName(storedDeviceName);
+                        }
+                    }
 
-                            return device;
-                        })
-                )
+                    return device;
+                });
+
+        Observable<Device> cloudScan = cloudDiscoverDevicesUseCase.execute()
+                .delay(5, TimeUnit.SECONDS)
+                .map(device -> {
+                    device.setDeviceInfo(cloudRetrieveDeviceInfoUseCase.execute(device).blockingGet());
+                    return device;
+                })
+                .map(device -> {
+                    device.setDeviceRole(cloudRetrieveDeviceRoleUseCase.execute(device).blockingGet());
+                    return device;
+                });
+
+        mDisposables.add(mCheckConnectionUseCase.executeCompletable()
+                .andThen(Observable.concat(localScan, cloudScan))
                 .subscribeOn(mSchedulersFacade.io())
                 .observeOn(mSchedulersFacade.ui())
                 .doOnSubscribe(__ -> mProcessing.setValue(true))

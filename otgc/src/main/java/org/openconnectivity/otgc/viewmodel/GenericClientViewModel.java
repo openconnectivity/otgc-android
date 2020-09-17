@@ -27,6 +27,7 @@ import androidx.lifecycle.MutableLiveData;
 import org.openconnectivity.otgc.domain.model.client.DynamicUiElement;
 import org.openconnectivity.otgc.domain.model.client.SerializableResource;
 import org.openconnectivity.otgc.domain.model.devicelist.Device;
+import org.openconnectivity.otgc.domain.model.devicelist.DeviceType;
 import org.openconnectivity.otgc.domain.model.resource.virtual.d.OcDeviceInfo;
 import org.openconnectivity.otgc.domain.model.resource.virtual.p.OcPlatformInfo;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceInfoUseCase;
@@ -35,6 +36,11 @@ import org.openconnectivity.otgc.domain.usecase.GetResourcesUseCase;
 import org.openconnectivity.otgc.domain.usecase.client.IntrospectUseCase;
 import org.openconnectivity.otgc.domain.usecase.client.UiFromSwaggerUseCase;
 import org.openconnectivity.otgc.domain.usecase.GetDeviceNameUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudDiscoverResourcesUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudGetResourceUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudPostResourceUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudRetrieveDeviceInfoUseCase;
+import org.openconnectivity.otgc.domain.usecase.cloud.CloudRetrievePlatformInfoUseCase;
 import org.openconnectivity.otgc.utils.viewmodel.BaseViewModel;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelError;
 import org.openconnectivity.otgc.utils.viewmodel.ViewModelErrorType;
@@ -44,6 +50,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.Single;
+
 public class GenericClientViewModel extends BaseViewModel {
 
     private final GetDeviceNameUseCase mGetDeviceNameUseCase;
@@ -52,6 +60,9 @@ public class GenericClientViewModel extends BaseViewModel {
     private final GetResourcesUseCase mGetResourcesUseCase;
     private final IntrospectUseCase mIntrospectUseCase;
     private final UiFromSwaggerUseCase mUiFromSwaggerUseCase;
+    private final CloudRetrieveDeviceInfoUseCase cloudRetrieveDeviceInfoUseCase;
+    private final CloudRetrievePlatformInfoUseCase cloudRetrievePlatformInfoUseCase;
+    private final CloudDiscoverResourcesUseCase cloudDiscoverResourcesUseCase;
 
     private final SchedulersFacade schedulersFacade;
 
@@ -69,7 +80,10 @@ public class GenericClientViewModel extends BaseViewModel {
             GetResourcesUseCase getResourcesUseCase,
             IntrospectUseCase introspectUseCase,
             UiFromSwaggerUseCase uiFromSwaggerUseCase,
-            SchedulersFacade schedulersFacade) {
+            SchedulersFacade schedulersFacade,
+            CloudRetrieveDeviceInfoUseCase cloudRetrieveDeviceInfoUseCase,
+            CloudRetrievePlatformInfoUseCase cloudRetrievePlatformInfoUseCase,
+            CloudDiscoverResourcesUseCase cloudDiscoverResourcesUseCase) {
         this.mGetDeviceNameUseCase = getDeviceNameUseCase;
         this.mGetDeviceInfoUseCase = getDeviceInfoUseCase;
         this.mGetPlatformInfoUseCase = getPlatformInfoUseCase;
@@ -77,6 +91,9 @@ public class GenericClientViewModel extends BaseViewModel {
         this.mIntrospectUseCase = introspectUseCase;
         this.mUiFromSwaggerUseCase = uiFromSwaggerUseCase;
         this.schedulersFacade = schedulersFacade;
+        this.cloudRetrieveDeviceInfoUseCase = cloudRetrieveDeviceInfoUseCase;
+        this.cloudRetrievePlatformInfoUseCase = cloudRetrievePlatformInfoUseCase;
+        this.cloudDiscoverResourcesUseCase = cloudDiscoverResourcesUseCase;
     }
 
     public LiveData<String> getDeviceName() {
@@ -112,7 +129,11 @@ public class GenericClientViewModel extends BaseViewModel {
     }
 
     public void loadDeviceInfo(Device device) {
-        mDisposables.add(mGetDeviceInfoUseCase.execute(device)
+        Single<OcDeviceInfo> deviceInfoSingle = device.getDeviceType() != DeviceType.CLOUD
+                ? mGetDeviceInfoUseCase.execute(device)
+                : cloudRetrieveDeviceInfoUseCase.execute(device);
+
+        mDisposables.add(deviceInfoSingle
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .doOnSubscribe(__ -> mProcessing.setValue(true))
@@ -124,7 +145,11 @@ public class GenericClientViewModel extends BaseViewModel {
     }
 
     public void loadPlatformInfo(Device device) {
-        mDisposables.add(mGetPlatformInfoUseCase.execute(device)
+        Single<OcPlatformInfo> platformInfoSingle = device.getDeviceType() != DeviceType.CLOUD
+                ? mGetPlatformInfoUseCase.execute(device)
+                : cloudRetrievePlatformInfoUseCase.execute(device);
+
+        mDisposables.add(platformInfoSingle
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .doOnSubscribe(__ -> mProcessing.setValue(true))
@@ -136,20 +161,26 @@ public class GenericClientViewModel extends BaseViewModel {
     }
 
     public void introspect(Device device) {
-        mDisposables.add(mIntrospectUseCase.execute(device)
-                .flatMap(mUiFromSwaggerUseCase::execute)
-                .subscribeOn(schedulersFacade.io())
-                .observeOn(schedulersFacade.ui())
-                .doOnSubscribe(__ -> mProcessing.setValue(true))
-                .subscribe(
-                        mIntrospection::setValue,
-                        throwable -> mError.setValue(
-                                new ViewModelError(Error.INTROSPECTION, null))
-                ));
+        if (device.getDeviceType() != DeviceType.CLOUD) {
+            mDisposables.add(mIntrospectUseCase.execute(device)
+                    .flatMap(mUiFromSwaggerUseCase::execute)
+                    .subscribeOn(schedulersFacade.io())
+                    .observeOn(schedulersFacade.ui())
+                    .doOnSubscribe(__ -> mProcessing.setValue(true))
+                    .subscribe(
+                            mIntrospection::setValue,
+                            throwable -> mError.setValue(
+                                    new ViewModelError(Error.INTROSPECTION, null))
+                    ));
+        }
     }
 
     public void findResources(Device device) {
-        mDisposables.add(mGetResourcesUseCase.execute(device)
+        Single<List<SerializableResource>> discoverResourcesSingle = device.getDeviceType() != DeviceType.CLOUD
+                ? mGetResourcesUseCase.execute(device)
+                : cloudDiscoverResourcesUseCase.execute(device);
+
+        mDisposables.add(discoverResourcesSingle
                 .subscribeOn(schedulersFacade.io())
                 .observeOn(schedulersFacade.ui())
                 .doOnSubscribe(__ -> mProcessing.setValue(true))

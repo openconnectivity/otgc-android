@@ -42,6 +42,7 @@
     <!-- OCF SECONDARY colors-->
     <color name="OCF_ORANGE">#f58220</color>
     <color name="OCF_YELLOW">#fcc509</color>
+    <color name="OCF_PURPLE">#8e44ad</color>
     <color name="OCF_LIGHT_GRAY">#717271</color>
     <color name="OCF_DARK_GRAY">#78777a</color>
 
